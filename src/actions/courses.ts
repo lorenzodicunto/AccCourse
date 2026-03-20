@@ -50,7 +50,13 @@ export async function createCourse(title: string, description: string, thumbnail
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
   });
-  if (!user || !user.tenantId) throw new Error("User has no tenant");
+  if (!user) throw new Error("User not found");
+
+  // Super Admin can create courses without a tenant
+  // Regular users must have a tenant
+  if (user.role !== "SUPER_ADMIN" && !user.tenantId) {
+    throw new Error("User has no tenant");
+  }
 
   const course = await prisma.course.create({
     data: {
@@ -58,7 +64,7 @@ export async function createCourse(title: string, description: string, thumbnail
       description,
       thumbnail,
       courseData,
-      tenantId: user.tenantId,
+      tenantId: user.tenantId ?? undefined,
       authorId: user.id,
     },
   });

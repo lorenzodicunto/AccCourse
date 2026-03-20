@@ -26,7 +26,7 @@ type CourseRow = {
   thumbnail: string;
   updatedAt: Date;
   author: { name: string; email: string };
-  tenant: { name: string };
+  tenant: { name: string } | null;
 };
 
 export default function DashboardPage() {

@@ -35,9 +35,9 @@ model Course {
   description String   @default("")
   thumbnail   String   @default("")
   courseData   String   @default("{}")
-  tenantId    String
+  tenantId    String?
   authorId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
   author      User     @relation(fields: [authorId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
