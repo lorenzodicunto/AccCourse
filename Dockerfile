@@ -25,9 +25,6 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
 # Copy necessary files
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
@@ -37,18 +34,13 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
-# Copy seed dependencies
-COPY --from=builder /app/src/lib/prisma.ts ./src/lib/prisma.ts
-COPY --from=builder /app/package.json ./package.json
-
-# Create data directory for SQLite
-RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data /app/prisma
-
-USER nextjs
+# Create writable data directory for SQLite
+RUN mkdir -p /app/data
 
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-ENV DATABASE_URL="file:./data/prod.db"
+ENV DATABASE_URL="file:/app/data/prod.db"
 
-CMD ["sh", "-c", "npx prisma db push --skip-generate && node server.js"]
+# Push schema on startup, then start server
+CMD ["sh", "-c", "npx prisma db push --skip-generate 2>&1 && node server.js"]
