@@ -15,12 +15,9 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Create the production database with schema and seed data
-ENV DATABASE_URL="file:/app/data/prod.db"
-RUN mkdir -p /app/data && npx prisma db push --skip-generate && node prisma/seed.js
-
 # Build Next.js (standalone)
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV DATABASE_URL="file:/app/data/prod.db"
 RUN npm run build
 
 # ── Production ────────────────────────────────────────────────
@@ -29,17 +26,28 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy necessary files
+# Copy Next.js standalone build
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Copy pre-built database
-COPY --from=builder /app/data ./data
+# Copy Prisma schema + seed for runtime initialization
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder /app/node_modules/bcryptjs ./node_modules/bcryptjs
+
+# Copy entrypoint script
+COPY --from=builder /app/entrypoint.sh ./entrypoint.sh
+RUN chmod +x entrypoint.sh
+
+# Create data directory (will be a volume mount point)
+RUN mkdir -p /app/data
 
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV DATABASE_URL="file:/app/data/prod.db"
 
-CMD ["node", "server.js"]
+CMD ["./entrypoint.sh"]
