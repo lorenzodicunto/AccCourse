@@ -15,6 +15,10 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
+# Create the production database with schema
+ENV DATABASE_URL="file:/app/data/prod.db"
+RUN mkdir -p /app/data && npx prisma db push --skip-generate
+
 # Build Next.js (standalone)
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
@@ -29,18 +33,13 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 
-# Create writable data directory for SQLite
-RUN mkdir -p /app/data
+# Copy pre-built database
+COPY --from=builder /app/data ./data
 
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV DATABASE_URL="file:/app/data/prod.db"
 
-# Push schema on startup, then start server
-CMD ["sh", "-c", "npx prisma db push --skip-generate 2>&1 && node server.js"]
+CMD ["node", "server.js"]
