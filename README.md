@@ -1,36 +1,145 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AccCourse — Plataforma de Criação de Cursos E-Learning
 
-## Getting Started
+> Crie cursos interativos e-learning com exportação SCORM 1.2 — sem código, totalmente visual.
 
-First, run the development server:
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)](https://typescriptlang.org)
+[![SCORM 1.2](https://img.shields.io/badge/SCORM-1.2-green)](https://scorm.com)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🎯 Proposta de Valor
+
+O **AccCourse** é uma plataforma SaaS de autoria de cursos e-learning inspirada no **isEazy Author**, focada em oferecer uma experiência de criação **WYSIWYG (What You See Is What You Get)** totalmente visual e sem necessidade de código.
+
+### Diferenciais:
+- **Editor Drag-and-Drop** com posicionamento livre em canvas 16:9
+- **4 tipos de blocos interativos**: Texto, Imagem, Flashcard (3D flip), Quiz
+- **Exportação SCORM 1.2 100% client-side** — nenhum servidor é necessário para gerar o pacote
+- **Undo/Redo** com histórico completo via Zustand
+- **Segurança**: sanitização HTML com DOMPurify contra XSS
+- **LGPD/GDPR Compliance**: consent banner e opção de exclusão de dados
+
+---
+
+## 🏗️ Arquitetura
+
+### Stack
+| Camada | Tecnologia |
+|--------|-----------|
+| Framework | Next.js 16 (App Router) |
+| Linguagem | TypeScript 5 |
+| UI | Tailwind CSS + shadcn/ui (Violet theme) |
+| Drag-and-Drop | @dnd-kit/core + @dnd-kit/sortable |
+| State | Zustand (persist + undo/redo) |
+| Sanitização | isomorphic-dompurify |
+| Exportação | JSZip + FileSaver |
+| Notificações | Sonner (via shadcn/ui) |
+
+### Geração SCORM (Client-Side)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Browser (Next.js App)                                  │
+│                                                         │
+│  Zustand Store ──> SCORM Engine ──> JSZip ──> Download  │
+│                                                         │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │ manifest.ts │  │ htmlGen.ts  │  │ scormApi.ts │     │
+│  │ (XML)       │  │ (HTML+JS)   │  │ (LMS shim)  │     │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘     │
+│         │                │                │             │
+│         └────────────────┼────────────────┘             │
+│                          ▼                              │
+│                    packager.ts                          │
+│                    (JSZip → .zip)                       │
+└─────────────────────────────────────────────────────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+O pacote SCORM é gerado **inteiramente no navegador**:
+1. `manifest.ts` — Gera o `imsmanifest.xml` com schemas SCORM 1.2
+2. `htmlGenerator.ts` — Converte slides/blocos em HTML com navegação, flashcard flip, quiz interativo e keyboard navigation
+3. `scormApi.ts` — SCORM API shim que faz `findAPI()` para comunicação com o LMS (bookmark, score, lesson_status)
+4. `styles.ts` — CSS premium com animations, responsive design e gradient background
+5. `packager.ts` — Empacota tudo com JSZip (DEFLATE) e inicia download via FileSaver
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Setup & Deploy
 
-## Learn More
+### Pré-requisitos
+- Node.js >= 18
+- npm >= 9
 
-To learn more about Next.js, take a look at the following resources:
+### Desenvolvimento
+```bash
+# Clonar o repositório
+git clone <repo-url>
+cd AccCourse
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Instalar dependências
+npm install
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Iniciar dev server
+npm run dev
+```
+Acesse [http://localhost:3000](http://localhost:3000)
 
-## Deploy on Vercel
+### Build de Produção
+```bash
+npm run build
+npm start
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Deploy (Vercel)
+```bash
+# Via CLI
+npx vercel --prod
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Ou conecte o repositório no dashboard.vercel.com
+```
+
+> **Nota**: Não há backend/banco de dados. Todos os dados são persistidos no `localStorage` do navegador via Zustand persist. Para produção, considere adicionar persistência em nuvem.
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+src/
+├── app/
+│   ├── layout.tsx              # Layout raiz (HydrationGuard + Toaster)
+│   ├── page.tsx                # Dashboard
+│   └── editor/[id]/page.tsx    # Editor WYSIWYG
+├── components/
+│   ├── dashboard/              # ProjectCard, CreateProjectDialog
+│   ├── editor/                 # TopToolbar, SlideNavigator, Canvas,
+│   │                           # DraggableBlock, PropertiesPanel
+│   ├── HydrationGuard.tsx      # Previne hydration mismatch (SSR + localStorage)
+│   └── ui/                     # shadcn/ui components
+├── lib/
+│   ├── sanitize.ts             # DOMPurify wrapper (anti-XSS)
+│   ├── utils.ts                # cn() helper
+│   └── scorm/
+│       ├── packager.ts         # JSZip + FileSaver (main entry)
+│       ├── manifest.ts         # imsmanifest.xml generator
+│       ├── htmlGenerator.ts    # Course HTML with interactions
+│       ├── styles.ts           # Premium CSS generator
+│       └── scormApi.ts         # SCORM 1.2 API shim
+└── store/
+    └── useEditorStore.ts       # Zustand (persist + undo/redo)
+```
+
+---
+
+## 🔐 Segurança
+
+- **XSS Prevention**: Todo conteúdo de texto é sanitizado com `DOMPurify.sanitize()` antes de salvar no store e antes da exportação SCORM
+- **LGPD/GDPR**: Cookie consent banner com opção de aceitar/rejeitar, botão "Excluir Meus Dados"
+- **Hydration Safety**: `HydrationGuard` previne hydration mismatch entre SSR e localStorage
+
+---
+
+## 📄 Licença
+
+Projeto proprietário — todos os direitos reservados.

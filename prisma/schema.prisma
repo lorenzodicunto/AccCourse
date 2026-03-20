@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Multi-Tenant RBAC Models ─────────────────────────────────────────────────
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  users     User[]
+  courses   Course[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("AUTHOR")
+  tenantId     String?
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
+  courses      Course[]
+  createdAt    DateTime @default(now())
+}
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  thumbnail   String   @default("")
+  courseData   String   @default("{}")
+  tenantId    String
+  authorId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  author      User     @relation(fields: [authorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── Review Portal Models (Legacy V1) ─────────────────────────────────────────
+
+model SharedCourse {
+  id         String    @id @default(cuid())
+  title      String
+  courseData  String
+  createdAt  DateTime  @default(now())
+  comments   Comment[]
+}
+
+model Reviewer {
+  id        String    @id @default(cuid())
+  name      String
+  email     String
+  createdAt DateTime  @default(now())
+  comments  Comment[]
+}
+
+model Comment {
+  id             String       @id @default(cuid())
+  text           String
+  slideId        String
+  sharedCourseId String
+  reviewerId     String
+  createdAt      DateTime     @default(now())
+  sharedCourse   SharedCourse @relation(fields: [sharedCourseId], references: [id], onDelete: Cascade)
+  reviewer       Reviewer     @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+}
