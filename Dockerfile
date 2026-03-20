@@ -15,9 +15,9 @@ COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
 
-# Create the production database with schema
+# Create the production database with schema and seed data
 ENV DATABASE_URL="file:/app/data/prod.db"
-RUN mkdir -p /app/data && npx prisma db push --skip-generate
+RUN mkdir -p /app/data && npx prisma db push --skip-generate && npx tsx prisma/seed.ts
 
 # Build Next.js (standalone)
 ENV NEXT_TELEMETRY_DISABLED=1
