@@ -43,8 +43,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Ensure uploads directory exists
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    // Use /app/data/uploads in production (persistent volume), public/uploads locally
+    const isProduction = process.env.NODE_ENV === "production";
+    const uploadsDir = isProduction
+      ? path.join("/app", "data", "uploads")
+      : path.join(process.cwd(), "public", "uploads");
     await mkdir(uploadsDir, { recursive: true });
 
     // Generate unique filename
@@ -56,8 +59,12 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     await writeFile(filePath, Buffer.from(bytes));
 
-    // Return the public URL
-    return NextResponse.json({ url: `/uploads/${fileName}` });
+    // Return the public URL - in production, serve from API route
+    const url = isProduction
+      ? `/api/uploads/${fileName}`
+      : `/uploads/${fileName}`;
+
+    return NextResponse.json({ url });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
