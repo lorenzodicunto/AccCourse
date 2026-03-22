@@ -24,8 +24,17 @@ export interface TextBlock extends BaseBlock {
   content: string; // HTML (rich text) — sanitize with DOMPurify before rendering!
   fontSize: number;
   fontWeight: string;
+  fontStyle: "normal" | "italic";
+  textDecorationLine: "none" | "underline" | "line-through";
   color: string;
   textAlign: "left" | "center" | "right";
+  lineHeight: number; // multiplier, e.g. 1.5
+  letterSpacing: number; // px
+  textShadow: string; // CSS text-shadow value
+  backgroundColor: string; // block bg color (transparent = none)
+  borderRadius: number; // px
+  opacity: number; // 0–1
+  listType: "none" | "ul" | "ol";
 }
 
 export interface ImageBlock extends BaseBlock {
@@ -33,6 +42,11 @@ export interface ImageBlock extends BaseBlock {
   src: string;
   alt: string;
   objectFit: "cover" | "contain" | "fill";
+  opacity: number;
+  borderRadius: number;
+  borderWidth: number;
+  borderColor: string;
+  boxShadow: string;
 }
 
 export interface FlashcardBlock extends BaseBlock {
@@ -54,6 +68,7 @@ export interface QuizBlock extends BaseBlock {
   question: string;
   options: QuizOption[];
   feedback: { correct: string; incorrect: string };
+  pointsValue: number; // points awarded for correct answer
 }
 
 export interface VideoInteraction {
@@ -79,6 +94,13 @@ export interface Slide {
   background: string;
 }
 
+export interface QuizSettings {
+  passingScore: number; // percentage 0-100
+  showResults: boolean;
+  allowRetry: boolean;
+  maxAttempts: number;
+}
+
 export interface CourseProject {
   id: string;
   title: string;
@@ -86,6 +108,7 @@ export interface CourseProject {
   thumbnail: string; // gradient CSS string
   theme: ThemeConfig;
   slides: Slide[];
+  quizSettings: QuizSettings;
   createdAt: string;
   updatedAt: string;
 }
@@ -597,7 +620,7 @@ export function createDefaultProject(
 ): CourseProject {
   const projectId = generateId();
   const slideId = generateId();
-  return {
+   return {
     id: projectId,
     title,
     description,
@@ -617,6 +640,12 @@ export function createDefaultProject(
         background: "#ffffff",
       },
     ],
+    quizSettings: {
+      passingScore: 70,
+      showResults: true,
+      allowRetry: true,
+      maxAttempts: 3,
+    },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };

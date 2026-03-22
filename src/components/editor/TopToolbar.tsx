@@ -196,8 +196,17 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           content: "<p>Clique para editar o texto</p>",
           fontSize: 18,
           fontWeight: "normal",
+          fontStyle: "normal",
+          textDecorationLine: "none",
           color: "#1a1a2e",
           textAlign: "left",
+          lineHeight: 1.5,
+          letterSpacing: 0,
+          textShadow: "none",
+          backgroundColor: "transparent",
+          borderRadius: 0,
+          opacity: 1,
+          listType: "none",
         };
         break;
       case "image":
@@ -209,6 +218,11 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           src: "",
           alt: "Imagem",
           objectFit: "cover",
+          opacity: 1,
+          borderRadius: 12,
+          borderWidth: 0,
+          borderColor: "#e2e8f0",
+          boxShadow: "none",
         };
         break;
       case "flashcard":
@@ -239,6 +253,7 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
             correct: "Parabéns! Resposta correta!",
             incorrect: "Tente novamente.",
           },
+          pointsValue: 10,
         };
         break;
       case "video":

@@ -279,16 +279,24 @@ export function DraggableBlock({
         <div
           ref={textRef}
           className={cn(
-            "w-full h-full p-3 overflow-hidden text-sm leading-relaxed rounded-lg",
+            "w-full h-full p-3 overflow-hidden text-sm rounded-lg",
             isEditing
-              ? "bg-white outline-none ring-1 ring-primary/30 cursor-text"
-              : "bg-white/80"
+              ? "outline-none ring-1 ring-primary/30 cursor-text"
+              : ""
           )}
           style={{
             fontSize: `${Math.max(10, block.fontSize * 0.7)}px`,
             fontWeight: block.fontWeight,
+            fontStyle: (block as any).fontStyle || "normal",
+            textDecorationLine: (block as any).textDecorationLine || "none",
             color: block.color,
             textAlign: block.textAlign,
+            lineHeight: (block as any).lineHeight ?? 1.5,
+            letterSpacing: `${(block as any).letterSpacing ?? 0}px`,
+            textShadow: (block as any).textShadow !== "none" ? (block as any).textShadow : undefined,
+            backgroundColor: (block as any).backgroundColor || "transparent",
+            borderRadius: `${(block as any).borderRadius ?? 0}px`,
+            opacity: (block as any).opacity ?? 1,
           }}
           contentEditable={isEditing}
           suppressContentEditableWarning
@@ -305,7 +313,13 @@ export function DraggableBlock({
       {/* ─── IMAGE BLOCK ─── */}
       {block.type === "image" && (
         <div
-          className="w-full h-full rounded-lg overflow-hidden"
+          className="w-full h-full overflow-hidden"
+          style={{
+            borderRadius: `${(block as any).borderRadius ?? 12}px`,
+            opacity: (block as any).opacity ?? 1,
+            border: (block as any).borderWidth ? `${(block as any).borderWidth}px solid ${(block as any).borderColor || "#e2e8f0"}` : undefined,
+            boxShadow: (block as any).boxShadow !== "none" ? (block as any).boxShadow : undefined,
+          }}
           onDoubleClick={handleImageDoubleClick}
         >
           <input

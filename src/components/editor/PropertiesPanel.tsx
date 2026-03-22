@@ -346,6 +346,7 @@ export function PropertiesPanel() {
                   <Type className="h-3 w-3 text-muted-foreground/60" />
                 }
               >
+                {/* Font size + weight row */}
                 <div className="grid grid-cols-2 gap-2">
                   <FieldRow label="Tam.">
                     <Input
@@ -369,12 +370,52 @@ export function PropertiesPanel() {
                       }
                       className="w-full h-7 text-xs rounded-md border border-border bg-background px-1.5"
                     >
-                      <option value="normal">Normal</option>
-                      <option value="bold">Negrito</option>
                       <option value="lighter">Leve</option>
+                      <option value="normal">Normal</option>
+                      <option value="500">Médio</option>
+                      <option value="600">Semi-Bold</option>
+                      <option value="bold">Negrito</option>
+                      <option value="800">Extra-Bold</option>
                     </select>
                   </FieldRow>
                 </div>
+
+                {/* B I U S format buttons */}
+                <div className="flex gap-1 mt-1">
+                  <button
+                    onClick={() => handleUpdate({ fontWeight: block.fontWeight === "bold" ? "normal" : "bold" } as Partial<Block>)}
+                    className={`h-7 w-7 flex items-center justify-center rounded-md text-xs font-bold border transition-colors ${block.fontWeight === "bold" || block.fontWeight === "800" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
+                    title="Negrito"
+                  >B</button>
+                  <button
+                    onClick={() => handleUpdate({ fontStyle: (block as any).fontStyle === "italic" ? "normal" : "italic" } as Partial<Block>)}
+                    className={`h-7 w-7 flex items-center justify-center rounded-md text-xs italic border transition-colors ${(block as any).fontStyle === "italic" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
+                    title="Itálico"
+                  >I</button>
+                  <button
+                    onClick={() => handleUpdate({ textDecorationLine: (block as any).textDecorationLine === "underline" ? "none" : "underline" } as Partial<Block>)}
+                    className={`h-7 w-7 flex items-center justify-center rounded-md text-xs underline border transition-colors ${(block as any).textDecorationLine === "underline" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
+                    title="Sublinhado"
+                  >U</button>
+                  <button
+                    onClick={() => handleUpdate({ textDecorationLine: (block as any).textDecorationLine === "line-through" ? "none" : "line-through" } as Partial<Block>)}
+                    className={`h-7 w-7 flex items-center justify-center rounded-md text-xs line-through border transition-colors ${(block as any).textDecorationLine === "line-through" ? "bg-primary text-primary-foreground border-primary" : "border-border hover:bg-accent"}`}
+                    title="Tachado"
+                  >S</button>
+                  <div className="w-px bg-border mx-0.5" />
+                  <select
+                    value={(block as any).listType || "none"}
+                    onChange={(e) => handleUpdate({ listType: e.target.value } as Partial<Block>)}
+                    className="h-7 text-xs rounded-md border border-border bg-background px-1.5 flex-1"
+                    title="Tipo de lista"
+                  >
+                    <option value="none">Sem lista</option>
+                    <option value="ul">• Lista</option>
+                    <option value="ol">1. Numerada</option>
+                  </select>
+                </div>
+
+                {/* Color */}
                 <FieldRow label="Cor">
                   <div className="flex gap-1.5">
                     <input
@@ -398,6 +439,8 @@ export function PropertiesPanel() {
                     />
                   </div>
                 </FieldRow>
+
+                {/* Align */}
                 <FieldRow label="Alinhar">
                   <select
                     value={block.textAlign}
@@ -415,6 +458,85 @@ export function PropertiesPanel() {
                     <option value="center">Centro</option>
                     <option value="right">Direita</option>
                   </select>
+                </FieldRow>
+
+                {/* Line height + Letter spacing */}
+                <div className="grid grid-cols-2 gap-2">
+                  <FieldRow label="Entrelinha">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0.8"
+                      max="3"
+                      value={(block as any).lineHeight ?? 1.5}
+                      onChange={(e) =>
+                        handleUpdate({ lineHeight: Number(e.target.value) } as Partial<Block>)
+                      }
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+                  <FieldRow label="Espaço">
+                    <Input
+                      type="number"
+                      step="0.5"
+                      min="-2"
+                      max="10"
+                      value={(block as any).letterSpacing ?? 0}
+                      onChange={(e) =>
+                        handleUpdate({ letterSpacing: Number(e.target.value) } as Partial<Block>)
+                      }
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+                </div>
+
+                {/* Background + Opacity */}
+                <div className="grid grid-cols-2 gap-2">
+                  <FieldRow label="Fundo">
+                    <div className="flex gap-1">
+                      <input
+                        type="color"
+                        value={(block as any).backgroundColor === "transparent" ? "#ffffff" : ((block as any).backgroundColor || "#ffffff")}
+                        onChange={(e) =>
+                          handleUpdate({ backgroundColor: e.target.value } as Partial<Block>)
+                        }
+                        className="w-7 h-7 rounded-md border border-border cursor-pointer"
+                      />
+                      <button
+                        onClick={() => handleUpdate({ backgroundColor: "transparent" } as Partial<Block>)}
+                        className="h-7 px-1.5 text-[10px] rounded-md border border-border hover:bg-accent"
+                        title="Sem fundo"
+                      >∅</button>
+                    </div>
+                  </FieldRow>
+                  <FieldRow label="Opacidade">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="1"
+                      value={(block as any).opacity ?? 1}
+                      onChange={(e) =>
+                        handleUpdate({ opacity: Number(e.target.value) } as Partial<Block>)
+                      }
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+                </div>
+
+                {/* Border radius */}
+                <FieldRow label="Borda">
+                  <Input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={(block as any).borderRadius ?? 0}
+                    onChange={(e) =>
+                      handleUpdate({ borderRadius: Number(e.target.value) } as Partial<Block>)
+                    }
+                    className="h-7 text-xs rounded-md"
+                    placeholder="Raio (px)"
+                  />
                 </FieldRow>
               </Section>
             )}
@@ -489,6 +611,79 @@ export function PropertiesPanel() {
                     <option value="cover">Cobrir</option>
                     <option value="contain">Conter</option>
                     <option value="fill">Preencher</option>
+                  </select>
+                </FieldRow>
+
+                {/* Opacity + Border radius */}
+                <div className="grid grid-cols-2 gap-2">
+                  <FieldRow label="Opacidade">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="1"
+                      value={(block as any).opacity ?? 1}
+                      onChange={(e) =>
+                        handleUpdate({ opacity: Number(e.target.value) } as Partial<Block>)
+                      }
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+                  <FieldRow label="Raio">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={(block as any).borderRadius ?? 12}
+                      onChange={(e) =>
+                        handleUpdate({ borderRadius: Number(e.target.value) } as Partial<Block>)
+                      }
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+                </div>
+
+                {/* Border */}
+                <div className="grid grid-cols-2 gap-2">
+                  <FieldRow label="Borda">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="10"
+                      value={(block as any).borderWidth ?? 0}
+                      onChange={(e) =>
+                        handleUpdate({ borderWidth: Number(e.target.value) } as Partial<Block>)
+                      }
+                      className="h-7 text-xs rounded-md"
+                      placeholder="px"
+                    />
+                  </FieldRow>
+                  <FieldRow label="Cor borda">
+                    <input
+                      type="color"
+                      value={(block as any).borderColor || "#e2e8f0"}
+                      onChange={(e) =>
+                        handleUpdate({ borderColor: e.target.value } as Partial<Block>)
+                      }
+                      className="w-full h-7 rounded-md border border-border cursor-pointer"
+                    />
+                  </FieldRow>
+                </div>
+
+                {/* Shadow */}
+                <FieldRow label="Sombra">
+                  <select
+                    value={(block as any).boxShadow || "none"}
+                    onChange={(e) =>
+                      handleUpdate({ boxShadow: e.target.value } as Partial<Block>)
+                    }
+                    className="w-full h-7 text-xs rounded-md border border-border bg-background px-1.5"
+                  >
+                    <option value="none">Nenhuma</option>
+                    <option value="0 2px 8px rgba(0,0,0,0.1)">Leve</option>
+                    <option value="0 4px 16px rgba(0,0,0,0.15)">Média</option>
+                    <option value="0 8px 32px rgba(0,0,0,0.25)">Forte</option>
+                    <option value="0 0 0 3px rgba(124,58,237,0.3)">Contorno</option>
                   </select>
                 </FieldRow>
               </Section>
@@ -681,6 +876,77 @@ export function PropertiesPanel() {
                     </div>
                   </div>
                 </div>
+
+                <Separator className="my-1" />
+
+                {/* Points value */}
+                <FieldRow label="Pontos">
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={(block as any).pointsValue ?? 10}
+                    onChange={(e) =>
+                      handleUpdate({ pointsValue: Number(e.target.value) } as Partial<Block>)
+                    }
+                    className="h-7 text-xs rounded-md"
+                    placeholder="Pontos por acerto"
+                  />
+                </FieldRow>
+
+                {/* Quiz Settings (course-level) */}
+                {project && (
+                  <>
+                    <Separator className="my-1" />
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] text-muted-foreground font-medium">
+                        ⚙️ Config. Avaliação (Curso)
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <FieldRow label="Nota mín.">
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={project.quizSettings?.passingScore ?? 70}
+                            onChange={(e) => {
+                              const store = useEditorStore.getState();
+                              const updatedProject = {
+                                ...project,
+                                quizSettings: {
+                                  ...project.quizSettings,
+                                  passingScore: Number(e.target.value),
+                                },
+                              };
+                              store.hydrateProject(updatedProject);
+                            }}
+                            className="h-7 text-xs rounded-md"
+                          />
+                        </FieldRow>
+                        <FieldRow label="Tentativas">
+                          <Input
+                            type="number"
+                            min="1"
+                            max="10"
+                            value={project.quizSettings?.maxAttempts ?? 3}
+                            onChange={(e) => {
+                              const store = useEditorStore.getState();
+                              const updatedProject = {
+                                ...project,
+                                quizSettings: {
+                                  ...project.quizSettings,
+                                  maxAttempts: Number(e.target.value),
+                                },
+                              };
+                              store.hydrateProject(updatedProject);
+                            }}
+                            className="h-7 text-xs rounded-md"
+                          />
+                        </FieldRow>
+                      </div>
+                    </div>
+                  </>
+                )}
               </Section>
             )}
 
