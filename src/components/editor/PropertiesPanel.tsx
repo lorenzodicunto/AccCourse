@@ -118,6 +118,7 @@ export function PropertiesPanel() {
     (s) => s.updateSlideBackground
   );
   const setTheme = useEditorStore((s) => s.setTheme);
+  const applyThemeToAllSlides = useEditorStore((s) => s.applyThemeToAllSlides);
 
   const project = getCurrentProject();
   const slide = getCurrentSlide();
@@ -155,6 +156,8 @@ export function PropertiesPanel() {
           secondaryColor: data.secondaryColor,
           fontFamily: data.fontFamily,
         });
+        // Apply theme to all existing blocks
+        applyThemeToAllSlides(project.id);
         toast.success("Tema da marca aplicado com sucesso! ✨");
         setAiDialogOpen(false);
       } else {

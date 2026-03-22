@@ -138,6 +138,7 @@ interface EditorActions {
 
   // Theme
   setTheme: (projectId: string, theme: Partial<ThemeConfig>) => void;
+  applyThemeToAllSlides: (projectId: string) => void;
 
   // Undo/Redo
   undo: () => void;
@@ -458,6 +459,55 @@ export const useEditorStore = create<EditorStore>()(
                 }
               : p
           ),
+        });
+      },
+
+      applyThemeToAllSlides: (projectId) => {
+        const state = get();
+        const project = state.projects.find((p) => p.id === projectId);
+        if (!project) return;
+
+        const { primaryColor, secondaryColor, fontFamily } = project.theme;
+
+        set({
+          past: [...state.past, state.projects].slice(-MAX_HISTORY),
+          future: [],
+          projects: state.projects.map((p) => {
+            if (p.id !== projectId) return p;
+            return {
+              ...p,
+              updatedAt: new Date().toISOString(),
+              slides: p.slides.map((slide) => ({
+                ...slide,
+                blocks: slide.blocks.map((block) => {
+                  if (block.type === "text") {
+                    // Update text blocks: apply font and color
+                    const textBlock = block as TextBlock;
+                    // Replace font-family in HTML content
+                    let content = textBlock.content;
+                    content = content.replace(
+                      /font-family:[^;"]+/g,
+                      `font-family: ${fontFamily}`
+                    );
+                    return {
+                      ...textBlock,
+                      color: secondaryColor,
+                      content,
+                    };
+                  }
+                  if (block.type === "flashcard") {
+                    const fc = block as FlashcardBlock;
+                    return {
+                      ...fc,
+                      frontBg: primaryColor,
+                      backBg: secondaryColor,
+                    };
+                  }
+                  return block;
+                }),
+              })),
+            };
+          }),
         });
       },
 
