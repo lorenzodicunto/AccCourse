@@ -13,10 +13,21 @@ export async function getUserCourses() {
   });
   if (!user) throw new Error("User not found");
 
+  const selectFields = {
+    id: true,
+    title: true,
+    description: true,
+    thumbnail: true,
+    courseData: true,
+    updatedAt: true,
+    author: { select: { name: true, email: true } },
+    tenant: { select: { name: true } },
+  } as const;
+
   // Super Admin sees all courses; Authors see only their tenant's
   if (user.role === "SUPER_ADMIN") {
     return prisma.course.findMany({
-      include: { author: { select: { name: true, email: true } }, tenant: { select: { name: true } } },
+      select: selectFields,
       orderBy: { updatedAt: "desc" },
     });
   }
@@ -25,7 +36,7 @@ export async function getUserCourses() {
 
   return prisma.course.findMany({
     where: { tenantId: user.tenantId },
-    include: { author: { select: { name: true, email: true } }, tenant: { select: { name: true } } },
+    select: selectFields,
     orderBy: { updatedAt: "desc" },
   });
 }
