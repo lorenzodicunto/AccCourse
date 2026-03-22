@@ -158,6 +158,36 @@ function SortableSlide({
           </button>
         )}
       </div>
+
+      {/* Transition indicator */}
+      {isSelected && (
+        <div
+          className="absolute bottom-1 left-1 z-20"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <select
+            value={slide.transition || "none"}
+            onChange={(e) => {
+              const store = useEditorStore.getState();
+              const project = store.getCurrentProject();
+              if (project) {
+                store.updateSlideTransition(
+                  project.id,
+                  slide.id,
+                  e.target.value as "none" | "fade" | "slide" | "zoom"
+                );
+              }
+            }}
+            className="h-5 text-[8px] rounded bg-black/60 text-white/90 border-none px-1 cursor-pointer"
+            title="Transição de slide"
+          >
+            <option value="none">Sem transição</option>
+            <option value="fade">Fade</option>
+            <option value="slide">Deslizar</option>
+            <option value="zoom">Zoom</option>
+          </select>
+        </div>
+      )}
     </div>
   );
 }

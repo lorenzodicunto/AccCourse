@@ -17,6 +17,7 @@ export interface BaseBlock {
   y: number;
   width: number;
   height: number;
+  zIndex: number;
 }
 
 export interface TextBlock extends BaseBlock {
@@ -99,11 +100,15 @@ export interface ShapeBlock extends BaseBlock {
 
 export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock;
 
+export type SlideTransition = "none" | "fade" | "slide" | "zoom";
+
 export interface Slide {
   id: string;
   order: number;
   blocks: Block[];
   background: string;
+  transition: SlideTransition;
+  notes: string;
 }
 
 export interface QuizSettings {
@@ -169,7 +174,24 @@ interface EditorActions {
     slideId: string,
     blockId: string
   ) => void;
+  duplicateBlock: (
+    projectId: string,
+    slideId: string,
+    blockId: string
+  ) => void;
   setSelectedBlock: (id: string | null) => void;
+
+  // Slide extras
+  updateSlideTransition: (
+    projectId: string,
+    slideId: string,
+    transition: SlideTransition
+  ) => void;
+  updateSlideNotes: (
+    projectId: string,
+    slideId: string,
+    notes: string
+  ) => void;
 
   // Theme
   setTheme: (projectId: string, theme: Partial<ThemeConfig>) => void;
@@ -279,6 +301,8 @@ export const useEditorStore = create<EditorStore>()(
           order: project.slides.length,
           blocks: [],
           background: "#ffffff",
+          transition: "none",
+          notes: "",
         };
 
         set({
@@ -478,6 +502,78 @@ export const useEditorStore = create<EditorStore>()(
 
       setSelectedBlock: (id) => set({ selectedBlockId: id }),
 
+      // ─── Duplicate Block ──────────────────────────────
+
+      duplicateBlock: (projectId, slideId, blockId) => {
+        const state = get();
+        const project = state.projects.find((p) => p.id === projectId);
+        if (!project) return;
+        const slide = project.slides.find((s) => s.id === slideId);
+        if (!slide) return;
+        const block = slide.blocks.find((b) => b.id === blockId);
+        if (!block) return;
+
+        const newBlock: Block = {
+          ...JSON.parse(JSON.stringify(block)),
+          id: generateId(),
+          x: Math.min(block.x + 20, 960 - block.width),
+          y: Math.min(block.y + 20, 540 - block.height),
+        };
+
+        set({
+          past: [...state.past, state.projects].slice(-MAX_HISTORY),
+          future: [],
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  slides: p.slides.map((s) =>
+                    s.id === slideId
+                      ? { ...s, blocks: [...s.blocks, newBlock] }
+                      : s
+                  ),
+                  updatedAt: new Date().toISOString(),
+                }
+              : p
+          ),
+          selectedBlockId: newBlock.id,
+        });
+      },
+
+      // ─── Slide Transition & Notes ─────────────────────
+
+      updateSlideTransition: (projectId, slideId, transition) => {
+        const state = get();
+        set({
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  slides: p.slides.map((s) =>
+                    s.id === slideId ? { ...s, transition } : s
+                  ),
+                }
+              : p
+          ),
+        });
+      },
+
+      updateSlideNotes: (projectId, slideId, notes) => {
+        const state = get();
+        set({
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  slides: p.slides.map((s) =>
+                    s.id === slideId ? { ...s, notes } : s
+                  ),
+                }
+              : p
+          ),
+        });
+      },
+
       // ─── Theme ─────────────────────────────────────────
 
       setTheme: (projectId, theme) => {
@@ -650,6 +746,8 @@ export function createDefaultProject(
         order: 0,
         blocks: [],
         background: "#ffffff",
+        transition: "none",
+        notes: "",
       },
     ],
     quizSettings: {

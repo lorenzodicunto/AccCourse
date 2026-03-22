@@ -184,6 +184,7 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
       id: crypto.randomUUID(),
       x: 80 + Math.random() * 200,
       y: 60 + Math.random() * 100,
+      zIndex: 0,
     };
 
     let newBlock: Block;

@@ -32,6 +32,8 @@ import {
   Settings2,
   Sparkles,
   ImageUp,
+  Copy,
+  Hexagon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -43,6 +45,7 @@ function BlockIcon({ type }: { type: Block["type"] }) {
     flashcard: <CreditCard className="h-4 w-4 text-emerald-500" />,
     quiz: <HelpCircle className="h-4 w-4 text-rose-500" />,
     video: <Play className="h-4 w-4 text-orange-500" />,
+    shape: <Hexagon className="h-4 w-4 text-indigo-500" />,
   };
   return icons[type];
 }
@@ -273,15 +276,29 @@ export function PropertiesPanel() {
                   {BLOCK_LABELS[block.type]}
                 </span>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-md"
-                onClick={handleDelete}
-                title="Excluir bloco"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
+              <div className="flex items-center gap-0.5">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md"
+                  onClick={() => {
+                    if (!project || !slide) return;
+                    useEditorStore.getState().duplicateBlock(project.id, slide.id, block.id);
+                  }}
+                  title="Duplicar bloco (Ctrl+D)"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-md"
+                  onClick={handleDelete}
+                  title="Excluir bloco"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
 
             {/* Position & Size */}
@@ -336,6 +353,28 @@ export function PropertiesPanel() {
                     className="h-7 text-xs rounded-md"
                   />
                 </FieldRow>
+              </div>
+
+              {/* Z-Index */}
+              <div className="grid grid-cols-3 gap-1">
+                <button
+                  onClick={() => handleUpdate({ zIndex: Math.max(0, (block.zIndex || 0) - 1) })}
+                  className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center"
+                  title="Enviar para trás"
+                >↓ Trás</button>
+                <Input
+                  type="number"
+                  min="0"
+                  max="99"
+                  value={block.zIndex || 0}
+                  onChange={(e) => handleUpdate({ zIndex: Number(e.target.value) })}
+                  className="h-7 text-xs rounded-md text-center"
+                />
+                <button
+                  onClick={() => handleUpdate({ zIndex: (block.zIndex || 0) + 1 })}
+                  className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center"
+                  title="Trazer para frente"
+                >↑ Frente</button>
               </div>
             </Section>
 

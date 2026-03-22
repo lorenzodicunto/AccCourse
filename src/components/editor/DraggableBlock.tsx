@@ -93,7 +93,7 @@ export function DraggableBlock({
     transform: transform
       ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
       : undefined,
-    zIndex: isDragging ? 50 : isSelected ? 20 : 10,
+    zIndex: isDragging ? 50 : isSelected ? 20 + (block.zIndex || 0) : 10 + (block.zIndex || 0),
     cursor: isDragging ? "grabbing" : "pointer",
   };
 
