@@ -3,11 +3,18 @@
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEditorStore, createDefaultProject } from "@/store/useEditorStore";
-import { getUserCourses, createCourse } from "@/actions/courses";
+import { createDefaultProject } from "@/store/useEditorStore";
+import { getUserCourses, createCourse, deleteCourse } from "@/actions/courses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CookieConsent } from "@/components/dashboard/CookieConsent";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   GraduationCap,
   Search,
@@ -16,6 +23,16 @@ import {
   Loader2,
   Shield,
   LogOut,
+  Pencil,
+  Copy,
+  Trash2,
+  MoreVertical,
+  Layers,
+  Type,
+  Image as ImageIcon,
+  HelpCircle,
+  CreditCard,
+  Play,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -24,10 +41,60 @@ type CourseRow = {
   title: string;
   description: string;
   thumbnail: string;
+  courseData: string | null;
   updatedAt: Date;
   author: { name: string; email: string };
   tenant: { name: string } | null;
 };
+
+// Parse courseData to extract first slide info
+function getFirstSlidePreview(courseData: string | null): {
+  background: string;
+  blocks: { type: string; x: number; y: number; width: number; height: number; content?: string; color?: string; fontSize?: number }[];
+  slideCount: number;
+} | null {
+  if (!courseData) return null;
+  try {
+    const project = JSON.parse(courseData);
+    if (!project.slides || project.slides.length === 0) return null;
+    const firstSlide = project.slides[0];
+    return {
+      background: firstSlide.background || "#ffffff",
+      blocks: (firstSlide.blocks || []).map((b: Record<string, unknown>) => ({
+        type: b.type,
+        x: b.x,
+        y: b.y,
+        width: b.width,
+        height: b.height,
+        content: b.content,
+        color: b.color,
+        fontSize: b.fontSize,
+      })),
+      slideCount: project.slides.length,
+    };
+  } catch {
+    return null;
+  }
+}
+
+// Mini block icon for the preview
+function MiniBlockIcon({ type }: { type: string }) {
+  const cls = "h-full w-full";
+  switch (type) {
+    case "text":
+      return <Type className={cls} />;
+    case "image":
+      return <ImageIcon className={cls} />;
+    case "quiz":
+      return <HelpCircle className={cls} />;
+    case "flashcard":
+      return <CreditCard className={cls} />;
+    case "video":
+      return <Play className={cls} />;
+    default:
+      return <Layers className={cls} />;
+  }
+}
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -71,6 +138,32 @@ export default function DashboardPage() {
         err instanceof Error ? err.message : "Erro ao criar curso."
       );
       setCreating(false);
+    }
+  };
+
+  const handleDuplicate = async (course: CourseRow) => {
+    try {
+      const result = await createCourse(
+        `${course.title} (cópia)`,
+        course.description,
+        course.thumbnail,
+        course.courseData || ""
+      );
+      toast.success("Curso duplicado com sucesso!");
+      loadCourses();
+    } catch {
+      toast.error("Erro ao duplicar.");
+    }
+  };
+
+  const handleDelete = async (course: CourseRow) => {
+    if (!confirm(`Tem certeza que deseja excluir "${course.title}"?`)) return;
+    try {
+      await deleteCourse(course.id);
+      setCourses((prev) => prev.filter((c) => c.id !== course.id));
+      toast.success("Curso excluído.");
+    } catch {
+      toast.error("Erro ao excluir.");
     }
   };
 
@@ -191,28 +284,178 @@ export default function DashboardPage() {
           </div>
         ) : filteredCourses.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredCourses.map((course) => (
-              <button
-                key={course.id}
-                onClick={() => router.push(`/editor/${course.id}`)}
-                className="group text-left bg-white rounded-2xl border border-border/50 shadow-sm hover:shadow-lg hover:border-primary/30 transition-all duration-200 overflow-hidden cursor-pointer"
-              >
-                {/* Thumbnail */}
+            {filteredCourses.map((course) => {
+              const slidePreview = getFirstSlidePreview(course.courseData);
+              return (
                 <div
-                  className="h-36 w-full"
-                  style={{ background: course.thumbnail || "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
-                />
-                {/* Info */}
-                <div className="p-4">
-                  <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                    {course.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Atualizado {new Date(course.updatedAt).toLocaleDateString("pt-BR")}
-                  </p>
+                  key={course.id}
+                  className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-border/50 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1"
+                >
+                  {/* Thumbnail / Slide Preview */}
+                  <button
+                    onClick={() => router.push(`/editor/${course.id}`)}
+                    className="relative h-40 w-full overflow-hidden cursor-pointer"
+                  >
+                    {slidePreview ? (
+                      /* Mini slide preview */
+                      <div
+                        className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                        style={{ backgroundColor: slidePreview.background }}
+                      >
+                        {/* Render mini blocks */}
+                        {slidePreview.blocks.map((block, i) => (
+                          <div
+                            key={i}
+                            className="absolute flex items-center justify-center"
+                            style={{
+                              left: `${(block.x / 960) * 100}%`,
+                              top: `${(block.y / 540) * 100}%`,
+                              width: `${(block.width / 960) * 100}%`,
+                              height: `${(block.height / 540) * 100}%`,
+                            }}
+                          >
+                            {block.type === "text" && block.content ? (
+                              <div
+                                className="w-full h-full overflow-hidden px-1"
+                                style={{
+                                  fontSize: `${Math.max(((block.fontSize || 16) / 540) * 160, 5)}px`,
+                                  color: block.color || "#000",
+                                  lineHeight: 1.3,
+                                }}
+                                dangerouslySetInnerHTML={{
+                                  __html: block.content.replace(/<[^>]*>/g, (tag) =>
+                                    tag.replace(/font-size:[^;"]+;?/g, "")
+                                  ),
+                                }}
+                              />
+                            ) : (
+                              <div className="w-full h-full rounded-sm bg-muted/30 flex items-center justify-center">
+                                <div className="h-3 w-3 text-muted-foreground/40">
+                                  <MiniBlockIcon type={block.type} />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+
+                        {/* Empty slide indicator */}
+                        {slidePreview.blocks.length === 0 && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-xs text-muted-foreground/30 font-medium">
+                              Slide vazio
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      /* Fallback gradient */
+                      <div
+                        className="absolute inset-0 transition-transform duration-500 group-hover:scale-110"
+                        style={{
+                          background:
+                            course.thumbnail ||
+                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                        }}
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+
+                    {/* Slide count badge */}
+                    <div className="absolute bottom-2 left-2">
+                      <span className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">
+                        <Layers className="h-3 w-3" />
+                        {slidePreview?.slideCount ?? 1} slide
+                        {(slidePreview?.slideCount ?? 1) !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* Floating action buttons on hover */}
+                  <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <button
+                      onClick={() => router.push(`/editor/${course.id}`)}
+                      className="p-1.5 rounded-lg bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white transition-colors cursor-pointer"
+                      title="Editar"
+                    >
+                      <Pencil className="h-3.5 w-3.5 text-foreground" />
+                    </button>
+                    <button
+                      onClick={() => handleDuplicate(course)}
+                      className="p-1.5 rounded-lg bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white transition-colors cursor-pointer"
+                      title="Duplicar"
+                    >
+                      <Copy className="h-3.5 w-3.5 text-foreground" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(course)}
+                      className="p-1.5 rounded-lg bg-white/90 backdrop-blur-sm shadow-sm hover:bg-red-50 transition-colors cursor-pointer"
+                      title="Excluir"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 text-red-600" />
+                    </button>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex flex-col flex-1 p-4">
+                    <div className="flex items-start justify-between gap-2">
+                      <button
+                        onClick={() => router.push(`/editor/${course.id}`)}
+                        className="text-left flex-1 cursor-pointer"
+                      >
+                        <h3 className="font-semibold text-sm text-foreground leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+                          {course.title}
+                        </h3>
+                      </button>
+
+                      {/* Dropdown */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <button className="p-1.5 rounded-lg hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" />
+                          }
+                        >
+                          <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 rounded-xl">
+                          <DropdownMenuItem
+                            onClick={() => router.push(`/editor/${course.id}`)}
+                            className="gap-2 cursor-pointer"
+                          >
+                            <Pencil className="h-4 w-4" />
+                            Editar
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleDuplicate(course)}
+                            className="gap-2 cursor-pointer"
+                          >
+                            <Copy className="h-4 w-4" />
+                            Duplicar
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(course)}
+                            className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    {/* Date */}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Atualizado{" "}
+                      {new Date(course.updatedAt).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
         ) : courses.length === 0 ? (
           /* Empty State */

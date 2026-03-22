@@ -123,7 +123,11 @@ export default function EditorPage() {
         const project = getCurrentProject();
         if (project && courseId) {
           const courseData = JSON.stringify(project);
-          saveCourse(courseId, courseData)
+          saveCourse(courseId, courseData, {
+            title: project.title,
+            description: project.description,
+            thumbnail: project.thumbnail,
+          })
             .then(() => toast.success("Curso salvo!"))
             .catch(() => toast.error("Erro ao salvar."));
         }

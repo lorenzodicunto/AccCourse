@@ -157,7 +157,11 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
     setSaving(true);
     try {
       const courseData = JSON.stringify(project);
-      await saveCourse(courseId, courseData);
+      await saveCourse(courseId, courseData, {
+        title: project.title,
+        description: project.description,
+        thumbnail: project.thumbnail,
+      });
       toast.success("Curso salvo na nuvem com sucesso!");
     } catch {
       toast.error("Erro ao salvar na nuvem.");
