@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Type,
   Image,
   CreditCard,
@@ -24,8 +30,11 @@ import {
   Maximize2,
   Palette,
   Settings2,
+  Sparkles,
+  ImageUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 function BlockIcon({ type }: { type: Block["type"] }) {
   const icons: Record<string, React.ReactNode> = {
@@ -108,6 +117,7 @@ export function PropertiesPanel() {
   const updateSlideBackground = useEditorStore(
     (s) => s.updateSlideBackground
   );
+  const setTheme = useEditorStore((s) => s.setTheme);
 
   const project = getCurrentProject();
   const slide = getCurrentSlide();
@@ -115,6 +125,50 @@ export function PropertiesPanel() {
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  // AI Theme state
+  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  const [aiAnalyzing, setAiAnalyzing] = useState(false);
+  const [aiFileName, setAiFileName] = useState<string | null>(null);
+  const aiFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAiTheme = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !project) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor, envie uma imagem.");
+      return;
+    }
+    setAiFileName(file.name);
+    setAiAnalyzing(true);
+    try {
+      const formData = new FormData();
+      formData.append("image", file);
+      const res = await fetch("/api/ai/theme", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.primaryColor && data.secondaryColor && data.fontFamily) {
+        setTheme(project.id, {
+          primaryColor: data.primaryColor,
+          secondaryColor: data.secondaryColor,
+          fontFamily: data.fontFamily,
+        });
+        toast.success("Tema da marca aplicado com sucesso! ✨");
+        setAiDialogOpen(false);
+      } else {
+        toast.error("Não foi possível extrair o tema.");
+      }
+    } catch (err) {
+      console.error("AI Theme error:", err);
+      toast.error("Erro ao analisar a imagem.");
+    } finally {
+      setAiAnalyzing(false);
+      setAiFileName(null);
+      if (aiFileInputRef.current) aiFileInputRef.current.value = "";
+    }
+  };
 
   const handleUpdate = (updates: Partial<Block>) => {
     if (!project || !slide || !block) return;
@@ -914,21 +968,190 @@ export function PropertiesPanel() {
                 </div>
               </FieldRow>
             </Section>
+
+            {/* ─── AI MAGIC THEME ─── */}
+            <div className="px-4 py-3 border-t border-border/30">
+              <button
+                onClick={() => setAiDialogOpen(true)}
+                className="w-full relative overflow-hidden rounded-xl px-4 py-3 text-left transition-all hover:scale-[1.02] active:scale-[0.98] group"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)",
+                }}
+              >
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <Sparkles className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white tracking-wide">
+                      ✨ Auto-Theme (AI)
+                    </p>
+                    <p className="text-[9px] text-white/70 mt-0.5">
+                      Extraia cores da sua marca
+                    </p>
+                  </div>
+                </div>
+              </button>
+              <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-violet-500" />
+                      Magic Theme AI
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-2">
+                    <p className="text-sm text-muted-foreground">
+                      Envie o logotipo ou brandbook da sua marca. Nossa IA irá
+                      extrair automaticamente as cores e tipografia ideais.
+                    </p>
+
+                    {aiAnalyzing ? (
+                      <div className="flex flex-col items-center justify-center py-8 space-y-3">
+                        <div className="relative">
+                          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center animate-pulse">
+                            <Sparkles className="h-7 w-7 text-white" />
+                          </div>
+                          <Loader2 className="absolute -bottom-1 -right-1 h-5 w-5 text-violet-500 animate-spin" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground">
+                          🤖 Analisando identidade visual...
+                        </p>
+                        {aiFileName && (
+                          <p className="text-[10px] text-muted-foreground">
+                            {aiFileName}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          ref={aiFileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAiTheme}
+                          className="hidden"
+                          id="ai-theme-upload"
+                        />
+                        <label
+                          htmlFor="ai-theme-upload"
+                          className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-violet-200 rounded-xl cursor-pointer hover:border-violet-400 hover:bg-violet-50/50 transition-colors group"
+                        >
+                          <ImageUp className="h-8 w-8 text-violet-300 group-hover:text-violet-500 transition-colors mb-2" />
+                          <span className="text-sm font-medium text-violet-600">
+                            Clique para enviar imagem
+                          </span>
+                          <span className="text-[10px] text-muted-foreground mt-1">
+                            PNG, JPG, SVG ou WebP
+                          </span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         ) : (
           /* No block selected */
-          <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+          <div className="flex flex-col items-center justify-center py-10 text-center px-6">
             <div className="h-12 w-12 rounded-xl bg-muted/40 flex items-center justify-center mb-3">
               <Layers className="h-6 w-6 text-muted-foreground/25" />
             </div>
             <p className="text-sm font-medium text-muted-foreground/50">
               Nenhum bloco selecionado
             </p>
-            <p className="text-xs text-muted-foreground/30 mt-1 leading-relaxed">
+            <p className="text-xs text-muted-foreground/30 mt-1 mb-6 leading-relaxed">
               Clique em um bloco no canvas
               <br />
               para editar suas propriedades
             </p>
+
+            {/* AI Theme button — also visible when no block is selected */}
+            <div className="w-full px-2">
+              <button
+                onClick={() => setAiDialogOpen(true)}
+                className="w-full relative overflow-hidden rounded-xl px-4 py-3 text-left transition-all hover:scale-[1.02] active:scale-[0.98] group"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)",
+                }}
+              >
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <Sparkles className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white tracking-wide">
+                      ✨ Auto-Theme (AI)
+                    </p>
+                    <p className="text-[9px] text-white/70 mt-0.5">
+                      Extraia cores da sua marca
+                    </p>
+                  </div>
+                </div>
+              </button>
+              <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-violet-500" />
+                      Magic Theme AI
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 py-2">
+                    <p className="text-sm text-muted-foreground">
+                      Envie o logotipo ou brandbook da sua marca. Nossa IA irá
+                      extrair automaticamente as cores e tipografia ideais.
+                    </p>
+                    {aiAnalyzing ? (
+                      <div className="flex flex-col items-center justify-center py-8 space-y-3">
+                        <div className="relative">
+                          <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center animate-pulse">
+                            <Sparkles className="h-7 w-7 text-white" />
+                          </div>
+                          <Loader2 className="absolute -bottom-1 -right-1 h-5 w-5 text-violet-500 animate-spin" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground">
+                          🤖 Analisando identidade visual...
+                        </p>
+                        {aiFileName && (
+                          <p className="text-[10px] text-muted-foreground">
+                            {aiFileName}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          ref={aiFileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAiTheme}
+                          className="hidden"
+                          id="ai-theme-upload-empty"
+                        />
+                        <label
+                          htmlFor="ai-theme-upload-empty"
+                          className="flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-violet-200 rounded-xl cursor-pointer hover:border-violet-400 hover:bg-violet-50/50 transition-colors group"
+                        >
+                          <ImageUp className="h-8 w-8 text-violet-300 group-hover:text-violet-500 transition-colors mb-2" />
+                          <span className="text-sm font-medium text-violet-600">
+                            Clique para enviar imagem
+                          </span>
+                          <span className="text-[10px] text-muted-foreground mt-1">
+                            PNG, JPG, SVG ou WebP
+                          </span>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         )}
       </ScrollArea>
