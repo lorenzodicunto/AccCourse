@@ -64,31 +64,38 @@ function SortableSlide({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group relative rounded-xl border-2 transition-all duration-200 cursor-pointer overflow-hidden",
+        "group relative rounded-lg transition-all duration-200 cursor-pointer overflow-hidden",
         isDragging && "shadow-2xl scale-[1.03]",
         isSelected
-          ? "border-primary shadow-md shadow-primary/10"
-          : "border-transparent hover:border-border"
+          ? "ring-2 ring-primary shadow-lg shadow-primary/20"
+          : "ring-1 ring-white/10 hover:ring-white/25"
       )}
       onClick={onSelect}
     >
+      {/* Active indicator bar */}
+      {isSelected && (
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary z-20 rounded-l-lg" />
+      )}
+
       {/* Drag handle */}
       <div
-        className="absolute top-1.5 left-1.5 z-20 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
+        className="absolute top-1 left-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
-        <div className="p-0.5 rounded-md bg-black/50 backdrop-blur-sm">
-          <GripVertical className="h-3 w-3 text-white" />
+        <div className="p-0.5 rounded bg-black/40 backdrop-blur-sm">
+          <GripVertical className="h-2.5 w-2.5 text-white/80" />
         </div>
       </div>
 
       {/* Slide number */}
-      <div className="absolute top-1.5 right-1.5 z-10">
+      <div className="absolute top-1 right-1 z-10">
         <span
           className={cn(
-            "text-[10px] font-bold px-1.5 py-0.5 rounded-md",
-            isSelected ? "bg-primary text-white" : "bg-black/40 text-white"
+            "text-[9px] font-bold px-1.5 py-0.5 rounded",
+            isSelected
+              ? "bg-primary text-white"
+              : "bg-black/30 text-white/80"
           )}
         >
           {index + 1}
@@ -104,7 +111,7 @@ function SortableSlide({
           {slide.blocks.map((block) => (
             <div
               key={block.id}
-              className="absolute rounded-sm"
+              className="absolute rounded-[1px]"
               style={{
                 left: `${(block.x / 960) * 100}%`,
                 top: `${(block.y / 540) * 100}%`,
@@ -112,12 +119,14 @@ function SortableSlide({
                 height: `${(block.height / 540) * 100}%`,
                 backgroundColor:
                   block.type === "text"
-                    ? "rgba(124, 58, 237, 0.2)"
+                    ? "rgba(124, 58, 237, 0.25)"
                     : block.type === "image"
-                    ? "rgba(59, 130, 246, 0.2)"
+                    ? "rgba(59, 130, 246, 0.25)"
                     : block.type === "flashcard"
-                    ? "rgba(16, 185, 129, 0.2)"
-                    : "rgba(239, 68, 68, 0.2)",
+                    ? "rgba(16, 185, 129, 0.25)"
+                    : block.type === "video"
+                    ? "rgba(249, 115, 22, 0.25)"
+                    : "rgba(239, 68, 68, 0.25)",
               }}
             />
           ))}
@@ -125,16 +134,16 @@ function SortableSlide({
       </div>
 
       {/* Actions overlay */}
-      <div className="absolute bottom-1.5 right-1.5 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="absolute bottom-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button
           onClick={(e) => {
             e.stopPropagation();
             onDuplicate();
           }}
-          className="p-1 rounded-md bg-white/90 hover:bg-white shadow-sm transition-colors"
+          className="p-1 rounded bg-white/90 hover:bg-white shadow-sm transition-colors"
           title="Duplicar"
         >
-          <Copy className="h-3 w-3 text-muted-foreground" />
+          <Copy className="h-2.5 w-2.5 text-slate-600" />
         </button>
         {canDelete && (
           <button
@@ -142,10 +151,10 @@ function SortableSlide({
               e.stopPropagation();
               onDelete();
             }}
-            className="p-1 rounded-md bg-white/90 hover:bg-red-50 shadow-sm transition-colors"
+            className="p-1 rounded bg-white/90 hover:bg-red-50 shadow-sm transition-colors"
             title="Excluir"
           >
-            <Trash2 className="h-3 w-3 text-destructive" />
+            <Trash2 className="h-2.5 w-2.5 text-destructive" />
           </button>
         )}
       </div>
@@ -190,20 +199,20 @@ export function SlideNavigator() {
   };
 
   return (
-    <div className="w-[220px] bg-white border-r border-border/50 flex flex-col flex-shrink-0">
+    <div className="w-[200px] bg-slate-900 flex flex-col flex-shrink-0">
       {/* Header */}
-      <div className="p-3 border-b border-border/50 flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+      <div className="p-3 border-b border-white/10 flex items-center justify-between">
+        <h3 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
           Slides
         </h3>
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 w-7 p-0 rounded-lg"
+          className="h-6 w-6 p-0 rounded text-slate-400 hover:text-white hover:bg-white/10"
           onClick={() => project && addSlide(project.id)}
           title="Adicionar Slide"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-3 w-3" />
         </Button>
       </div>
 
@@ -241,14 +250,14 @@ export function SlideNavigator() {
       </ScrollArea>
 
       {/* Add Slide Button */}
-      <div className="p-2 border-t border-border/50">
+      <div className="p-2 border-t border-white/10">
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="w-full gap-1.5 rounded-xl text-xs"
+          className="w-full gap-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/10 border border-dashed border-white/15"
           onClick={() => project && addSlide(project.id)}
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-3 w-3" />
           Novo Slide
         </Button>
       </div>

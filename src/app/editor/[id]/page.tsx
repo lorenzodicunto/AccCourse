@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useEditorStore, CourseProject } from "@/store/useEditorStore";
 import { getCourse } from "@/actions/courses";
+import { saveCourse } from "@/actions/courses";
 import { TopToolbar } from "@/components/editor/TopToolbar";
 import { SlideNavigator } from "@/components/editor/SlideNavigator";
 import { Canvas } from "@/components/editor/Canvas";
 import { PropertiesPanel } from "@/components/editor/PropertiesPanel";
+import { StatusBar } from "@/components/editor/StatusBar";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function EditorPage() {
   const params = useParams();
@@ -18,6 +21,13 @@ export default function EditorPage() {
   const setCurrentProject = useEditorStore((s) => s.setCurrentProject);
   const setCurrentSlide = useEditorStore((s) => s.setCurrentSlide);
   const projects = useEditorStore((s) => s.projects);
+  const undo = useEditorStore((s) => s.undo);
+  const redo = useEditorStore((s) => s.redo);
+  const selectedBlockId = useEditorStore((s) => s.selectedBlockId);
+  const deleteBlock = useEditorStore((s) => s.deleteBlock);
+  const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
+  const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
+  const duplicateSlide = useEditorStore((s) => s.duplicateSlide);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -34,11 +44,9 @@ export default function EditorPage() {
           return;
         }
 
-        // Parse courseData safely
         let projectData: CourseProject;
         try {
           projectData = JSON.parse(course.courseData) as CourseProject;
-          // Ensure the project ID matches the DB record ID
           projectData.id = course.id;
         } catch {
           setError("Dados do curso corrompidos.");
@@ -57,8 +65,96 @@ export default function EditorPage() {
     }
 
     loadCourse();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [courseId, hydrateProject, setCurrentProject, setCurrentSlide]);
+
+  // ─── Keyboard Shortcuts ───
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isCtrl = e.ctrlKey || e.metaKey;
+
+      // Ctrl+Z — Undo
+      if (isCtrl && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+        return;
+      }
+
+      // Ctrl+Y or Ctrl+Shift+Z — Redo
+      if (
+        (isCtrl && e.key === "y") ||
+        (isCtrl && e.key === "z" && e.shiftKey)
+      ) {
+        e.preventDefault();
+        redo();
+        return;
+      }
+
+      // Delete/Backspace — Delete selected block
+      if (
+        (e.key === "Delete" || e.key === "Backspace") &&
+        !isCtrl &&
+        selectedBlockId
+      ) {
+        // Don't delete when editing text
+        const active = document.activeElement;
+        if (
+          active &&
+          (active.tagName === "INPUT" ||
+            active.tagName === "TEXTAREA" ||
+            (active as HTMLElement).contentEditable === "true")
+        ) {
+          return;
+        }
+        e.preventDefault();
+        const project = getCurrentProject();
+        const slide = getCurrentSlide();
+        if (project && slide) {
+          deleteBlock(project.id, slide.id, selectedBlockId);
+        }
+        return;
+      }
+
+      // Ctrl+S — Save to cloud
+      if (isCtrl && e.key === "s") {
+        e.preventDefault();
+        const project = getCurrentProject();
+        if (project && courseId) {
+          const courseData = JSON.stringify(project);
+          saveCourse(courseId, courseData)
+            .then(() => toast.success("Curso salvo!"))
+            .catch(() => toast.error("Erro ao salvar."));
+        }
+        return;
+      }
+
+      // Ctrl+D — Duplicate current slide
+      if (isCtrl && e.key === "d") {
+        e.preventDefault();
+        const project = getCurrentProject();
+        const slide = getCurrentSlide();
+        if (project && slide) {
+          duplicateSlide(project.id, slide.id);
+          toast.success("Slide duplicado!");
+        }
+        return;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    undo,
+    redo,
+    selectedBlockId,
+    deleteBlock,
+    getCurrentProject,
+    getCurrentSlide,
+    courseId,
+    duplicateSlide,
+  ]);
 
   if (error) {
     return (
@@ -94,6 +190,7 @@ export default function EditorPage() {
         <Canvas />
         <PropertiesPanel />
       </div>
+      <StatusBar />
     </div>
   );
 }

@@ -2,9 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import { auth } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
+    // Verify authentication
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 

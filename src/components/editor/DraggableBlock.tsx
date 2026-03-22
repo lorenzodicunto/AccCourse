@@ -2,8 +2,20 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useDraggable } from "@dnd-kit/core";
-import { Block, VideoBlock as VideoBlockType, useEditorStore } from "@/store/useEditorStore";
-import { Image, CreditCard, HelpCircle, Upload, Play, Check, Loader2 } from "lucide-react";
+import {
+  Block,
+  VideoBlock as VideoBlockType,
+  useEditorStore,
+} from "@/store/useEditorStore";
+import {
+  Image,
+  CreditCard,
+  HelpCircle,
+  Upload,
+  Play,
+  Check,
+  Loader2,
+} from "lucide-react";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
@@ -18,6 +30,32 @@ interface DraggableBlockProps {
   onSelect: () => void;
   isDraggingAny: boolean;
 }
+
+// Resize handle positions
+const HANDLES = [
+  { position: "top-left", cursor: "nwse-resize", x: -1, y: -1 },
+  { position: "top-center", cursor: "ns-resize", x: 0, y: -1 },
+  { position: "top-right", cursor: "nesw-resize", x: 1, y: -1 },
+  { position: "middle-left", cursor: "ew-resize", x: -1, y: 0 },
+  { position: "middle-right", cursor: "ew-resize", x: 1, y: 0 },
+  { position: "bottom-left", cursor: "nesw-resize", x: -1, y: 1 },
+  { position: "bottom-center", cursor: "ns-resize", x: 0, y: 1 },
+  { position: "bottom-right", cursor: "nwse-resize", x: 1, y: 1 },
+] as const;
+
+const HANDLE_POSITIONS: Record<
+  string,
+  { top?: string; bottom?: string; left?: string; right?: string }
+> = {
+  "top-left": { top: "-4px", left: "-4px" },
+  "top-center": { top: "-4px", left: "50%", },
+  "top-right": { top: "-4px", right: "-4px" },
+  "middle-left": { top: "50%", left: "-4px" },
+  "middle-right": { top: "50%", right: "-4px" },
+  "bottom-left": { bottom: "-4px", left: "-4px" },
+  "bottom-center": { bottom: "-4px", left: "50%" },
+  "bottom-right": { bottom: "-4px", right: "-4px" },
+};
 
 export function DraggableBlock({
   block,
@@ -37,6 +75,7 @@ export function DraggableBlock({
   const [isEditing, setIsEditing] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isResizing, setIsResizing] = useState(false);
   const textRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,7 +93,7 @@ export function DraggableBlock({
     transform: transform
       ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
       : undefined,
-    zIndex: isDragging ? 50 : 10,
+    zIndex: isDragging ? 50 : isSelected ? 20 : 10,
     cursor: isDragging ? "grabbing" : "pointer",
   };
 
@@ -68,6 +107,74 @@ export function DraggableBlock({
     [block.id, getCurrentProject, getCurrentSlide, updateBlock]
   );
 
+  // ─── Resize ───
+  const handleResizeStart = useCallback(
+    (
+      e: React.MouseEvent,
+      handleX: number,
+      handleY: number
+    ) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setIsResizing(true);
+
+      const startMouseX = e.clientX;
+      const startMouseY = e.clientY;
+      const startX = block.x;
+      const startY = block.y;
+      const startW = block.width;
+      const startH = block.height;
+
+      const scaleX = 960 / canvasWidth;
+      const scaleY = 540 / canvasHeight;
+
+      const handleMouseMove = (me: MouseEvent) => {
+        const dx = (me.clientX - startMouseX) * scaleX;
+        const dy = (me.clientY - startMouseY) * scaleY;
+
+        let newX = startX;
+        let newY = startY;
+        let newW = startW;
+        let newH = startH;
+
+        if (handleX === -1) {
+          newX = Math.max(0, startX + dx);
+          newW = Math.max(30, startW - dx);
+        } else if (handleX === 1) {
+          newW = Math.max(30, startW + dx);
+        }
+
+        if (handleY === -1) {
+          newY = Math.max(0, startY + dy);
+          newH = Math.max(30, startH - dy);
+        } else if (handleY === 1) {
+          newH = Math.max(30, startH + dy);
+        }
+
+        // Clamp to canvas
+        if (newX + newW > 960) newW = 960 - newX;
+        if (newY + newH > 540) newH = 540 - newY;
+
+        handleUpdate({
+          x: Math.round(newX),
+          y: Math.round(newY),
+          width: Math.round(newW),
+          height: Math.round(newH),
+        });
+      };
+
+      const handleMouseUp = () => {
+        setIsResizing(false);
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    },
+    [block.x, block.y, block.width, block.height, canvasWidth, canvasHeight, handleUpdate]
+  );
+
   // ─── Text inline editing with DOMPurify ───
   const handleTextDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -78,14 +185,15 @@ export function DraggableBlock({
   const handleTextBlur = () => {
     setIsEditing(false);
     if (textRef.current) {
-      // SECURITY: Sanitize HTML before saving to store
       const sanitized = sanitizeHtml(textRef.current.innerHTML);
       handleUpdate({ content: sanitized } as Partial<Block>);
     }
   };
 
   // ─── Image upload (via /api/upload) ───
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) return;
@@ -94,7 +202,10 @@ export function DraggableBlock({
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
       const data = await res.json();
       if (data.url) {
         handleUpdate({ src: data.url } as Partial<Block>);
@@ -124,25 +235,51 @@ export function DraggableBlock({
     <div
       ref={setNodeRef}
       className={cn(
-        "absolute rounded-xl transition-shadow duration-150",
+        "absolute rounded-lg transition-shadow duration-150",
         isDragging && "shadow-2xl opacity-90",
         isSelected && !isDragging
-          ? "ring-2 ring-primary ring-offset-2 shadow-lg"
-          : !isDragging && "hover:ring-1 hover:ring-primary/40"
+          ? "ring-2 ring-primary shadow-lg"
+          : !isDragging && "hover:ring-1 hover:ring-primary/30"
       )}
       style={style}
-      {...(isEditing ? {} : { ...attributes, ...listeners })}
+      {...(isEditing || isResizing ? {} : { ...attributes, ...listeners })}
       onClick={(e) => {
         e.stopPropagation();
         onSelect();
       }}
     >
+      {/* Resize Handles (PowerPoint-style) */}
+      {isSelected && !isDragging && (
+        <>
+          {HANDLES.map((handle) => (
+            <div
+              key={handle.position}
+              className="absolute z-30 w-[8px] h-[8px] bg-white border-2 border-primary rounded-[1px] shadow-sm hover:bg-primary hover:border-primary transition-colors"
+              style={{
+                ...HANDLE_POSITIONS[handle.position],
+                cursor: handle.cursor,
+                transform:
+                  handle.position.includes("center") ||
+                  handle.position.includes("middle")
+                    ? handle.position.includes("center")
+                      ? "translateX(-50%)"
+                      : "translateY(-50%)"
+                    : undefined,
+              }}
+              onMouseDown={(e) =>
+                handleResizeStart(e, handle.x, handle.y)
+              }
+            />
+          ))}
+        </>
+      )}
+
       {/* ─── TEXT BLOCK ─── */}
       {block.type === "text" && (
         <div
           ref={textRef}
           className={cn(
-            "w-full h-full p-3 overflow-hidden text-sm leading-relaxed rounded-xl",
+            "w-full h-full p-3 overflow-hidden text-sm leading-relaxed rounded-lg",
             isEditing
               ? "bg-white outline-none ring-1 ring-primary/30 cursor-text"
               : "bg-white/80"
@@ -168,7 +305,7 @@ export function DraggableBlock({
       {/* ─── IMAGE BLOCK ─── */}
       {block.type === "image" && (
         <div
-          className="w-full h-full rounded-xl overflow-hidden"
+          className="w-full h-full rounded-lg overflow-hidden"
           onDoubleClick={handleImageDoubleClick}
         >
           <input
@@ -187,14 +324,14 @@ export function DraggableBlock({
               draggable={false}
             />
           ) : isUploading ? (
-            <div className="w-full h-full bg-muted/50 flex flex-col items-center justify-center border-2 border-dashed border-primary/30 rounded-xl">
+            <div className="w-full h-full bg-muted/50 flex flex-col items-center justify-center border-2 border-dashed border-primary/30 rounded-lg">
               <Loader2 className="h-8 w-8 text-primary/60 mb-2 animate-spin" />
               <span className="text-xs text-primary/60 font-medium">
                 Enviando imagem...
               </span>
             </div>
           ) : (
-            <div className="w-full h-full bg-muted/50 flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-xl hover:border-primary/30 transition-colors">
+            <div className="w-full h-full bg-muted/50 flex flex-col items-center justify-center border-2 border-dashed border-muted-foreground/20 rounded-lg hover:border-primary/30 transition-colors">
               <Upload className="h-8 w-8 text-muted-foreground/40 mb-2" />
               <span className="text-xs text-muted-foreground/60">
                 Duplo clique para upload
@@ -207,7 +344,7 @@ export function DraggableBlock({
       {/* ─── FLASHCARD BLOCK (3D Flip) ─── */}
       {block.type === "flashcard" && (
         <div
-          className="w-full h-full rounded-xl"
+          className="w-full h-full rounded-lg"
           style={{ perspective: "600px" }}
           onClick={handleFlashcardClick}
         >
@@ -220,7 +357,7 @@ export function DraggableBlock({
           >
             {/* Front */}
             <div
-              className="absolute inset-0 rounded-xl flex items-center justify-center text-white font-semibold text-sm shadow-inner"
+              className="absolute inset-0 rounded-lg flex items-center justify-center text-white font-semibold text-sm shadow-inner"
               style={{
                 backgroundColor: block.frontBg,
                 backfaceVisibility: "hidden",
@@ -236,7 +373,7 @@ export function DraggableBlock({
             </div>
             {/* Back */}
             <div
-              className="absolute inset-0 rounded-xl flex items-center justify-center text-white font-semibold text-sm shadow-inner"
+              className="absolute inset-0 rounded-lg flex items-center justify-center text-white font-semibold text-sm shadow-inner"
               style={{
                 backgroundColor: block.backBg,
                 backfaceVisibility: "hidden",
@@ -256,7 +393,7 @@ export function DraggableBlock({
 
       {/* ─── QUIZ BLOCK ─── */}
       {block.type === "quiz" && (
-        <div className="w-full h-full bg-white rounded-xl border border-border/60 p-3 overflow-hidden">
+        <div className="w-full h-full bg-white rounded-lg border border-border/60 p-3 overflow-hidden">
           <div className="flex items-center gap-1.5 mb-2">
             <HelpCircle className="h-4 w-4 text-primary flex-shrink-0" />
             <p className="text-xs font-semibold text-foreground line-clamp-1">
@@ -283,9 +420,10 @@ export function DraggableBlock({
           </div>
         </div>
       )}
+
       {/* ─── VIDEO BLOCK ─── */}
       {block.type === "video" && (
-        <div className="w-full h-full rounded-xl overflow-hidden bg-black relative">
+        <div className="w-full h-full rounded-lg overflow-hidden bg-black relative">
           {/* Invisible mask to prevent iframe swallowing dnd-kit clicks */}
           <div className="absolute inset-0 z-10" />
           {(block as VideoBlockType).url ? (
@@ -299,9 +437,18 @@ export function DraggableBlock({
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center text-white/40">
               <Play className="h-8 w-8 mb-2" />
-              <span className="text-xs">Cole a URL do vídeo no painel lateral</span>
+              <span className="text-xs">
+                Cole a URL do vídeo no painel lateral
+              </span>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Dimension tooltip when selected */}
+      {isSelected && !isDragging && (
+        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-800 text-white text-[9px] rounded font-mono whitespace-nowrap z-40 shadow-lg">
+          {block.width} × {block.height}
         </div>
       )}
     </div>

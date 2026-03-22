@@ -9,8 +9,8 @@ if [ ! -f /app/data/prod.db ]; then
   node prisma/seed.js
   echo "✅ Database created and seeded."
 else
-  echo "✅ Existing database found. Applying migrations..."
-  npx prisma db push --skip-generate --accept-data-loss 2>/dev/null || true
+  echo "✅ Existing database found. Applying schema changes..."
+  npx prisma db push --skip-generate 2>&1 || echo "⚠️  Schema push had warnings — review above output."
   echo "✅ Database ready."
 fi
 
