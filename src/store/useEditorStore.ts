@@ -85,7 +85,19 @@ export interface VideoBlock extends BaseBlock {
   interactions: VideoInteraction[];
 }
 
-export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock;
+export type ShapeType = "rectangle" | "circle" | "rounded-rect" | "triangle" | "arrow" | "line" | "star";
+
+export interface ShapeBlock extends BaseBlock {
+  type: "shape";
+  shapeType: ShapeType;
+  fillColor: string;
+  strokeColor: string;
+  strokeWidth: number;
+  opacity: number;
+  rotation: number;
+}
+
+export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock;
 
 export interface Slide {
   id: string;

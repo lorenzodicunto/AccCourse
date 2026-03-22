@@ -53,6 +53,7 @@ const BLOCK_LABELS: Record<string, string> = {
   flashcard: "Flashcard",
   quiz: "Quiz",
   video: "Vídeo",
+  shape: "Forma",
 };
 
 // ─── Collapsible Section ───
@@ -947,6 +948,97 @@ export function PropertiesPanel() {
                     </div>
                   </>
                 )}
+              </Section>
+            )}
+
+            {/* ─── SHAPE PROPERTIES ─── */}
+            {block.type === "shape" && (
+              <Section
+                title="Forma"
+                icon={
+                  <svg className="h-3 w-3 text-muted-foreground/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" /></svg>
+                }
+              >
+                <FieldRow label="Tipo">
+                  <select
+                    value={(block as any).shapeType || "rectangle"}
+                    onChange={(e) =>
+                      handleUpdate({ shapeType: e.target.value } as Partial<Block>)
+                    }
+                    className="w-full h-7 text-xs rounded-md border border-border bg-background px-1.5"
+                  >
+                    <option value="rectangle">■ Retângulo</option>
+                    <option value="circle">● Círculo</option>
+                    <option value="rounded-rect">▢ Ret. Arredondado</option>
+                    <option value="triangle">▲ Triângulo</option>
+                    <option value="star">★ Estrela</option>
+                    <option value="arrow">↑ Seta</option>
+                    <option value="line">─ Linha</option>
+                  </select>
+                </FieldRow>
+                <div className="grid grid-cols-2 gap-2">
+                  <FieldRow label="Preencher">
+                    <input
+                      type="color"
+                      value={(block as any).fillColor || "#7c3aed"}
+                      onChange={(e) =>
+                        handleUpdate({ fillColor: e.target.value } as Partial<Block>)
+                      }
+                      className="w-full h-7 rounded-md border border-border cursor-pointer"
+                    />
+                  </FieldRow>
+                  <FieldRow label="Borda">
+                    <input
+                      type="color"
+                      value={(block as any).strokeColor || "#4f46e5"}
+                      onChange={(e) =>
+                        handleUpdate({ strokeColor: e.target.value } as Partial<Block>)
+                      }
+                      className="w-full h-7 rounded-md border border-border cursor-pointer"
+                    />
+                  </FieldRow>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <FieldRow label="Esp. borda">
+                    <Input
+                      type="number"
+                      min="0"
+                      max="20"
+                      value={(block as any).strokeWidth ?? 2}
+                      onChange={(e) =>
+                        handleUpdate({ strokeWidth: Number(e.target.value) } as Partial<Block>)
+                      }
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+                  <FieldRow label="Opacidade">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="1"
+                      value={(block as any).opacity ?? 1}
+                      onChange={(e) =>
+                        handleUpdate({ opacity: Number(e.target.value) } as Partial<Block>)
+                      }
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+                </div>
+                <FieldRow label="Rotação">
+                  <Input
+                    type="number"
+                    min="0"
+                    max="360"
+                    step="15"
+                    value={(block as any).rotation ?? 0}
+                    onChange={(e) =>
+                      handleUpdate({ rotation: Number(e.target.value) } as Partial<Block>)
+                    }
+                    className="h-7 text-xs rounded-md"
+                    placeholder="graus"
+                  />
+                </FieldRow>
               </Section>
             )}
 

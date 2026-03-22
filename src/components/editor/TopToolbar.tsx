@@ -33,6 +33,7 @@ import {
   Copy,
   Scissors,
   ClipboardPaste,
+  Hexagon,
 } from "lucide-react";
 import { useState } from "react";
 import { exportScormPackage } from "@/lib/scorm/packager";
@@ -264,6 +265,20 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           height: 270,
           url: "",
           interactions: [],
+        };
+        break;
+      case "shape":
+        newBlock = {
+          ...baseBlock,
+          type: "shape",
+          width: 200,
+          height: 200,
+          shapeType: "rectangle",
+          fillColor: "#7c3aed",
+          strokeColor: "#4f46e5",
+          strokeWidth: 2,
+          opacity: 1,
+          rotation: 0,
         };
         break;
     }
@@ -534,6 +549,15 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
                   label="Quiz"
                   variant="large"
                   onClick={() => handleAddBlock("quiz")}
+                />
+              </RibbonGroup>
+
+              <RibbonGroup label="Formas">
+                <RibbonButton
+                  icon={<Hexagon className="h-5 w-5" />}
+                  label="Forma"
+                  variant="large"
+                  onClick={() => handleAddBlock("shape")}
                 />
               </RibbonGroup>
             </>

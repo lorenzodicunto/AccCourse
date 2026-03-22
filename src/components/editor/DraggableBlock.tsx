@@ -459,6 +459,49 @@ export function DraggableBlock({
         </div>
       )}
 
+      {/* ─── SHAPE BLOCK ─── */}
+      {block.type === "shape" && (
+        <div
+          className="w-full h-full"
+          style={{
+            opacity: (block as any).opacity ?? 1,
+            transform: `rotate(${(block as any).rotation ?? 0}deg)`,
+          }}
+        >
+          <svg
+            viewBox="0 0 200 200"
+            width="100%"
+            height="100%"
+            preserveAspectRatio="none"
+          >
+            {(() => {
+              const fill = (block as any).fillColor || "#7c3aed";
+              const stroke = (block as any).strokeColor || "#4f46e5";
+              const sw = (block as any).strokeWidth ?? 2;
+              const shapeType = (block as any).shapeType || "rectangle";
+
+              switch (shapeType) {
+                case "circle":
+                  return <ellipse cx="100" cy="100" rx="95" ry="95" fill={fill} stroke={stroke} strokeWidth={sw} />;
+                case "rounded-rect":
+                  return <rect x="5" y="5" width="190" height="190" rx="30" fill={fill} stroke={stroke} strokeWidth={sw} />;
+                case "triangle":
+                  return <polygon points="100,10 190,190 10,190" fill={fill} stroke={stroke} strokeWidth={sw} />;
+                case "arrow":
+                  return <polygon points="100,10 190,100 140,100 140,190 60,190 60,100 10,100" fill={fill} stroke={stroke} strokeWidth={sw} />;
+                case "line":
+                  return <line x1="10" y1="100" x2="190" y2="100" stroke={stroke} strokeWidth={Math.max(sw, 4)} strokeLinecap="round" />;
+                case "star":
+                  return <polygon points="100,10 125,75 195,80 140,130 155,195 100,160 45,195 60,130 5,80 75,75" fill={fill} stroke={stroke} strokeWidth={sw} />;
+                case "rectangle":
+                default:
+                  return <rect x="5" y="5" width="190" height="190" fill={fill} stroke={stroke} strokeWidth={sw} />;
+              }
+            })()}
+          </svg>
+        </div>
+      )}
+
       {/* Dimension tooltip when selected */}
       {isSelected && !isDragging && (
         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-800 text-white text-[9px] rounded font-mono whitespace-nowrap z-40 shadow-lg">

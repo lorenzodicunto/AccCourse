@@ -1,7 +1,7 @@
 // SCORM Course HTML Generator
 // Generates the index.html content from course slides and blocks
 
-import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock } from "@/store/useEditorStore";
+import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock } from "@/store/useEditorStore";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 export function generateCourseHTML(project: CourseProject, assetMap?: Map<string, string>): string {
@@ -276,6 +276,8 @@ function generateBlockHTML(block: Block, assetMap?: Map<string, string>): string
       return generateQuizBlockHTML(block as QuizBlock, style);
     case "video":
       return generateVideoBlockHTML(block as VideoBlock, style);
+    case "shape":
+      return generateShapeBlockHTML(block as ShapeBlock, style);
     default:
       return "";
   }
@@ -392,5 +394,46 @@ function generateVideoBlockHTML(block: VideoBlock, style: string): string {
   return `
         <div class="block video-block" style="${style} background: #000; border-radius: 12px; overflow: hidden;">
           ${videoHTML}
+        </div>`;
+}
+
+function generateShapeBlockHTML(block: ShapeBlock, style: string): string {
+  const opacity = block.opacity !== undefined && block.opacity < 1 ? `opacity: ${block.opacity};` : "";
+  const rotation = block.rotation ? `transform: rotate(${block.rotation}deg);` : "";
+  const fill = block.fillColor || "#7c3aed";
+  const stroke = block.strokeColor || "#4f46e5";
+  const sw = block.strokeWidth ?? 2;
+
+  let shapeSVG: string;
+  switch (block.shapeType) {
+    case "circle":
+      shapeSVG = `<ellipse cx="100" cy="100" rx="95" ry="95" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      break;
+    case "rounded-rect":
+      shapeSVG = `<rect x="5" y="5" width="190" height="190" rx="30" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      break;
+    case "triangle":
+      shapeSVG = `<polygon points="100,10 190,190 10,190" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      break;
+    case "arrow":
+      shapeSVG = `<polygon points="100,10 190,100 140,100 140,190 60,190 60,100 10,100" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      break;
+    case "line":
+      shapeSVG = `<line x1="10" y1="100" x2="190" y2="100" stroke="${stroke}" stroke-width="${Math.max(sw, 4)}" stroke-linecap="round" />`;
+      break;
+    case "star":
+      shapeSVG = `<polygon points="100,10 125,75 195,80 140,130 155,195 100,160 45,195 60,130 5,80 75,75" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      break;
+    case "rectangle":
+    default:
+      shapeSVG = `<rect x="5" y="5" width="190" height="190" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      break;
+  }
+
+  return `
+        <div class="block shape-block" style="${style} ${opacity} ${rotation}">
+          <svg viewBox="0 0 200 200" width="100%" height="100%" preserveAspectRatio="none">
+            ${shapeSVG}
+          </svg>
         </div>`;
 }
