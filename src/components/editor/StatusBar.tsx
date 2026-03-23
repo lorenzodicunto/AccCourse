@@ -26,6 +26,7 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
   const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
   const getSelectedBlock = useEditorStore((s) => s.getSelectedBlock);
+  const setCurrentSlide = useEditorStore((s) => s.setCurrentSlide);
   const previewMode = useEditorStore((s) => s.previewMode);
 
   const project = getCurrentProject();
@@ -112,9 +113,27 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
         </span>
       </div>
 
-      {/* Center: Save Status */}
-      <div className="flex items-center gap-1.5">
-        {saveIndicator()}
+      {/* Center: Mini Timeline */}
+      <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 mr-2">
+          {saveIndicator()}
+        </div>
+        <div className="w-px h-3.5 bg-slate-600 mr-1" />
+        <div className="flex items-center gap-0.5">
+          {slides.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setCurrentSlide(s.id)}
+              className={cn(
+                "h-3 rounded-[2px] transition-all cursor-pointer",
+                currentSlideIndex === i
+                  ? "bg-purple-500 w-5 shadow-sm shadow-purple-500/40"
+                  : "bg-slate-600 w-3 hover:bg-slate-500"
+              )}
+              title={`Slide ${i + 1}`}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Right: Language + Zoom & Grid */}

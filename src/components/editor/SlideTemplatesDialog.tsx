@@ -11,22 +11,33 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LayoutTemplate, Check } from "lucide-react";
+import { LayoutTemplate, Check, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 interface SlideTemplate {
   id: string;
   name: string;
-  preview: string; // CSS gradient for preview
+  category: string;
+  preview: string;
   background: string;
   blocks: Omit<Block, "id">[];
 }
+
+const CATEGORIES = [
+  { id: "all", label: "Todos" },
+  { id: "welcome", label: "Abertura" },
+  { id: "content", label: "Conteúdo" },
+  { id: "interactive", label: "Interação" },
+  { id: "closing", label: "Encerramento" },
+];
 
 const TEMPLATES: SlideTemplate[] = [
   {
     id: "blank",
     name: "Em Branco",
+    category: "content",
     preview: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
     background: "#ffffff",
     blocks: [],
@@ -34,6 +45,7 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "title",
     name: "Título Central",
+    category: "welcome",
     preview: "linear-gradient(135deg, #1e293b, #334155)",
     background: "#1e293b",
     blocks: [
@@ -58,6 +70,7 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "title-content",
     name: "Título + Conteúdo",
+    category: "content",
     preview: "linear-gradient(135deg, #ffffff, #f1f5f9)",
     background: "#ffffff",
     blocks: [
@@ -87,6 +100,7 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "two-columns",
     name: "2 Colunas",
+    category: "content",
     preview: "linear-gradient(135deg, #fafafa, #e2e8f0)",
     background: "#ffffff",
     blocks: [
@@ -119,6 +133,7 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "image-left",
     name: "Imagem + Texto",
+    category: "content",
     preview: "linear-gradient(90deg, #dbeafe 50%, #ffffff 50%)",
     background: "#ffffff",
     blocks: [
@@ -149,6 +164,7 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "section",
     name: "Divisória de Seção",
+    category: "welcome",
     preview: "linear-gradient(135deg, #6366f1, #8b5cf6)",
     background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
     blocks: [
@@ -173,6 +189,7 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "quiz-template",
     name: "Quiz",
+    category: "interactive",
     preview: "linear-gradient(135deg, #fef3c7, #fde68a)",
     background: "#fffbeb",
     blocks: [
@@ -201,6 +218,7 @@ const TEMPLATES: SlideTemplate[] = [
   {
     id: "thank-you",
     name: "Slide Final",
+    category: "closing",
     preview: "linear-gradient(135deg, #0f172a, #1e293b)",
     background: "#0f172a",
     blocks: [
@@ -232,6 +250,8 @@ const TEMPLATES: SlideTemplate[] = [
 export function SlideTemplatesDialog() {
   const [open, setOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
   const addSlide = useEditorStore((s) => s.addSlide);
   const setCurrentSlide = useEditorStore((s) => s.setCurrentSlide);
@@ -292,9 +312,44 @@ export function SlideTemplatesDialog() {
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="h-[400px] mt-2">
+        {/* Search + Categories */}
+        <div className="space-y-2 mb-3">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
+            <Input
+              placeholder="Buscar templates..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-8 h-8 text-xs rounded-lg bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/30"
+            />
+          </div>
+          <div className="flex items-center gap-1">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={cn(
+                  "px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all cursor-pointer",
+                  activeCategory === cat.id
+                    ? "bg-purple-500/20 text-purple-300"
+                    : "text-slate-400 hover:bg-white/5 hover:text-slate-300"
+                )}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <ScrollArea className="h-[400px]">
           <div className="grid grid-cols-3 gap-3 p-1">
-            {TEMPLATES.map((template) => (
+            {TEMPLATES
+              .filter((t) => {
+                const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase());
+                const matchesCategory = activeCategory === "all" || t.category === activeCategory;
+                return matchesSearch && matchesCategory;
+              })
+              .map((template) => (
               <div
                 key={template.id}
                 className={cn(
