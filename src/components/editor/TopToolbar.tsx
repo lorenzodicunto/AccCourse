@@ -61,6 +61,8 @@ import { AICourseDialog } from "./AICourseDialog";
 import { ContrastChecker } from "./ContrastChecker";
 import { ImportPPTXDialog } from "./ImportPPTXDialog";
 import { PreviewDialog } from "./PreviewDialog";
+import { SlideLayoutsDialog } from "./SlideLayoutsDialog";
+import { exportAsPDF } from "@/lib/export/pdfExporter";
 
 interface TopToolbarProps {
   courseId?: string;
@@ -605,6 +607,24 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
             Exportar SCORM
           </Button>
 
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-xs h-7 px-2"
+            onClick={() => {
+              if (!project) return;
+              try {
+                exportAsPDF(project);
+                toast.success("PDF gerado — use Ctrl+P para salvar");
+              } catch { toast.error("Erro ao gerar PDF"); }
+            }}
+            disabled={!project}
+          >
+            <Download className="h-3.5 w-3.5 text-red-500" />
+            Export PDF
+          </Button>
+
+          <SlideLayoutsDialog />
           <SlideTemplatesDialog />
           <AssetLibraryDialog />
 
