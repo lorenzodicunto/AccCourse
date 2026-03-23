@@ -10,6 +10,7 @@ import { SlideNavigator } from "@/components/editor/SlideNavigator";
 import { Canvas } from "@/components/editor/Canvas";
 import { PropertiesPanel } from "@/components/editor/PropertiesPanel";
 import { StatusBar } from "@/components/editor/StatusBar";
+import { ComponentLibrarySidebar } from "@/components/editor/ComponentLibrarySidebar";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -40,6 +41,7 @@ export default function EditorPage() {
   const [error, setError] = useState("");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
+  const [componentLibOpen, setComponentLibOpen] = useState(false);
 
   // ─── Clipboard (internal, no browser API needed) ───
   const clipboardRef = useRef<Block | null>(null);
@@ -301,7 +303,7 @@ export default function EditorPage() {
 
   if (error) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-zinc-50 gap-4">
+      <div className="h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#0F172A' }}>
         <p className="text-sm text-red-500 font-medium">{error}</p>
         <button
           onClick={() => router.push("/")}
@@ -315,7 +317,7 @@ export default function EditorPage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center bg-zinc-50">
+      <div className="h-screen flex flex-col items-center justify-center" style={{ background: '#0F172A' }}>
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
         <p className="text-sm text-muted-foreground">Carregando curso...</p>
       </div>
@@ -326,14 +328,15 @@ export default function EditorPage() {
   if (!project) return null;
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-zinc-50">
-      <TopToolbar courseId={courseId} />
+    <div className="h-screen flex flex-col overflow-hidden" style={{ background: '#0F172A' }}>
+      <TopToolbar courseId={courseId} onToggleComponentLib={() => setComponentLibOpen(!componentLibOpen)} />
       <div className="flex flex-1 overflow-hidden">
         <SlideNavigator />
         <Canvas />
         <PropertiesPanel />
       </div>
       <StatusBar saveStatus={saveStatus} lastSavedAt={lastSavedAt} />
+      <ComponentLibrarySidebar open={componentLibOpen} onClose={() => setComponentLibOpen(false)} />
     </div>
   );
 }

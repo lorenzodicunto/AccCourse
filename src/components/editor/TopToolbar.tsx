@@ -46,6 +46,7 @@ import {
   Clock,
   GripVertical,
   Video,
+  Layers,
 } from "lucide-react";
 import { useState } from "react";
 import { exportScormPackage } from "@/lib/scorm/packager";
@@ -67,6 +68,7 @@ import { exportAsPDF } from "@/lib/export/pdfExporter";
 
 interface TopToolbarProps {
   courseId?: string;
+  onToggleComponentLib?: () => void;
 }
 
 type RibbonTabId = "home" | "insert" | "design";
@@ -103,7 +105,7 @@ const SLIDE_BG_PRESETS = [
   "#fff7ed",
 ];
 
-export function TopToolbar({ courseId }: TopToolbarProps) {
+export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) {
   const router = useRouter();
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
   const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
@@ -782,6 +784,15 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           {/* ─── INSERT TAB ─── */}
           {activeTab === "insert" && (
             <>
+              <RibbonGroup label="Biblioteca">
+                <RibbonButton
+                  icon={<Layers className="h-5 w-5" />}
+                  label="Componentes"
+                  variant="large"
+                  onClick={() => onToggleComponentLib?.()}
+                />
+              </RibbonGroup>
+
               <RibbonGroup label="Texto">
                 <RibbonButton
                   icon={<Type className="h-5 w-5" />}

@@ -284,7 +284,7 @@ export function SlideTemplatesDialog() {
           Templates
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.06)' }}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <LayoutTemplate className="h-4 w-4" />
@@ -300,8 +300,8 @@ export function SlideTemplatesDialog() {
                 className={cn(
                   "group relative rounded-lg border overflow-hidden cursor-pointer transition-all",
                   selectedTemplate === template.id
-                    ? "ring-2 ring-primary border-primary scale-[1.02]"
-                    : "border-border hover:border-primary/50 hover:scale-[1.01]"
+                    ? "ring-2 ring-purple-500 border-purple-500/50 scale-[1.02]"
+                    : "border-white/10 hover:border-purple-500/30 hover:scale-[1.01]"
                 )}
                 onClick={() => setSelectedTemplate(template.id)}
               >
@@ -334,13 +334,13 @@ export function SlideTemplatesDialog() {
                 </div>
 
                 {/* Name */}
-                <div className="px-2 py-1.5">
-                  <p className="text-xs font-medium text-center">{template.name}</p>
+                <div className="px-2 py-1.5" style={{ background: 'rgba(255,255,255,0.03)' }}>
+                  <p className="text-xs font-medium text-center text-slate-300">{template.name}</p>
                 </div>
 
                 {/* Selected indicator */}
                 {selectedTemplate === template.id && (
-                  <div className="absolute top-1 right-1 bg-primary text-white rounded-full p-0.5">
+                  <div className="absolute top-1 right-1 bg-purple-500 text-white rounded-full p-0.5">
                     <Check className="h-3 w-3" />
                   </div>
                 )}
@@ -350,7 +350,7 @@ export function SlideTemplatesDialog() {
         </ScrollArea>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/5">
           <Button
             variant="outline"
             size="sm"
