@@ -1156,7 +1156,393 @@ export function PropertiesPanel() {
               </Section>
             )}
 
-            {/* ─── VIDEO PROPERTIES ─── */}
+            {/* ─── TRUE/FALSE PROPERTIES ─── */}
+            {block.type === "truefalse" && (
+              <Section title="Verdadeiro/Falso" icon={<CheckCircle2 className="h-3 w-3 text-emerald-500" />}>
+                <FieldRow label="Afirmação">
+                  <Input
+                    value={(block as any).statement || ""}
+                    onChange={(e) => handleUpdate({ statement: e.target.value } as any)}
+                    placeholder="Ex: O céu é azul."
+                    className="h-7 text-xs"
+                  />
+                </FieldRow>
+                <FieldRow label="Resposta correta">
+                  <select
+                    value={(block as any).isTrue ? "true" : "false"}
+                    onChange={(e) => handleUpdate({ isTrue: e.target.value === "true" } as any)}
+                    className="h-7 text-xs rounded-md border bg-background px-2 w-full"
+                  >
+                    <option value="true">Verdadeiro</option>
+                    <option value="false">Falso</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Feedback correto">
+                  <Input
+                    value={(block as any).feedbackCorrect || ""}
+                    onChange={(e) => handleUpdate({ feedbackCorrect: e.target.value } as any)}
+                    className="h-7 text-xs"
+                  />
+                </FieldRow>
+                <FieldRow label="Feedback incorreto">
+                  <Input
+                    value={(block as any).feedbackIncorrect || ""}
+                    onChange={(e) => handleUpdate({ feedbackIncorrect: e.target.value } as any)}
+                    className="h-7 text-xs"
+                  />
+                </FieldRow>
+                <FieldRow label="Pontos">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={(block as any).pointsValue ?? 10}
+                    onChange={(e) => handleUpdate({ pointsValue: Number(e.target.value) } as any)}
+                    className="h-7 text-xs"
+                  />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── MATCHING PROPERTIES ─── */}
+            {block.type === "matching" && (
+              <Section title="Liga Pontos" icon={<Link2 className="h-3 w-3 text-blue-500" />}>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted-foreground font-medium">Pares (esquerda → direita):</p>
+                  {((block as any).pairs || []).map((pair: any, i: number) => (
+                    <div key={pair.id} className="flex items-center gap-1">
+                      <Input
+                        value={pair.left}
+                        onChange={(e) => {
+                          const pairs = [...(block as any).pairs];
+                          pairs[i] = { ...pairs[i], left: e.target.value };
+                          handleUpdate({ pairs } as any);
+                        }}
+                        className="h-6 text-[10px] flex-1"
+                        placeholder="Esquerda"
+                      />
+                      <span className="text-[9px] text-muted-foreground">→</span>
+                      <Input
+                        value={pair.right}
+                        onChange={(e) => {
+                          const pairs = [...(block as any).pairs];
+                          pairs[i] = { ...pairs[i], right: e.target.value };
+                          handleUpdate({ pairs } as any);
+                        }}
+                        className="h-6 text-[10px] flex-1"
+                        placeholder="Direita"
+                      />
+                      <button
+                        onClick={() => {
+                          const pairs = (block as any).pairs.filter((_: any, j: number) => j !== i);
+                          handleUpdate({ pairs } as any);
+                        }}
+                        className="text-red-400 hover:text-red-600 text-xs"
+                      >✕</button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-6 text-[10px]"
+                    onClick={() => {
+                      const pairs = [...((block as any).pairs || []), { id: crypto.randomUUID(), left: "Novo item", right: "Nova definição" }];
+                      handleUpdate({ pairs } as any);
+                    }}
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Adicionar Par
+                  </Button>
+                </div>
+                <FieldRow label="Embaralhar direita">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={(block as any).shuffleRight !== false} onChange={(e) => handleUpdate({ shuffleRight: e.target.checked } as any)} className="rounded" />
+                    <span className="text-xs text-muted-foreground">Sim</span>
+                  </label>
+                </FieldRow>
+                <FieldRow label="Pontos">
+                  <Input type="number" min={0} value={(block as any).pointsValue ?? 10} onChange={(e) => handleUpdate({ pointsValue: Number(e.target.value) } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── FILL-BLANK PROPERTIES ─── */}
+            {block.type === "fillblank" && (
+              <Section title="Preencher Lacunas" icon={<PenLine className="h-3 w-3 text-amber-500" />}>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted-foreground font-medium">Segmentos (texto e lacunas):</p>
+                  {((block as any).segments || []).map((seg: any, i: number) => (
+                    <div key={i} className="flex items-center gap-1">
+                      {seg.type === "text" ? (
+                        <Input
+                          value={seg.content}
+                          onChange={(e) => {
+                            const segments = [...(block as any).segments];
+                            segments[i] = { ...segments[i], content: e.target.value };
+                            handleUpdate({ segments } as any);
+                          }}
+                          className="h-6 text-[10px] flex-1"
+                          placeholder="Texto..."
+                        />
+                      ) : (
+                        <div className="flex-1 flex items-center gap-1">
+                          <span className="text-[9px] bg-amber-100 text-amber-700 px-1 rounded">LACUNA</span>
+                          <Input
+                            value={seg.correctAnswer || ""}
+                            onChange={(e) => {
+                              const segments = [...(block as any).segments];
+                              segments[i] = { ...segments[i], correctAnswer: e.target.value };
+                              handleUpdate({ segments } as any);
+                            }}
+                            className="h-6 text-[10px] flex-1"
+                            placeholder="Resposta correta"
+                          />
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          const segments = (block as any).segments.filter((_: any, j: number) => j !== i);
+                          handleUpdate({ segments } as any);
+                        }}
+                        className="text-red-400 hover:text-red-600 text-xs shrink-0"
+                      >✕</button>
+                    </div>
+                  ))}
+                  <div className="flex gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-6 text-[10px]"
+                      onClick={() => {
+                        const segments = [...((block as any).segments || []), { type: "text", content: "texto " }];
+                        handleUpdate({ segments } as any);
+                      }}
+                    >+ Texto</Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 h-6 text-[10px]"
+                      onClick={() => {
+                        const segments = [...((block as any).segments || []), { type: "blank", id: crypto.randomUUID(), correctAnswer: "", acceptedVariants: [] }];
+                        handleUpdate({ segments } as any);
+                      }}
+                    >+ Lacuna</Button>
+                  </div>
+                </div>
+                <FieldRow label="Case-sensitive">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={(block as any).caseSensitive || false} onChange={(e) => handleUpdate({ caseSensitive: e.target.checked } as any)} className="rounded" />
+                    <span className="text-xs text-muted-foreground">Diferenciar maiúsc./minúsc.</span>
+                  </label>
+                </FieldRow>
+                <FieldRow label="Pontos">
+                  <Input type="number" min={0} value={(block as any).pointsValue ?? 10} onChange={(e) => handleUpdate({ pointsValue: Number(e.target.value) } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── SORTING PROPERTIES ─── */}
+            {block.type === "sorting" && (
+              <Section title="Ordenação" icon={<ArrowUpDown className="h-3 w-3 text-purple-500" />}>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted-foreground font-medium">Itens (na ordem correta):</p>
+                  {((block as any).items || []).map((item: any, i: number) => (
+                    <div key={item.id} className="flex items-center gap-1">
+                      <span className="text-[9px] text-purple-400 font-mono w-4">{i + 1}.</span>
+                      <Input
+                        value={item.content}
+                        onChange={(e) => {
+                          const items = [...(block as any).items];
+                          items[i] = { ...items[i], content: e.target.value };
+                          handleUpdate({ items } as any);
+                        }}
+                        className="h-6 text-[10px] flex-1"
+                      />
+                      <button
+                        onClick={() => {
+                          const items = (block as any).items.filter((_: any, j: number) => j !== i);
+                          const correctOrder = items.map((it: any) => it.id);
+                          handleUpdate({ items, correctOrder } as any);
+                        }}
+                        className="text-red-400 hover:text-red-600 text-xs"
+                      >✕</button>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-6 text-[10px]"
+                    onClick={() => {
+                      const newId = `s${Date.now()}`;
+                      const items = [...((block as any).items || []), { id: newId, content: "Novo passo" }];
+                      const correctOrder = items.map((it: any) => it.id);
+                      handleUpdate({ items, correctOrder } as any);
+                    }}
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Adicionar Item
+                  </Button>
+                </div>
+                <FieldRow label="Pontos">
+                  <Input type="number" min={0} value={(block as any).pointsValue ?? 10} onChange={(e) => handleUpdate({ pointsValue: Number(e.target.value) } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── HOTSPOT PROPERTIES ─── */}
+            {block.type === "hotspot" && (
+              <Section title="Hotspot" icon={<MousePointer className="h-3 w-3 text-cyan-500" />}>
+                <FieldRow label="Imagem de fundo">
+                  <Input
+                    value={(block as any).imageSrc || ""}
+                    onChange={(e) => handleUpdate({ imageSrc: e.target.value } as any)}
+                    placeholder="URL da imagem..."
+                    className="h-7 text-xs"
+                  />
+                </FieldRow>
+                <FieldRow label="Modo">
+                  <select
+                    value={(block as any).mode || "explore"}
+                    onChange={(e) => handleUpdate({ mode: e.target.value } as any)}
+                    className="h-7 text-xs rounded-md border bg-background px-2 w-full"
+                  >
+                    <option value="explore">🔍 Explorar (informativo)</option>
+                    <option value="quiz">🎯 Quiz (pontuação)</option>
+                  </select>
+                </FieldRow>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted-foreground font-medium">Pontos ({((block as any).spots || []).length}):</p>
+                  {((block as any).spots || []).map((spot: any, i: number) => (
+                    <div key={spot.id} className="p-1.5 rounded border border-slate-200 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Input value={spot.label} onChange={(e) => { const spots = [...(block as any).spots]; spots[i] = { ...spots[i], label: e.target.value }; handleUpdate({ spots } as any); }} className="h-5 text-[9px] flex-1" placeholder="Label" />
+                        <button onClick={() => { handleUpdate({ spots: (block as any).spots.filter((_: any, j: number) => j !== i) } as any); }} className="text-red-400 hover:text-red-600 text-xs">✕</button>
+                      </div>
+                      <div className="flex gap-1">
+                        <Input type="number" min={0} max={100} value={spot.x} onChange={(e) => { const spots = [...(block as any).spots]; spots[i] = { ...spots[i], x: Number(e.target.value) }; handleUpdate({ spots } as any); }} className="h-5 text-[9px]" placeholder="X%" />
+                        <Input type="number" min={0} max={100} value={spot.y} onChange={(e) => { const spots = [...(block as any).spots]; spots[i] = { ...spots[i], y: Number(e.target.value) }; handleUpdate({ spots } as any); }} className="h-5 text-[9px]" placeholder="Y%" />
+                        <Input type="number" min={1} max={20} value={spot.radius} onChange={(e) => { const spots = [...(block as any).spots]; spots[i] = { ...spots[i], radius: Number(e.target.value) }; handleUpdate({ spots } as any); }} className="h-5 text-[9px]" placeholder="R" />
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-6 text-[10px]"
+                    onClick={() => {
+                      const spots = [...((block as any).spots || []), { id: crypto.randomUUID(), x: 50, y: 50, radius: 8, label: `Ponto ${((block as any).spots || []).length + 1}`, content: "Descrição", isCorrect: false }];
+                      handleUpdate({ spots } as any);
+                    }}
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Adicionar Ponto
+                  </Button>
+                </div>
+                <FieldRow label="Pontos">
+                  <Input type="number" min={0} value={(block as any).pointsValue ?? 10} onChange={(e) => handleUpdate({ pointsValue: Number(e.target.value) } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── ACCORDION PROPERTIES ─── */}
+            {block.type === "accordion" && (
+              <Section title="Accordion" icon={<ChevronDown className="h-3 w-3 text-slate-500" />}>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted-foreground font-medium">Seções:</p>
+                  {((block as any).sections || []).map((section: any, i: number) => (
+                    <div key={section.id} className="p-1.5 rounded border border-slate-200 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={section.title}
+                          onChange={(e) => { const sections = [...(block as any).sections]; sections[i] = { ...sections[i], title: e.target.value }; handleUpdate({ sections } as any); }}
+                          className="h-5 text-[9px] flex-1 font-medium"
+                          placeholder="Título"
+                        />
+                        <button onClick={() => { handleUpdate({ sections: (block as any).sections.filter((_: any, j: number) => j !== i) } as any); }} className="text-red-400 hover:text-red-600 text-xs">✕</button>
+                      </div>
+                      <Input
+                        value={section.content}
+                        onChange={(e) => { const sections = [...(block as any).sections]; sections[i] = { ...sections[i], content: e.target.value }; handleUpdate({ sections } as any); }}
+                        className="h-5 text-[9px]"
+                        placeholder="Conteúdo..."
+                      />
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-6 text-[10px]"
+                    onClick={() => {
+                      const sections = [...((block as any).sections || []), { id: crypto.randomUUID(), title: "Nova Seção", content: "Conteúdo" }];
+                      handleUpdate({ sections } as any);
+                    }}
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Adicionar Seção
+                  </Button>
+                </div>
+                <FieldRow label="Múltiplos abertos">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" checked={(block as any).allowMultipleOpen || false} onChange={(e) => handleUpdate({ allowMultipleOpen: e.target.checked } as any)} className="rounded" />
+                    <span className="text-xs text-muted-foreground">Permitir</span>
+                  </label>
+                </FieldRow>
+                <FieldRow label="Estilo">
+                  <select value={(block as any).style || "boxed"} onChange={(e) => handleUpdate({ style: e.target.value } as any)} className="h-7 text-xs rounded-md border bg-background px-2 w-full">
+                    <option value="minimal">Minimal</option>
+                    <option value="boxed">Boxed</option>
+                    <option value="bordered">Bordered</option>
+                  </select>
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── TABS PROPERTIES ─── */}
+            {block.type === "tabs" && (
+              <Section title="Tabs" icon={<PanelTop className="h-3 w-3 text-indigo-500" />}>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted-foreground font-medium">Abas:</p>
+                  {((block as any).tabs || []).map((tab: any, i: number) => (
+                    <div key={tab.id} className="p-1.5 rounded border border-slate-200 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Input
+                          value={tab.label}
+                          onChange={(e) => { const tabs = [...(block as any).tabs]; tabs[i] = { ...tabs[i], label: e.target.value }; handleUpdate({ tabs } as any); }}
+                          className="h-5 text-[9px] flex-1 font-medium"
+                          placeholder="Label"
+                        />
+                        <button onClick={() => { handleUpdate({ tabs: (block as any).tabs.filter((_: any, j: number) => j !== i) } as any); }} className="text-red-400 hover:text-red-600 text-xs">✕</button>
+                      </div>
+                      <Input
+                        value={tab.content}
+                        onChange={(e) => { const tabs = [...(block as any).tabs]; tabs[i] = { ...tabs[i], content: e.target.value }; handleUpdate({ tabs } as any); }}
+                        className="h-5 text-[9px]"
+                        placeholder="Conteúdo..."
+                      />
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full h-6 text-[10px]"
+                    onClick={() => {
+                      const tabs = [...((block as any).tabs || []), { id: crypto.randomUUID(), label: "Nova Aba", content: "Conteúdo" }];
+                      handleUpdate({ tabs } as any);
+                    }}
+                  >
+                    <Plus className="h-3 w-3 mr-1" /> Adicionar Aba
+                  </Button>
+                </div>
+                <FieldRow label="Orientação">
+                  <select value={(block as any).orientation || "horizontal"} onChange={(e) => handleUpdate({ orientation: e.target.value } as any)} className="h-7 text-xs rounded-md border bg-background px-2 w-full">
+                    <option value="horizontal">Horizontal</option>
+                    <option value="vertical">Vertical</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Estilo">
+                  <select value={(block as any).style || "underline"} onChange={(e) => handleUpdate({ style: e.target.value } as any)} className="h-7 text-xs rounded-md border bg-background px-2 w-full">
+                    <option value="underline">Underline</option>
+                    <option value="boxed">Boxed</option>
+                    <option value="pills">Pills</option>
+                  </select>
+                </FieldRow>
+              </Section>
+            )}
             {block.type === "video" && (
               <>
                 <Section
