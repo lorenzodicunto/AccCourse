@@ -9,6 +9,7 @@ import { generateManifest } from "./manifest";
 import { generateCourseHTML } from "./htmlGenerator";
 import { generateStyles } from "./styles";
 import { SCORM_API_JS } from "./scormApi";
+import { generateTinCanXML, generateXAPIScript } from "./xapi";
 
 export interface ExportProgress {
   step: string;
@@ -91,6 +92,11 @@ export async function exportScormPackage(
   // Step 2: Generate SCORM API
   onProgress?.({ step: "Incluindo API SCORM 1.2...", percent: 15 });
   zip.file("scorm-api.js", SCORM_API_JS);
+
+  // Step 2.5: Generate xAPI support (Tin Can)
+  onProgress?.({ step: "Adicionando suporte xAPI...", percent: 18 });
+  zip.file("tincan.xml", generateTinCanXML(project.id, project.title, project.description));
+  zip.file("xapi-tracker.js", generateXAPIScript(project));
 
   // Step 3: Collect and fetch local assets
   onProgress?.({ step: "Analisando assets de mídia...", percent: 25 });

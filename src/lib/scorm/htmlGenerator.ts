@@ -47,6 +47,7 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
   <title>${escapeHtml(project.title)}</title>
   <link rel="stylesheet" href="styles.css">
   <script src="scorm-api.js"><\/script>
+  <script src="xapi-tracker.js"><\/script>
 </head>
 <body>
   <!-- Skip Navigation (WCAG) -->

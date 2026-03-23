@@ -57,6 +57,7 @@ import { AssetLibraryDialog } from "./AssetLibraryDialog";
 import { SlideTemplatesDialog } from "./SlideTemplatesDialog";
 import { AIQuizDialog } from "./AIQuizDialog";
 import { AICourseDialog } from "./AICourseDialog";
+import { ContrastChecker } from "./ContrastChecker";
 
 interface TopToolbarProps {
   courseId?: string;
@@ -619,6 +620,7 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           />
           {project && <AICourseDialog projectId={project.id} />}
 
+          <ContrastChecker />
           <KeyboardShortcutsDialog />
         </div>
       </div>
