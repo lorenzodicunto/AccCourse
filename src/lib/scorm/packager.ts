@@ -80,14 +80,27 @@ export async function exportScormPackage(
 ): Promise<void> {
   const zip = new JSZip();
 
-  // Step 1: Generate imsmanifest.xml
+  // Step 1: Generate imsmanifest.xml (SCORM 1.2 + SCORM 2004)
   onProgress?.({ step: "Gerando manifesto SCORM...", percent: 5 });
-  const manifest = generateManifest(
+  const manifest12 = generateManifest(
     project.id,
     project.title,
     project.description
   );
-  zip.file("imsmanifest.xml", manifest);
+  zip.file("imsmanifest.xml", manifest12);
+
+  // Also include SCORM 2004 manifest as alternative
+  try {
+    const { generateManifest2004 } = await import("./manifest2004");
+    const manifest2004 = generateManifest2004(
+      project.id,
+      project.title,
+      project.description
+    );
+    zip.file("imsmanifest-2004.xml", manifest2004);
+  } catch (e) {
+    // SCORM 2004 optional
+  }
 
   // Step 2: Generate SCORM API
   onProgress?.({ step: "Incluindo API SCORM 1.2...", percent: 15 });

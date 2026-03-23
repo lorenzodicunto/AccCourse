@@ -31,7 +31,7 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
         .join("\n");
 
       return `
-    <section class="slide" id="slide-${index}" data-index="${index}" data-transition="${slide.transition || 'none'}" role="region" aria-roledescription="slide" aria-label="Slide ${index + 1} de ${totalSlides}" style="background-color: ${slide.background};" tabindex="0">
+    <section class="slide" id="slide-${index}" data-index="${index}" data-transition="${slide.transition || 'none'}" data-narration="${slide.narration || ''}" role="region" aria-roledescription="slide" aria-label="Slide ${index + 1} de ${totalSlides}" style="background-color: ${slide.background};" tabindex="0">
       <div class="slide-content">
         ${blocksHTML}
       </div>
@@ -219,6 +219,17 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
         if (window.SCORM && window.SCORM.initialized) {
           window.SCORM.setBookmark(index);
           window.SCORM.save();
+        }
+
+        // Auto-play narration
+        if (window._narrationAudio) { window._narrationAudio.pause(); window._narrationAudio = null; }
+        var slideEl = document.getElementById('slide-' + index);
+        if (slideEl) {
+          var narrationUrl = slideEl.getAttribute('data-narration');
+          if (narrationUrl) {
+            window._narrationAudio = new Audio(narrationUrl);
+            window._narrationAudio.play().catch(function() {});
+          }
         }
       }
 
@@ -413,7 +424,10 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
 }
 
 function generateBlockHTML(block: Block, assetMap?: Map<string, string>): string {
-  const style = `position: absolute; left: ${(block.x / 960) * 100}%; top: ${(block.y / 540) * 100}%; width: ${(block.width / 960) * 100}%; height: ${(block.height / 540) * 100}%;`;
+  const animStyle = block.animation && block.animation.type !== 'none'
+    ? `animation: ${block.animation.type} ${block.animation.duration || 0.5}s ${block.animation.easing || 'ease'} ${block.animation.delay || 0}s both;`
+    : '';
+  const style = `position: absolute; left: ${(block.x / 960) * 100}%; top: ${(block.y / 540) * 100}%; width: ${(block.width / 960) * 100}%; height: ${(block.height / 540) * 100}%; ${animStyle}`;
 
   switch (block.type) {
     case "text":

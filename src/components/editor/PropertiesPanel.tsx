@@ -1742,6 +1742,104 @@ export function PropertiesPanel() {
               </Section>
             )}
 
+            {block.type === "interactiveVideo" && (
+              <Section title="🎬 Vídeo Interativo" icon={<Play className="h-3 w-3 text-purple-500" />}>
+                <div className="space-y-3">
+                  {/* Video Source */}
+                  <FieldRow label="URL Vídeo">
+                    <Input value={(block as any).src || ""} onChange={(e) => handleUpdate({ src: e.target.value } as any)} className="h-7 text-xs" placeholder="https://..." />
+                  </FieldRow>
+                  <FieldRow label="Poster">
+                    <Input value={(block as any).poster || ""} onChange={(e) => handleUpdate({ poster: e.target.value } as any)} className="h-7 text-xs" placeholder="URL da thumbnail" />
+                  </FieldRow>
+                  <div className="flex gap-3">
+                    <label className="flex items-center gap-1.5 text-[10px]">
+                      <input type="checkbox" checked={(block as any).autoplay || false} onChange={(e) => handleUpdate({ autoplay: e.target.checked } as any)} className="rounded" />
+                      Autoplay
+                    </label>
+                    <label className="flex items-center gap-1.5 text-[10px]">
+                      <input type="checkbox" checked={(block as any).loop || false} onChange={(e) => handleUpdate({ loop: e.target.checked } as any)} className="rounded" />
+                      Loop
+                    </label>
+                  </div>
+
+                  <Separator />
+
+                  {/* Chapters */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[10px] font-semibold text-purple-700">📑 Chapters</p>
+                      <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => {
+                        const chapters = [...((block as any).chapters || []), { id: crypto.randomUUID(), time: 0, title: "Novo Chapter", description: "" }];
+                        handleUpdate({ chapters } as any);
+                      }}>
+                        <Plus className="h-2.5 w-2.5 mr-0.5" /> Add
+                      </Button>
+                    </div>
+                    {((block as any).chapters || []).map((ch: any, i: number) => (
+                      <div key={ch.id} className="bg-purple-50/50 rounded-lg p-2 mb-1 space-y-1">
+                        <div className="flex gap-1">
+                          <Input type="number" min={0} value={ch.time} onChange={(e) => { const chapters = [...(block as any).chapters]; chapters[i] = { ...chapters[i], time: Number(e.target.value) }; handleUpdate({ chapters } as any); }} className="h-5 text-[9px] w-14" placeholder="seg" />
+                          <Input value={ch.title} onChange={(e) => { const chapters = [...(block as any).chapters]; chapters[i] = { ...chapters[i], title: e.target.value }; handleUpdate({ chapters } as any); }} className="h-5 text-[9px] flex-1" placeholder="Título" />
+                          <button onClick={() => handleUpdate({ chapters: (block as any).chapters.filter((_: any, j: number) => j !== i) } as any)} className="text-red-400 text-xs">✕</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Separator />
+
+                  {/* Quiz Points */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[10px] font-semibold text-purple-700">❓ Quiz Points</p>
+                      <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => {
+                        const quizPoints = [...((block as any).quizPoints || []), { id: crypto.randomUUID(), time: 10, question: "Pergunta?", options: ["Opção A", "Opção B"], correctIndex: 0, pointsValue: 10 }];
+                        handleUpdate({ quizPoints } as any);
+                      }}>
+                        <Plus className="h-2.5 w-2.5 mr-0.5" /> Add
+                      </Button>
+                    </div>
+                    {((block as any).quizPoints || []).map((qp: any, i: number) => (
+                      <div key={qp.id} className="bg-rose-50/50 rounded-lg p-2 mb-1 space-y-1">
+                        <div className="flex gap-1">
+                          <Input type="number" min={0} value={qp.time} onChange={(e) => { const quizPoints = [...(block as any).quizPoints]; quizPoints[i] = { ...quizPoints[i], time: Number(e.target.value) }; handleUpdate({ quizPoints } as any); }} className="h-5 text-[9px] w-14" placeholder="seg" />
+                          <Input value={qp.question} onChange={(e) => { const quizPoints = [...(block as any).quizPoints]; quizPoints[i] = { ...quizPoints[i], question: e.target.value }; handleUpdate({ quizPoints } as any); }} className="h-5 text-[9px] flex-1" placeholder="Pergunta" />
+                          <button onClick={() => handleUpdate({ quizPoints: (block as any).quizPoints.filter((_: any, j: number) => j !== i) } as any)} className="text-red-400 text-xs">✕</button>
+                        </div>
+                        <div className="flex gap-1">
+                          <Input value={(qp.options || []).join(", ")} onChange={(e) => { const quizPoints = [...(block as any).quizPoints]; quizPoints[i] = { ...quizPoints[i], options: e.target.value.split(", ") }; handleUpdate({ quizPoints } as any); }} className="h-5 text-[8px] flex-1" placeholder="Opções (separadas por , )" />
+                          <Input type="number" min={0} value={qp.correctIndex} onChange={(e) => { const quizPoints = [...(block as any).quizPoints]; quizPoints[i] = { ...quizPoints[i], correctIndex: Number(e.target.value) }; handleUpdate({ quizPoints } as any); }} className="h-5 text-[9px] w-10" placeholder="Idx" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Separator />
+
+                  {/* Bookmarks */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-[10px] font-semibold text-purple-700">🔖 Bookmarks</p>
+                      <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => {
+                        const bookmarks = [...((block as any).bookmarks || []), { id: crypto.randomUUID(), time: 0, label: "Bookmark" }];
+                        handleUpdate({ bookmarks } as any);
+                      }}>
+                        <Plus className="h-2.5 w-2.5 mr-0.5" /> Add
+                      </Button>
+                    </div>
+                    {((block as any).bookmarks || []).map((bm: any, i: number) => (
+                      <div key={bm.id} className="flex gap-1 mb-1">
+                        <Input type="number" min={0} value={bm.time} onChange={(e) => { const bookmarks = [...(block as any).bookmarks]; bookmarks[i] = { ...bookmarks[i], time: Number(e.target.value) }; handleUpdate({ bookmarks } as any); }} className="h-5 text-[9px] w-14" placeholder="seg" />
+                        <Input value={bm.label} onChange={(e) => { const bookmarks = [...(block as any).bookmarks]; bookmarks[i] = { ...bookmarks[i], label: e.target.value }; handleUpdate({ bookmarks } as any); }} className="h-5 text-[9px] flex-1" placeholder="Label" />
+                        <button onClick={() => handleUpdate({ bookmarks: (block as any).bookmarks.filter((_: any, j: number) => j !== i) } as any)} className="text-red-400 text-xs">✕</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Section>
+            )}
+
             {block.type === "video" && (
               <>
                 <Section

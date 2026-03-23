@@ -310,6 +310,7 @@ interface EditorState {
   currentProjectId: string | null;
   currentSlideId: string | null;
   selectedBlockId: string | null;
+  selectedBlockIds: string[];
   past: CourseProject[][];
   future: CourseProject[][];
   previewMode: "desktop" | "mobile";
@@ -353,6 +354,8 @@ interface EditorActions {
     blockId: string
   ) => void;
   setSelectedBlock: (id: string | null) => void;
+  toggleBlockSelection: (blockId: string) => void;
+  clearBlockSelection: () => void;
 
   // Slide extras
   updateSlideTransition: (
@@ -418,6 +421,7 @@ export const useEditorStore = create<EditorStore>()(
       currentProjectId: null,
       currentSlideId: null,
       selectedBlockId: null,
+      selectedBlockIds: [],
       past: [],
       future: [],
       previewMode: "desktop",
@@ -675,7 +679,14 @@ export const useEditorStore = create<EditorStore>()(
         });
       },
 
-      setSelectedBlock: (id) => set({ selectedBlockId: id }),
+      setSelectedBlock: (id) => set({ selectedBlockId: id, selectedBlockIds: id ? [id] : [] }),
+      toggleBlockSelection: (blockId) => set((state) => {
+        const ids = state.selectedBlockIds;
+        const exists = ids.includes(blockId);
+        const newIds = exists ? ids.filter(id => id !== blockId) : [...ids, blockId];
+        return { selectedBlockIds: newIds, selectedBlockId: newIds.length === 1 ? newIds[0] : newIds.length === 0 ? null : state.selectedBlockId };
+      }),
+      clearBlockSelection: () => set({ selectedBlockIds: [], selectedBlockId: null }),
 
       // ─── Duplicate Block ──────────────────────────────
 
