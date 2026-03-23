@@ -10,6 +10,16 @@ export interface ThemeConfig {
   mode: "light" | "dark";
 }
 
+export type AnimationType = "none" | "fadeIn" | "fadeOut" | "slideLeft" | "slideRight" | "slideUp" | "slideDown" | "zoomIn" | "zoomOut" | "bounceIn" | "rotateIn" | "flipIn";
+export type AnimationEasing = "ease" | "ease-in" | "ease-out" | "ease-in-out" | "linear";
+
+export interface BlockAnimation {
+  type: AnimationType;
+  duration: number; // seconds
+  delay: number; // seconds
+  easing: AnimationEasing;
+}
+
 export interface BaseBlock {
   id: string;
   type: string;
@@ -18,6 +28,7 @@ export interface BaseBlock {
   width: number;
   height: number;
   zIndex: number;
+  animation?: BlockAnimation;
 }
 
 export interface TextBlock extends BaseBlock {
