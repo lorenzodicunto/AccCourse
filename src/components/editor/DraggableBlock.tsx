@@ -71,6 +71,8 @@ export function DraggableBlock({
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
   const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
   const updateBlock = useEditorStore((s) => s.updateBlock);
+  const toggleBlockSelection = useEditorStore((s) => s.toggleBlockSelection);
+  const selectedBlockIds = useEditorStore((s) => s.selectedBlockIds);
 
   const [isEditing, setIsEditing] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -254,7 +256,11 @@ export function DraggableBlock({
       {...(isEditing || isResizing ? {} : { ...attributes, ...listeners })}
       onClick={(e) => {
         e.stopPropagation();
-        onSelect();
+        if (e.shiftKey) {
+          toggleBlockSelection(block.id);
+        } else {
+          onSelect();
+        }
       }}
     >
       {/* Resize Handles (PowerPoint-style) */}

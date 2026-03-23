@@ -61,6 +61,7 @@ import { AICourseDialog } from "./AICourseDialog";
 import { ContrastChecker } from "./ContrastChecker";
 import { ImportPPTXDialog } from "./ImportPPTXDialog";
 import { PreviewDialog } from "./PreviewDialog";
+import { CourseSettingsDialog } from "./CourseSettingsDialog";
 import { SlideLayoutsDialog } from "./SlideLayoutsDialog";
 import { exportAsPDF } from "@/lib/export/pdfExporter";
 
@@ -660,6 +661,7 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
 
           <ContrastChecker />
           <ImportPPTXDialog />
+          <CourseSettingsDialog />
           <PreviewDialog />
           <KeyboardShortcutsDialog />
         </div>

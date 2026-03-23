@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { setLocale as setLocaleGlobal, getLocale, Locale } from "@/lib/i18n";
 import type { SaveStatus } from "@/app/editor/[id]/page";
 
 const ZOOM_LEVELS = [50, 75, 100, 125, 150, 200];
@@ -35,6 +36,7 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
 
   const [zoom, setZoom] = useState(100);
   const [showGrid, setShowGrid] = useState(false);
+  const [locale, setLocaleLoc] = useState<Locale>(getLocale());
 
   const handleZoomIn = () => {
     const idx = ZOOM_LEVELS.findIndex((z) => z >= zoom);
@@ -115,8 +117,25 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
         {saveIndicator()}
       </div>
 
-      {/* Right: Zoom & Grid */}
+      {/* Right: Language + Zoom & Grid */}
       <div className="flex items-center gap-2">
+        {/* Language Switcher */}
+        <select
+          value={locale}
+          onChange={(e) => {
+            const newLocale = e.target.value as Locale;
+            setLocaleGlobal(newLocale);
+            setLocaleLoc(newLocale);
+          }}
+          className="h-4 text-[9px] bg-transparent border border-slate-600 rounded px-1 text-slate-300 cursor-pointer appearance-none"
+          title="Idioma"
+        >
+          <option value="pt-BR" className="bg-slate-800">🇧🇷 PT</option>
+          <option value="en" className="bg-slate-800">🇺🇸 EN</option>
+        </select>
+
+        <div className="w-px h-3.5 bg-slate-600" />
+
         <button
           onClick={() => setShowGrid(!showGrid)}
           className={cn(
