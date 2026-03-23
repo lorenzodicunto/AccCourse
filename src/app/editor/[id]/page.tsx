@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useEditorStore, CourseProject } from "@/store/useEditorStore";
+import { useEditorStore, CourseProject, Block } from "@/store/useEditorStore";
 import { getCourse } from "@/actions/courses";
 import { saveCourse } from "@/actions/courses";
 import { TopToolbar } from "@/components/editor/TopToolbar";
@@ -13,6 +13,8 @@ import { StatusBar } from "@/components/editor/StatusBar";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+export type SaveStatus = "saved" | "saving" | "unsaved" | "error";
+
 export default function EditorPage() {
   const params = useParams();
   const router = useRouter();
@@ -20,18 +22,29 @@ export default function EditorPage() {
   const hydrateProject = useEditorStore((s) => s.hydrateProject);
   const setCurrentProject = useEditorStore((s) => s.setCurrentProject);
   const setCurrentSlide = useEditorStore((s) => s.setCurrentSlide);
+  const setSelectedBlock = useEditorStore((s) => s.setSelectedBlock);
   const projects = useEditorStore((s) => s.projects);
   const undo = useEditorStore((s) => s.undo);
   const redo = useEditorStore((s) => s.redo);
   const selectedBlockId = useEditorStore((s) => s.selectedBlockId);
   const deleteBlock = useEditorStore((s) => s.deleteBlock);
+  const duplicateBlock = useEditorStore((s) => s.duplicateBlock);
+  const updateBlock = useEditorStore((s) => s.updateBlock);
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
   const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
+  const getSelectedBlock = useEditorStore((s) => s.getSelectedBlock);
   const duplicateSlide = useEditorStore((s) => s.duplicateSlide);
+  const addBlock = useEditorStore((s) => s.addBlock);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
 
+  // ─── Clipboard (internal, no browser API needed) ───
+  const clipboardRef = useRef<Block | null>(null);
+
+  // ─── Load Course ───
   useEffect(() => {
     let cancelled = false;
 
@@ -70,10 +83,67 @@ export default function EditorPage() {
     };
   }, [courseId, hydrateProject, setCurrentProject, setCurrentSlide]);
 
+  // ─── Auto-Save (debounce 3s) ───
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const initialLoadRef = useRef(true);
+
+  const doSave = useCallback(async () => {
+    const project = getCurrentProject();
+    if (!project || !courseId) return;
+
+    setSaveStatus("saving");
+    try {
+      const courseData = JSON.stringify(project);
+      await saveCourse(courseId, courseData, {
+        title: project.title,
+        description: project.description,
+        thumbnail: project.thumbnail,
+      });
+      setSaveStatus("saved");
+      setLastSavedAt(new Date());
+    } catch {
+      setSaveStatus("error");
+    }
+  }, [courseId, getCurrentProject]);
+
+  useEffect(() => {
+    // Skip initial load (hydration triggers projects change)
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    if (loading) return;
+
+    setSaveStatus("unsaved");
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      doSave();
+    }, 3000);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [projects, loading, doSave]);
+
   // ─── Keyboard Shortcuts ───
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const isCtrl = e.ctrlKey || e.metaKey;
+
+      // Don't intercept when typing in inputs
+      const active = document.activeElement;
+      const isTyping =
+        active &&
+        (active.tagName === "INPUT" ||
+          active.tagName === "TEXTAREA" ||
+          active.tagName === "SELECT" ||
+          (active as HTMLElement).contentEditable === "true");
 
       // Ctrl+Z — Undo
       if (isCtrl && e.key === "z" && !e.shiftKey) {
@@ -92,22 +162,28 @@ export default function EditorPage() {
         return;
       }
 
+      // Ctrl+S — Save to cloud
+      if (isCtrl && e.key === "s") {
+        e.preventDefault();
+        doSave().then(() => toast.success("Curso salvo!"));
+        return;
+      }
+
+      // Escape — Deselect block
+      if (e.key === "Escape") {
+        setSelectedBlock(null);
+        return;
+      }
+
+      // Don't handle remaining shortcuts when typing
+      if (isTyping) return;
+
       // Delete/Backspace — Delete selected block
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
         !isCtrl &&
         selectedBlockId
       ) {
-        // Don't delete when editing text
-        const active = document.activeElement;
-        if (
-          active &&
-          (active.tagName === "INPUT" ||
-            active.tagName === "TEXTAREA" ||
-            (active as HTMLElement).contentEditable === "true")
-        ) {
-          return;
-        }
         e.preventDefault();
         const project = getCurrentProject();
         const slide = getCurrentSlide();
@@ -117,32 +193,89 @@ export default function EditorPage() {
         return;
       }
 
-      // Ctrl+S — Save to cloud
-      if (isCtrl && e.key === "s") {
+      // Ctrl+C — Copy block
+      if (isCtrl && e.key === "c" && selectedBlockId) {
         e.preventDefault();
-        const project = getCurrentProject();
-        if (project && courseId) {
-          const courseData = JSON.stringify(project);
-          saveCourse(courseId, courseData, {
-            title: project.title,
-            description: project.description,
-            thumbnail: project.thumbnail,
-          })
-            .then(() => toast.success("Curso salvo!"))
-            .catch(() => toast.error("Erro ao salvar."));
+        const block = getSelectedBlock();
+        if (block) {
+          clipboardRef.current = JSON.parse(JSON.stringify(block));
+          toast.success("Bloco copiado!");
         }
         return;
       }
 
-      // Ctrl+D — Duplicate current slide
+      // Ctrl+X — Cut block
+      if (isCtrl && e.key === "x" && selectedBlockId) {
+        e.preventDefault();
+        const block = getSelectedBlock();
+        const project = getCurrentProject();
+        const slide = getCurrentSlide();
+        if (block && project && slide) {
+          clipboardRef.current = JSON.parse(JSON.stringify(block));
+          deleteBlock(project.id, slide.id, selectedBlockId);
+          toast.success("Bloco recortado!");
+        }
+        return;
+      }
+
+      // Ctrl+V — Paste block
+      if (isCtrl && e.key === "v" && clipboardRef.current) {
+        e.preventDefault();
+        const project = getCurrentProject();
+        const slide = getCurrentSlide();
+        if (project && slide) {
+          const newBlock: Block = {
+            ...clipboardRef.current,
+            id: crypto.randomUUID(),
+            x: Math.min(clipboardRef.current.x + 20, 960 - clipboardRef.current.width),
+            y: Math.min(clipboardRef.current.y + 20, 540 - clipboardRef.current.height),
+          };
+          addBlock(project.id, slide.id, newBlock);
+          setSelectedBlock(newBlock.id);
+          toast.success("Bloco colado!");
+        }
+        return;
+      }
+
+      // Ctrl+D — Duplicate block or slide
       if (isCtrl && e.key === "d") {
         e.preventDefault();
         const project = getCurrentProject();
         const slide = getCurrentSlide();
         if (project && slide) {
-          duplicateSlide(project.id, slide.id);
-          toast.success("Slide duplicado!");
+          if (selectedBlockId) {
+            duplicateBlock(project.id, slide.id, selectedBlockId);
+            toast.success("Bloco duplicado!");
+          } else {
+            duplicateSlide(project.id, slide.id);
+            toast.success("Slide duplicado!");
+          }
         }
+        return;
+      }
+
+      // Arrow keys — Move selected block (1px, 10px with Shift)
+      if (
+        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) &&
+        selectedBlockId
+      ) {
+        e.preventDefault();
+        const project = getCurrentProject();
+        const slide = getCurrentSlide();
+        const block = getSelectedBlock();
+        if (!project || !slide || !block) return;
+
+        const step = e.shiftKey ? 10 : 1;
+        let dx = 0, dy = 0;
+        if (e.key === "ArrowUp") dy = -step;
+        if (e.key === "ArrowDown") dy = step;
+        if (e.key === "ArrowLeft") dx = -step;
+        if (e.key === "ArrowRight") dx = step;
+
+        updateBlock(project.id, slide.id, selectedBlockId, {
+          x: Math.max(0, Math.min(960 - block.width, block.x + dx)),
+          y: Math.max(0, Math.min(540 - block.height, block.y + dy)),
+        });
         return;
       }
     };
@@ -154,10 +287,16 @@ export default function EditorPage() {
     redo,
     selectedBlockId,
     deleteBlock,
+    duplicateBlock,
+    updateBlock,
     getCurrentProject,
     getCurrentSlide,
+    getSelectedBlock,
+    setSelectedBlock,
+    addBlock,
     courseId,
     duplicateSlide,
+    doSave,
   ]);
 
   if (error) {
@@ -194,7 +333,7 @@ export default function EditorPage() {
         <Canvas />
         <PropertiesPanel />
       </div>
-      <StatusBar />
+      <StatusBar saveStatus={saveStatus} lastSavedAt={lastSavedAt} />
     </div>
   );
 }

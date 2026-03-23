@@ -7,19 +7,29 @@ import {
   Grid3x3,
   CheckCircle2,
   AlertCircle,
+  Loader2,
+  CloudOff,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import type { SaveStatus } from "@/app/editor/[id]/page";
 
 const ZOOM_LEVELS = [50, 75, 100, 125, 150, 200];
 
-export function StatusBar() {
+interface StatusBarProps {
+  saveStatus?: SaveStatus;
+  lastSavedAt?: Date | null;
+}
+
+export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps) {
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
   const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
+  const getSelectedBlock = useEditorStore((s) => s.getSelectedBlock);
   const previewMode = useEditorStore((s) => s.previewMode);
 
   const project = getCurrentProject();
   const slide = getCurrentSlide();
+  const block = getSelectedBlock();
   const slides = project?.slides ?? [];
   const currentSlideIndex = slides.findIndex((s) => s.id === slide?.id);
 
@@ -40,38 +50,69 @@ export function StatusBar() {
     }
   };
 
-  // Check if project has been modified (simple check based on updatedAt)
-  const isSaved =
-    project &&
-    new Date(project.updatedAt).getTime() <
-      Date.now() - 2000;
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const saveIndicator = () => {
+    switch (saveStatus) {
+      case "saving":
+        return (
+          <>
+            <Loader2 className="h-3 w-3 text-amber-400 animate-spin" />
+            <span className="text-[10px] text-amber-400">Salvando...</span>
+          </>
+        );
+      case "saved":
+        return (
+          <>
+            <CheckCircle2 className="h-3 w-3 text-emerald-400" />
+            <span className="text-[10px] text-emerald-400">
+              {lastSavedAt ? `Salvo às ${formatTime(lastSavedAt)}` : "Salvo"}
+            </span>
+          </>
+        );
+      case "unsaved":
+        return (
+          <>
+            <CloudOff className="h-3 w-3 text-orange-400" />
+            <span className="text-[10px] text-orange-400">Não salvo</span>
+          </>
+        );
+      case "error":
+        return (
+          <>
+            <AlertCircle className="h-3 w-3 text-red-400" />
+            <span className="text-[10px] text-red-400">Erro ao salvar</span>
+          </>
+        );
+    }
+  };
 
   return (
     <div className="h-7 bg-slate-800 flex items-center justify-between px-3 flex-shrink-0 text-slate-400 select-none">
-      {/* Left: Slide info */}
-      <div className="flex items-center gap-3">
+      {/* Left: Breadcrumb */}
+      <div className="flex items-center gap-1.5">
         <span className="text-[10px] font-mono">
-          Slide {currentSlideIndex + 1} / {slides.length}
+          Slide {currentSlideIndex + 1}/{slides.length}
         </span>
-        <div className="w-px h-3.5 bg-slate-600" />
+        {block && (
+          <>
+            <span className="text-[10px] text-slate-600">›</span>
+            <span className="text-[10px] text-slate-300 capitalize">
+              {block.type}
+            </span>
+          </>
+        )}
+        <div className="w-px h-3.5 bg-slate-600 mx-1" />
         <span className="text-[10px]">
           {previewMode === "desktop" ? "16:9" : "Mobile"}
         </span>
       </div>
 
-      {/* Center: Status */}
+      {/* Center: Save Status */}
       <div className="flex items-center gap-1.5">
-        {project ? (
-          <>
-            <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-            <span className="text-[10px] text-emerald-400">Pronto</span>
-          </>
-        ) : (
-          <>
-            <AlertCircle className="h-3 w-3 text-amber-400" />
-            <span className="text-[10px] text-amber-400">Carregando</span>
-          </>
-        )}
+        {saveIndicator()}
       </div>
 
       {/* Right: Zoom & Grid */}
