@@ -71,12 +71,15 @@ interface TopToolbarProps {
   onToggleComponentLib?: () => void;
 }
 
-type RibbonTabId = "home" | "insert" | "design";
+type RibbonTabId = "home" | "insert" | "interactions" | "design" | "export" | "tools";
 
 const RIBBON_TABS: { id: RibbonTabId; label: string }[] = [
   { id: "home", label: "Início" },
   { id: "insert", label: "Inserir" },
+  { id: "interactions", label: "Interações" },
   { id: "design", label: "Design" },
+  { id: "export", label: "Exportar" },
+  { id: "tools", label: "Ferramentas" },
 ];
 
 const THEME_PRESETS = [
@@ -564,7 +567,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
           />
         </div>
 
-        {/* Right: Save + Share + Export */}
+        {/* Right: Save */}
         <div className="flex items-center gap-1.5">
           <Button
             variant="ghost"
@@ -580,92 +583,6 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
             )}
             {saving ? "Salvando..." : "Salvar"}
           </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 rounded-lg text-xs h-7 text-purple-400 hover:bg-purple-500/10 cursor-pointer"
-            onClick={handleShare}
-            disabled={sharing || !project}
-          >
-            {sharing ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Share2 className="h-3.5 w-3.5" />
-            )}
-            Compartilhar
-          </Button>
-
-          <Button
-            className="gap-1.5 rounded-lg bg-primary text-primary-foreground shadow-sm shadow-primary/20 hover:shadow-md hover:shadow-primary/30 transition-all text-xs h-7"
-            size="sm"
-            onClick={handleExport}
-            disabled={exporting || !project}
-          >
-            {exporting ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Download className="h-3.5 w-3.5" />
-            )}
-            Exportar SCORM
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 text-xs h-7 px-2"
-            onClick={() => {
-              if (!project) return;
-              try {
-                exportAsPDF(project);
-                toast.success("PDF gerado — use Ctrl+P para salvar");
-              } catch { toast.error("Erro ao gerar PDF"); }
-            }}
-            disabled={!project}
-          >
-            <Download className="h-3.5 w-3.5 text-red-500" />
-            Export PDF
-          </Button>
-
-          <SlideLayoutsDialog />
-          <SlideTemplatesDialog />
-          <AssetLibraryDialog />
-
-          <AIQuizDialog
-            onInsertQuiz={(data) => {
-              if (!project || !slide) return;
-              addBlock(project.id, slide.id, {
-                id: crypto.randomUUID(),
-                type: "quiz",
-                x: 100,
-                y: 100,
-                width: 700,
-                height: 350,
-                zIndex: slide.blocks.length,
-                ...data,
-              });
-            }}
-            onInsertTrueFalse={(data) => {
-              if (!project || !slide) return;
-              addBlock(project.id, slide.id, {
-                id: crypto.randomUUID(),
-                type: "truefalse",
-                x: 100,
-                y: 100,
-                width: 600,
-                height: 200,
-                zIndex: slide.blocks.length,
-                ...data,
-              });
-            }}
-          />
-          {project && <AICourseDialog projectId={project.id} />}
-
-          <ContrastChecker />
-          <ImportPPTXDialog />
-          <CourseSettingsDialog />
-          <PreviewDialog />
-          <KeyboardShortcutsDialog />
         </div>
       </div>
 
@@ -815,9 +732,15 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   variant="large"
                   onClick={() => handleAddBlock("video")}
                 />
+                <RibbonButton
+                  icon={<Music className="h-5 w-5" />}
+                  label="Áudio"
+                  variant="large"
+                  onClick={() => handleAddBlock("audio")}
+                />
               </RibbonGroup>
 
-              <RibbonGroup label="Interações">
+              <RibbonGroup label="Conteúdo">
                 <RibbonButton
                   icon={<CreditCard className="h-5 w-5" />}
                   label="Flashcard"
@@ -830,9 +753,6 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   variant="large"
                   onClick={() => handleAddBlock("quiz")}
                 />
-              </RibbonGroup>
-
-              <RibbonGroup label="Formas">
                 <RibbonButton
                   icon={<Hexagon className="h-5 w-5" />}
                   label="Forma"
@@ -840,16 +760,12 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   onClick={() => handleAddBlock("shape")}
                 />
               </RibbonGroup>
+            </>
+          )}
 
-              <RibbonGroup label="Áudio">
-                <RibbonButton
-                  icon={<Music className="h-5 w-5" />}
-                  label="Áudio"
-                  variant="large"
-                  onClick={() => handleAddBlock("audio")}
-                />
-              </RibbonGroup>
-
+          {/* ─── INTERACTIONS TAB ─── */}
+          {activeTab === "interactions" && (
+            <>
               <RibbonGroup label="Avaliações">
                 <RibbonButton
                   icon={<CheckCircle2 className="h-5 w-5" />}
@@ -930,6 +846,11 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
           {/* ─── DESIGN TAB ─── */}
           {activeTab === "design" && (
             <>
+              <RibbonGroup label="Slides">
+                <SlideLayoutsDialog />
+                <SlideTemplatesDialog />
+              </RibbonGroup>
+
               <RibbonGroup label="Tema">
                 <div className="flex items-center gap-1">
                   {THEME_PRESETS.slice(0, 8).map((preset) => (
@@ -943,7 +864,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                         })
                       }
                       className={cn(
-                        "w-7 h-7 rounded-full border-2 transition-all hover:scale-110 shadow-sm",
+                        "w-7 h-7 rounded-full border-2 transition-all hover:scale-110 shadow-sm cursor-pointer",
                         project?.theme.primaryColor === preset.primary
                           ? "border-foreground scale-110 ring-2 ring-primary/30"
                           : "border-white"
@@ -981,7 +902,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                         updateSlideBackground(project.id, slide.id, color)
                       }
                       className={cn(
-                        "w-5 h-5 rounded border transition-all hover:scale-125",
+                        "w-5 h-5 rounded border transition-all hover:scale-125 cursor-pointer",
                         slide?.background === color
                           ? "border-primary ring-1 ring-primary/40 scale-110"
                           : "border-border/60"
@@ -1026,6 +947,99 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
               </RibbonGroup>
             </>
           )}
+
+          {/* ─── EXPORT TAB ─── */}
+          {activeTab === "export" && (
+            <>
+              <RibbonGroup label="Publicar">
+                <RibbonButton
+                  icon={<Download className="h-5 w-5" />}
+                  label="SCORM"
+                  variant="large"
+                  onClick={handleExport}
+                  disabled={exporting || !project}
+                />
+                <RibbonButton
+                  icon={<Download className="h-5 w-5 text-red-400" />}
+                  label="PDF"
+                  variant="large"
+                  onClick={() => {
+                    if (!project) return;
+                    try {
+                      exportAsPDF(project);
+                      toast.success("PDF gerado — use Ctrl+P para salvar");
+                    } catch { toast.error("Erro ao gerar PDF"); }
+                  }}
+                  disabled={!project}
+                />
+              </RibbonGroup>
+
+              <RibbonGroup label="Compartilhar">
+                <RibbonButton
+                  icon={<Share2 className="h-5 w-5" />}
+                  label="Revisão"
+                  variant="large"
+                  onClick={handleShare}
+                  disabled={sharing || !project}
+                />
+              </RibbonGroup>
+
+              <RibbonGroup label="Importar">
+                <ImportPPTXDialog />
+              </RibbonGroup>
+            </>
+          )}
+
+          {/* ─── TOOLS TAB ─── */}
+          {activeTab === "tools" && (
+            <>
+              <RibbonGroup label="Inteligência Artificial">
+                <AIQuizDialog
+                  onInsertQuiz={(data) => {
+                    if (!project || !slide) return;
+                    addBlock(project.id, slide.id, {
+                      id: crypto.randomUUID(),
+                      type: "quiz",
+                      x: 100,
+                      y: 100,
+                      width: 700,
+                      height: 350,
+                      zIndex: slide.blocks.length,
+                      ...data,
+                    });
+                  }}
+                  onInsertTrueFalse={(data) => {
+                    if (!project || !slide) return;
+                    addBlock(project.id, slide.id, {
+                      id: crypto.randomUUID(),
+                      type: "truefalse",
+                      x: 100,
+                      y: 100,
+                      width: 600,
+                      height: 200,
+                      zIndex: slide.blocks.length,
+                      ...data,
+                    });
+                  }}
+                />
+                {project && <AICourseDialog projectId={project.id} />}
+              </RibbonGroup>
+
+              <RibbonGroup label="Acessibilidade">
+                <ContrastChecker />
+              </RibbonGroup>
+
+              <RibbonGroup label="Recursos">
+                <AssetLibraryDialog />
+              </RibbonGroup>
+
+              <RibbonGroup label="Geral">
+                <PreviewDialog />
+                <CourseSettingsDialog />
+                <KeyboardShortcutsDialog />
+              </RibbonGroup>
+            </>
+          )}
         </div>
       </div>
 
@@ -1036,33 +1050,34 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
           onClick={() => setShareDialogOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200"
+            className="rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200"
+            style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.06)' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
                 <Share2 className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-foreground">
+                <h3 className="text-base font-semibold text-white">
                   Compartilhar para Revisão
                 </h3>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-slate-400">
                   Envie o link para que revisores deixem comentários
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-xl border border-border/50">
-              <Link className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-white/5 rounded-xl border border-white/10">
+              <Link className="h-4 w-4 text-slate-400 flex-shrink-0" />
               <input
                 readOnly
                 value={shareLink}
-                className="flex-1 bg-transparent text-sm text-foreground outline-none font-mono truncate"
+                className="flex-1 bg-transparent text-sm text-white outline-none font-mono truncate"
               />
               <Button
                 size="sm"
-                className="rounded-lg h-8 gap-1.5 flex-shrink-0"
+                className="rounded-lg h-8 gap-1.5 flex-shrink-0 bg-purple-500 hover:bg-purple-600 cursor-pointer"
                 onClick={handleCopyLink}
               >
                 {copied ? (
@@ -1080,7 +1095,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
               <Button
                 variant="ghost"
                 size="sm"
-                className="rounded-xl"
+                className="rounded-xl text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer"
                 onClick={() => setShareDialogOpen(false)}
               >
                 Fechar
