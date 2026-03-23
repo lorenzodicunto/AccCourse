@@ -201,7 +201,7 @@ export function Canvas() {
                 ? "w-[375px]"
                 : "w-full max-w-[960px]"
             }`}
-            style={{ aspectRatio: "16 / 9", transform: `scale(${zoom / 100})` }}
+            style={{ aspectRatio: previewMode === "mobile" ? "9 / 19.5" : "16 / 9", transform: `scale(${zoom / 100})` }}
             onClick={handleCanvasClick}
           >
             {/* Slide background */}
