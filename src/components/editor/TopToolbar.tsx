@@ -52,6 +52,8 @@ import { cn } from "@/lib/utils";
 import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 import { AssetLibraryDialog } from "./AssetLibraryDialog";
 import { SlideTemplatesDialog } from "./SlideTemplatesDialog";
+import { AIQuizDialog } from "./AIQuizDialog";
+import { AICourseDialog } from "./AICourseDialog";
 
 interface TopToolbarProps {
   courseId?: string;
@@ -533,6 +535,37 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
 
           <SlideTemplatesDialog />
           <AssetLibraryDialog />
+
+          <AIQuizDialog
+            onInsertQuiz={(data) => {
+              if (!project || !slide) return;
+              addBlock(project.id, slide.id, {
+                id: crypto.randomUUID(),
+                type: "quiz",
+                x: 100,
+                y: 100,
+                width: 700,
+                height: 350,
+                zIndex: slide.blocks.length,
+                ...data,
+              });
+            }}
+            onInsertTrueFalse={(data) => {
+              if (!project || !slide) return;
+              addBlock(project.id, slide.id, {
+                id: crypto.randomUUID(),
+                type: "truefalse",
+                x: 100,
+                y: 100,
+                width: 600,
+                height: 200,
+                zIndex: slide.blocks.length,
+                ...data,
+              });
+            }}
+          />
+          {project && <AICourseDialog projectId={project.id} />}
+
           <KeyboardShortcutsDialog />
         </div>
       </div>
