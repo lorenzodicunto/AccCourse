@@ -265,6 +265,8 @@ export interface Slide {
   background: string;
   transition: SlideTransition;
   notes: string;
+  narration?: string; // audio URL for slide narration
+  duration?: number;  // estimated duration in seconds
 }
 
 export interface QuizSettings {

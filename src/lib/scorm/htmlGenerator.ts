@@ -55,11 +55,57 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
 
   <!-- Top Bar -->
   <header class="top-bar" role="banner" aria-label="Barra do curso">
-    <div class="course-title">${escapeHtml(project.title)}</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button id="menuToggle" onclick="toggleMenu()" style="background:none;border:none;color:white;font-size:18px;cursor:pointer;padding:4px;" aria-label="Menu de navegação">☰</button>
+      <div class="course-title">${escapeHtml(project.title)}</div>
+    </div>
     <div class="slide-counter" aria-live="polite" aria-atomic="true">
       <span id="currentSlide">1</span> / ${totalSlides}
     </div>
   </header>
+
+  <!-- Sidebar Menu -->
+  <aside id="sideMenu" style="position:fixed;top:0;left:-280px;width:280px;height:100vh;background:linear-gradient(180deg,#1e1b4b,#312e81);z-index:1000;transition:left 0.3s ease;box-shadow:4px 0 20px rgba(0,0,0,0.3);display:flex;flex-direction:column;">
+    <div style="padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:space-between;">
+      <span style="color:white;font-weight:700;font-size:14px;">📋 Navegação</span>
+      <button onclick="toggleMenu()" style="background:none;border:none;color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:8px;">
+      ${slides.map((slide, i) => {
+        const firstText = slide.blocks.find(b => b.type === 'text');
+        const slideLabel = firstText ? (firstText as any).content.substring(0, 40).replace(/<[^>]*>/g, '') : `Slide ${i + 1}`;
+        return `
+        <button onclick="goToSlide(${i})" class="menu-item" id="menuItem${i}" style="display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:none;background:${i === 0 ? 'rgba(255,255,255,0.1)' : 'transparent'};border-radius:8px;cursor:pointer;text-align:left;color:rgba(255,255,255,0.8);font-size:12px;margin-bottom:2px;transition:background 0.2s;">
+          <span style="min-width:24px;height:24px;border-radius:50%;background:${i === 0 ? '#7c3aed' : 'rgba(255,255,255,0.1)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:white;">${i + 1}</span>
+          <span>${slideLabel}</span>
+        </button>`;
+      }).join('')}
+    </div>
+    <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,0.1);">
+      <div style="font-size:10px;color:rgba(255,255,255,0.3);">AccCourse • ${totalSlides} slides</div>
+    </div>
+  </aside>
+  <div id="menuOverlay" onclick="toggleMenu()" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.5);z-index:999;display:none;"></div>
+
+  <!-- Certificate Modal -->
+  <div id="certModal" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.7);z-index:2000;display:none;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:24px;max-width:600px;width:90%;padding:48px 40px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);position:relative;">
+      <div style="font-size:48px;margin-bottom:16px;">🏆</div>
+      <h2 style="font-size:24px;font-weight:800;color:#1e1b4b;margin-bottom:4px;">Certificado de Conclusão</h2>
+      <p style="font-size:13px;color:#64748b;margin-bottom:24px;">Parabéns! Você concluiu o curso com sucesso.</p>
+      <div style="border:2px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:24px;background:linear-gradient(135deg,#faf5ff,#ede9fe);">
+        <p style="font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px;">Certificamos que</p>
+        <input id="certName" placeholder="Seu nome completo" style="border:none;background:transparent;font-size:20px;font-weight:700;color:#3b0764;text-align:center;width:100%;outline:none;padding:8px 0;border-bottom:2px dashed #c4b5fd;" />
+        <p style="font-size:13px;color:#374151;margin-top:12px;">Concluiu o curso <strong style="color:#7c3aed;">${escapeHtml(project.title)}</strong></p>
+        <p style="font-size:11px;color:#94a3b8;margin-top:8px;">em <span id="certDate"></span></p>
+        <p id="certScore" style="font-size:12px;color:#7c3aed;font-weight:600;margin-top:8px;"></p>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;">
+        <button onclick="printCert()" style="padding:10px 24px;background:#7c3aed;color:white;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-size:13px;">🖨️ Imprimir</button>
+        <button onclick="closeCert()" style="padding:10px 24px;background:#f1f5f9;color:#374151;border:none;border-radius:12px;font-weight:600;cursor:pointer;font-size:13px;">Fechar</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Slides Container -->
   <main class="slides-container" id="main-content" role="main" aria-label="Conteúdo do curso">
@@ -226,8 +272,7 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
           }
 
           ${showResults && totalQuizBlocks > 0 ? "showResults();" : `
-          nextBtn.textContent = '✓ Concluído!';
-          nextBtn.disabled = true;
+          showCert(score);
           `}
         }
       };
@@ -305,6 +350,59 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
         if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); window.nextSlide(); }
         if (e.key === 'ArrowLeft') { e.preventDefault(); window.prevSlide(); }
       });
+
+      // ─── Side Menu ───
+      var menuOpen = false;
+      window.toggleMenu = function() {
+        menuOpen = !menuOpen;
+        var menu = document.getElementById('sideMenu');
+        var overlay = document.getElementById('menuOverlay');
+        if (menu) menu.style.left = menuOpen ? '0' : '-280px';
+        if (overlay) overlay.style.display = menuOpen ? 'block' : 'none';
+      };
+
+      window.goToSlide = function(index) {
+        currentIndex = index;
+        showSlide(currentIndex);
+        if (menuOpen) window.toggleMenu();
+      };
+
+      // Update menu highlight on slide change
+      var origShowSlide = showSlide;
+      showSlide = function(index) {
+        origShowSlide(index);
+        for (var m = 0; m < totalSlides; m++) {
+          var item = document.getElementById('menuItem' + m);
+          if (item) {
+            item.style.background = m === index ? 'rgba(255,255,255,0.1)' : 'transparent';
+            var badge = item.querySelector('span');
+            if (badge) badge.style.background = m === index ? '#7c3aed' : 'rgba(255,255,255,0.1)';
+          }
+        }
+      };
+
+      // ─── Certificate ───
+      window.showCert = function(score) {
+        var modal = document.getElementById('certModal');
+        var dateEl = document.getElementById('certDate');
+        var scoreEl = document.getElementById('certScore');
+        if (modal) modal.style.display = 'flex';
+        if (dateEl) dateEl.textContent = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+        if (scoreEl && score && score.percentage !== undefined) {
+          scoreEl.textContent = 'Nota: ' + score.percentage + '%';
+        }
+        nextBtn.textContent = '✓ Concluído!';
+        nextBtn.disabled = true;
+      };
+
+      window.closeCert = function() {
+        var modal = document.getElementById('certModal');
+        if (modal) modal.style.display = 'none';
+      };
+
+      window.printCert = function() {
+        window.print();
+      };
 
       // Init
       showSlide(currentIndex);

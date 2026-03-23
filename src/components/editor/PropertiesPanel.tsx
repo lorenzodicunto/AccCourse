@@ -2149,6 +2149,37 @@ export function PropertiesPanel() {
                   />
                   <p className="text-[9px] text-amber-400 mt-1">Visível apenas para o instrutor</p>
                 </div>
+
+                {/* Narration */}
+                <div className="bg-violet-50/50 border border-violet-200/50 rounded-xl p-3 mt-3">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Music className="h-3 w-3 text-violet-600" />
+                    <span className="text-[10px] font-semibold text-violet-700 uppercase tracking-wide">🎙️ Narração</span>
+                  </div>
+                  <Input
+                    value={slide.narration || ""}
+                    onChange={(e) => {
+                      if (project) {
+                        useEditorStore.setState((state) => ({
+                          projects: state.projects.map(p =>
+                            p.id === project.id ? {
+                              ...p,
+                              slides: p.slides.map(s =>
+                                s.id === slide.id ? { ...s, narration: e.target.value } : s
+                              ),
+                            } : p
+                          ),
+                        }));
+                      }
+                    }}
+                    placeholder="URL do áudio (mp3, wav, ogg...)"
+                    className="h-7 text-xs rounded-md border-violet-200 mb-2"
+                  />
+                  {slide.narration && (
+                    <audio src={slide.narration} controls className="w-full h-8" />
+                  )}
+                  <p className="text-[9px] text-violet-400 mt-1">Áudio reproduzido ao exibir o slide</p>
+                </div>
               </div>
             )}
 
