@@ -75,7 +75,7 @@ export async function createCourse(title: string, description: string, thumbnail
       description,
       thumbnail,
       courseData,
-      tenantId: user.tenantId ?? undefined,
+      tenantId: user.tenantId || null,
       authorId: user.id,
     },
   });
