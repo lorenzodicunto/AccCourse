@@ -169,9 +169,9 @@ export default function ReviewPage() {
   // ─── LOADING ───
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-violet-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0F172A' }}>
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+          <div className="h-10 w-10 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
           <p className="text-sm text-muted-foreground font-medium">
             Carregando curso...
           </p>
@@ -183,7 +183,7 @@ export default function ReviewPage() {
   // ─── ERROR ───
   if (error || !project) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-violet-50">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0F172A' }}>
         <div className="text-center max-w-sm">
           <GraduationCap className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
           <h2 className="text-lg font-semibold text-foreground mb-1">
@@ -200,52 +200,52 @@ export default function ReviewPage() {
   // ─── GATEKEEPER ───
   if (!reviewer) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 via-white to-violet-50 p-4">
+      <div className="min-h-screen flex items-center justify-center p-4" style={{ background: '#0F172A' }}>
         <div className="w-full max-w-sm">
-          <div className="bg-white rounded-2xl shadow-2xl shadow-black/8 border border-border/40 p-8">
+          <div className="rounded-2xl shadow-2xl shadow-black/20 p-8" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div className="text-center mb-6">
-              <div className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center shadow-lg shadow-primary/30">
+              <div className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
                 <GraduationCap className="h-7 w-7 text-white" />
               </div>
-              <h1 className="text-lg font-bold text-foreground">
+              <h1 className="text-lg font-bold text-white">
                 {project.title}
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-slate-400 mt-1">
                 Identifique-se para acessar e deixar comentários
               </p>
             </div>
 
             <form onSubmit={handleGatekeeperSubmit} className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
                   Nome Completo
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                   <input
                     type="text"
                     required
                     value={gkName}
                     onChange={(e) => setGkName(e.target.value)}
                     placeholder="Seu nome"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-border/60 rounded-xl bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 rounded-xl bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/30 transition-all placeholder:text-slate-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1.5">
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1.5">
                   E-mail Corporativo
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                   <input
                     type="email"
                     required
                     value={gkEmail}
                     onChange={(e) => setGkEmail(e.target.value)}
                     placeholder="nome@empresa.com"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-border/60 rounded-xl bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-white/10 rounded-xl bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/30 transition-all placeholder:text-slate-500"
                   />
                 </div>
               </div>
@@ -253,7 +253,7 @@ export default function ReviewPage() {
               <button
                 type="submit"
                 disabled={gkLoading}
-                className="w-full py-2.5 text-sm font-semibold bg-gradient-to-r from-primary to-violet-600 text-white rounded-xl shadow-md shadow-primary/30 hover:shadow-lg hover:shadow-primary/40 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-2.5 text-sm font-semibold bg-gradient-to-r from-purple-500 to-violet-600 text-white rounded-xl shadow-md shadow-purple-500/30 hover:shadow-lg hover:shadow-purple-500/40 transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {gkLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -269,21 +269,21 @@ export default function ReviewPage() {
 
   // ─── REVIEW PORTAL (Read-only Player + Comments) ───
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-violet-50 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: '#0F172A' }}>
       {/* Header */}
-      <header className="h-14 bg-white border-b border-border/50 flex items-center justify-between px-6 flex-shrink-0">
+      <header className="h-14 flex items-center justify-between px-6 flex-shrink-0" style={{ background: '#1E293B', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center">
+          <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
             <GraduationCap className="h-3.5 w-3.5 text-white" />
           </div>
-          <span className="text-sm font-semibold text-foreground">
+          <span className="text-sm font-semibold text-white">
             {project.title}
           </span>
-          <span className="text-xs text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full">
+          <span className="text-xs text-slate-400 bg-white/5 px-2 py-0.5 rounded-full">
             Revisão
           </span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-slate-400">
           <User className="h-3.5 w-3.5" />
           <span>{reviewer.name}</span>
         </div>
@@ -295,7 +295,7 @@ export default function ReviewPage() {
         <div className="flex-1 flex flex-col items-center justify-center p-6">
           {/* 16:9 Canvas */}
           <div
-            className="relative w-full max-w-[860px] bg-white rounded-2xl shadow-xl shadow-black/6 border border-border/30 overflow-hidden"
+            className="relative w-full max-w-[860px] bg-white rounded-2xl shadow-xl shadow-black/20 border border-white/10 overflow-hidden"
             style={{ aspectRatio: "16 / 9" }}
           >
             {currentSlide && (
@@ -316,17 +316,19 @@ export default function ReviewPage() {
             <button
               onClick={goPrev}
               disabled={currentSlideIndex === 0}
-              className="h-9 w-9 rounded-xl bg-white border border-border/50 shadow-sm flex items-center justify-center hover:bg-muted/50 disabled:opacity-30 transition-all"
+              className="h-9 w-9 rounded-xl border border-white/10 shadow-sm flex items-center justify-center hover:bg-white/5 disabled:opacity-30 transition-all text-slate-300 cursor-pointer"
+              style={{ background: '#1E293B' }}
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <span className="text-sm font-medium text-foreground min-w-[80px] text-center">
+            <span className="text-sm font-medium text-slate-300 min-w-[80px] text-center">
               Slide {currentSlideIndex + 1} / {slides.length}
             </span>
             <button
               onClick={goNext}
               disabled={currentSlideIndex === slides.length - 1}
-              className="h-9 w-9 rounded-xl bg-white border border-border/50 shadow-sm flex items-center justify-center hover:bg-muted/50 disabled:opacity-30 transition-all"
+              className="h-9 w-9 rounded-xl border border-white/10 shadow-sm flex items-center justify-center hover:bg-white/5 disabled:opacity-30 transition-all text-slate-300 cursor-pointer"
+              style={{ background: '#1E293B' }}
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -334,18 +336,18 @@ export default function ReviewPage() {
         </div>
 
         {/* Comments Sidebar */}
-        <aside className="w-[340px] bg-white border-l border-border/50 flex flex-col flex-shrink-0">
-          <div className="p-4 border-b border-border/30">
+        <aside className="w-[340px] flex flex-col flex-shrink-0" style={{ background: '#1E293B', borderLeft: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="p-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-primary" />
-              <h3 className="text-sm font-semibold text-foreground">
+              <MessageSquare className="h-4 w-4 text-purple-400" />
+              <h3 className="text-sm font-semibold text-white">
                 Comentários
               </h3>
-              <span className="inline-flex items-center justify-center h-5 min-w-[20px] text-[10px] font-bold bg-primary/10 text-primary rounded-full px-1.5">
+              <span className="inline-flex items-center justify-center h-5 min-w-[20px] text-[10px] font-bold bg-purple-500/15 text-purple-400 rounded-full px-1.5">
                 {comments.length}
               </span>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Slide {currentSlideIndex + 1}
             </p>
           </div>
@@ -363,11 +365,11 @@ export default function ReviewPage() {
             {comments.map((comment) => (
               <div
                 key={comment.id}
-                className="bg-muted/30 rounded-xl p-3 border border-border/20"
+                className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}
               >
                 <div className="flex items-center gap-2 mb-1.5">
-                  <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-[10px] font-bold text-primary">
+                  <div className="h-6 w-6 rounded-full bg-purple-500/15 flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-purple-400">
                       {comment.reviewer.name
                         .split(" ")
                         .map((n) => n[0])
@@ -376,7 +378,7 @@ export default function ReviewPage() {
                         .toUpperCase()}
                     </span>
                   </div>
-                  <span className="text-xs font-semibold text-foreground">
+                  <span className="text-xs font-semibold text-white">
                     {comment.reviewer.name}
                   </span>
                   <span className="text-[10px] text-muted-foreground ml-auto">
@@ -386,7 +388,7 @@ export default function ReviewPage() {
                     })}
                   </span>
                 </div>
-                <p className="text-xs text-foreground/80 leading-relaxed">
+                <p className="text-xs text-slate-300 leading-relaxed">
                   {comment.text}
                 </p>
               </div>
@@ -394,14 +396,14 @@ export default function ReviewPage() {
           </div>
 
           {/* Comment Input */}
-          <div className="p-4 border-t border-border/30">
+          <div className="p-4" style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <div className="flex gap-2">
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Escreva um comentário..."
                 rows={2}
-                className="flex-1 text-sm border border-border/60 rounded-xl px-3 py-2 bg-muted/20 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none transition-all"
+                className="flex-1 text-sm border border-white/10 rounded-xl px-3 py-2 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500/30 resize-none transition-all placeholder:text-slate-500"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -412,7 +414,7 @@ export default function ReviewPage() {
               <button
                 onClick={handleAddComment}
                 disabled={!newComment.trim() || submitting}
-                className="h-10 w-10 self-end rounded-xl bg-primary text-white flex items-center justify-center shadow-md shadow-primary/20 hover:shadow-lg disabled:opacity-30 transition-all"
+                className="h-10 w-10 self-end rounded-xl bg-purple-500 text-white flex items-center justify-center shadow-md shadow-purple-500/20 hover:shadow-lg disabled:opacity-30 transition-all cursor-pointer"
               >
                 {submitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
