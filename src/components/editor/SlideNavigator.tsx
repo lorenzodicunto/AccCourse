@@ -1,10 +1,11 @@
-"use client";
-
+import { useState } from "react";
 import { useEditorStore } from "@/store/useEditorStore";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Plus, Copy, Trash2, GripVertical } from "lucide-react";
+import { Plus, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TemplateSelectorDialog } from "./TemplateSelectorDialog";
+import { SlideTemplate } from "@/lib/templates/slideLayouts";
 import {
   DndContext,
   closestCenter,
@@ -64,29 +65,25 @@ function SortableSlide({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group relative rounded-lg transition-all duration-200 cursor-pointer overflow-hidden",
-        isDragging && "shadow-2xl scale-[1.03]",
+        "group relative rounded-lg transition-all duration-200 cursor-grab active:cursor-grabbing overflow-hidden outline-none",
+        isDragging && "shadow-2xl scale-[1.03] ring-1 ring-primary/50 opacity-90",
         isSelected
           ? "ring-2 ring-primary shadow-lg shadow-primary/20"
           : "ring-1 ring-white/10 hover:ring-white/25"
       )}
-      onClick={onSelect}
+      onClick={(e) => {
+        // Only select if not dragging
+        if (!isDragging) onSelect();
+      }}
+      {...attributes}
+      {...listeners}
     >
       {/* Active indicator bar */}
       {isSelected && (
         <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary z-20 rounded-l-lg" />
       )}
 
-      {/* Drag handle */}
-      <div
-        className="absolute top-1 left-1 z-20 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        <div className="p-0.5 rounded bg-black/40 backdrop-blur-sm">
-          <GripVertical className="h-2.5 w-2.5 text-white/80" />
-        </div>
-      </div>
+      {/* Drag handle removido, pois o slide todo é o handle agora */}
 
       {/* Slide number */}
       <div className="absolute top-1 right-1 z-10">
@@ -197,12 +194,24 @@ export function SlideNavigator() {
   const currentSlideId = useEditorStore((s) => s.currentSlideId);
   const setCurrentSlide = useEditorStore((s) => s.setCurrentSlide);
   const addSlide = useEditorStore((s) => s.addSlide);
+  const addBlocks = useEditorStore((s) => s.addBlocks);
   const duplicateSlide = useEditorStore((s) => s.duplicateSlide);
   const deleteSlide = useEditorStore((s) => s.deleteSlide);
   const reorderSlides = useEditorStore((s) => s.reorderSlides);
 
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+
   const project = getCurrentProject();
   const slides = project?.slides ?? [];
+
+  const handleTemplateSelect = (template: SlideTemplate | null) => {
+    setIsTemplateDialogOpen(false);
+    if (!project) return;
+    const newSlideId = addSlide(project.id);
+    if (template) {
+      addBlocks(project.id, newSlideId, template.generateBlocks());
+    }
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -239,15 +248,14 @@ export function SlideNavigator() {
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0 rounded text-slate-400 hover:text-white hover:bg-white/10"
-          onClick={() => project && addSlide(project.id)}
+          onClick={() => project && setIsTemplateDialogOpen(true)}
           title="Adicionar Slide"
         >
           <Plus className="h-3 w-3" />
         </Button>
       </div>
 
-      {/* Slides List with DnD */}
-      <ScrollArea className="flex-1">
+      <div className="flex-1 overflow-y-auto min-h-0 custom-scrollbar">
         <div className="p-2 space-y-2">
           <DndContext
             sensors={sensors}
@@ -277,7 +285,7 @@ export function SlideNavigator() {
             </SortableContext>
           </DndContext>
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Add Slide Button */}
       <div className="p-2 border-t border-white/10">
@@ -285,12 +293,20 @@ export function SlideNavigator() {
           variant="ghost"
           size="sm"
           className="w-full gap-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/10 border border-dashed border-white/15"
-          onClick={() => project && addSlide(project.id)}
+          onClick={() => project && setIsTemplateDialogOpen(true)}
         >
           <Plus className="h-3 w-3" />
           Novo Slide
         </Button>
       </div>
+
+      {project && (
+        <TemplateSelectorDialog
+          open={isTemplateDialogOpen}
+          onOpenChange={setIsTemplateDialogOpen}
+          onSelect={handleTemplateSelect}
+        />
+      )}
     </div>
   );
 }

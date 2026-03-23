@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useEditorStore, CourseProject, Block } from "@/store/useEditorStore";
+import { useEditorStore, CourseProject, Block, Slide } from "@/store/useEditorStore";
 import { getCourse } from "@/actions/courses";
 import { saveCourse } from "@/actions/courses";
 import { TopToolbar } from "@/components/editor/TopToolbar";
@@ -27,15 +27,18 @@ export default function EditorPage() {
   const projects = useEditorStore((s) => s.projects);
   const undo = useEditorStore((s) => s.undo);
   const redo = useEditorStore((s) => s.redo);
-  const selectedBlockId = useEditorStore((s) => s.selectedBlockId);
-  const deleteBlock = useEditorStore((s) => s.deleteBlock);
-  const duplicateBlock = useEditorStore((s) => s.duplicateBlock);
-  const updateBlock = useEditorStore((s) => s.updateBlock);
+  const selectedBlockIds = useEditorStore((s) => s.selectedBlockIds);
+  const deleteBlocks = useEditorStore((s) => s.deleteBlocks);
+  const duplicateBlocks = useEditorStore((s) => s.duplicateBlocks);
+  const updateBlocks = useEditorStore((s) => s.updateBlocks);
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
   const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
-  const getSelectedBlock = useEditorStore((s) => s.getSelectedBlock);
+  const getSelectedBlocks = useEditorStore((s) => s.getSelectedBlocks);
   const duplicateSlide = useEditorStore((s) => s.duplicateSlide);
-  const addBlock = useEditorStore((s) => s.addBlock);
+  const deleteSlide = useEditorStore((s) => s.deleteSlide);
+  const insertSlideContextual = useEditorStore((s) => s.insertSlideContextual);
+  const addBlocks = useEditorStore((s) => s.addBlocks);
+  const selectAllBlocks = useEditorStore((s) => s.selectAllBlocks);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -44,7 +47,8 @@ export default function EditorPage() {
   const [componentLibOpen, setComponentLibOpen] = useState(false);
 
   // ─── Clipboard (internal, no browser API needed) ───
-  const clipboardRef = useRef<Block | null>(null);
+  const clipboardRef = useRef<Block[]>([]);
+  const clipboardSlideRef = useRef<Slide | null>(null);
 
   // ─── Load Course ───
   useEffect(() => {
@@ -180,74 +184,116 @@ export default function EditorPage() {
       // Don't handle remaining shortcuts when typing
       if (isTyping) return;
 
-      // Delete/Backspace — Delete selected block
+      // Ctrl+A — Select All
+      if (isCtrl && e.key === "a") {
+        e.preventDefault();
+        const project = getCurrentProject();
+        const slide = getCurrentSlide();
+        if (project && slide) {
+          selectAllBlocks(project.id, slide.id);
+        }
+        return;
+      }
+
+      // Delete/Backspace — Delete selected blocks
       if (
         (e.key === "Delete" || e.key === "Backspace") &&
         !isCtrl &&
-        selectedBlockId
+        selectedBlockIds.length > 0
       ) {
         e.preventDefault();
         const project = getCurrentProject();
         const slide = getCurrentSlide();
         if (project && slide) {
-          deleteBlock(project.id, slide.id, selectedBlockId);
+          deleteBlocks(project.id, slide.id, selectedBlockIds);
         }
         return;
       }
 
-      // Ctrl+C — Copy block
-      if (isCtrl && e.key === "c" && selectedBlockId) {
-        e.preventDefault();
-        const block = getSelectedBlock();
-        if (block) {
-          clipboardRef.current = JSON.parse(JSON.stringify(block));
-          toast.success("Bloco copiado!");
+      // Ctrl+C — Copy blocks or slide
+      if (isCtrl && e.key === "c") {
+        if (selectedBlockIds.length > 0) {
+          e.preventDefault();
+          const blocks = getSelectedBlocks();
+          if (blocks.length > 0) {
+            clipboardRef.current = JSON.parse(JSON.stringify(blocks));
+            clipboardSlideRef.current = null;
+            toast.success(blocks.length > 1 ? `${blocks.length} blocos copiados!` : "Bloco copiado!");
+          }
+        } else {
+          e.preventDefault();
+          const slide = getCurrentSlide();
+          if (slide) {
+            clipboardSlideRef.current = JSON.parse(JSON.stringify(slide));
+            clipboardRef.current = [];
+            toast.success("Slide copiado!");
+          }
         }
         return;
       }
 
-      // Ctrl+X — Cut block
-      if (isCtrl && e.key === "x" && selectedBlockId) {
-        e.preventDefault();
-        const block = getSelectedBlock();
+      // Ctrl+X — Cut blocks or slide
+      if (isCtrl && e.key === "x") {
+        if (selectedBlockIds.length > 0) {
+          e.preventDefault();
+          const blocks = getSelectedBlocks();
+          const project = getCurrentProject();
+          const slide = getCurrentSlide();
+          if (blocks.length > 0 && project && slide) {
+            clipboardRef.current = JSON.parse(JSON.stringify(blocks));
+            clipboardSlideRef.current = null;
+            deleteBlocks(project.id, slide.id, selectedBlockIds);
+            toast.success(blocks.length > 1 ? `${blocks.length} blocos recortados!` : "Bloco recortado!");
+          }
+        } else {
+          e.preventDefault();
+          const project = getCurrentProject();
+          const slide = getCurrentSlide();
+          if (project && slide && project.slides.length > 1) {
+            clipboardSlideRef.current = JSON.parse(JSON.stringify(slide));
+            clipboardRef.current = [];
+            deleteSlide(project.id, slide.id);
+            toast.success("Slide recortado!");
+          } else if (project?.slides.length === 1) {
+            toast.error("Não é possível recortar o último slide do curso.");
+          }
+        }
+        return;
+      }
+
+      // Ctrl+V — Paste blocks or slide
+      if (isCtrl && e.key === "v") {
         const project = getCurrentProject();
         const slide = getCurrentSlide();
-        if (block && project && slide) {
-          clipboardRef.current = JSON.parse(JSON.stringify(block));
-          deleteBlock(project.id, slide.id, selectedBlockId);
-          toast.success("Bloco recortado!");
-        }
-        return;
-      }
-
-      // Ctrl+V — Paste block
-      if (isCtrl && e.key === "v" && clipboardRef.current) {
-        e.preventDefault();
-        const project = getCurrentProject();
-        const slide = getCurrentSlide();
-        if (project && slide) {
-          const newBlock: Block = {
-            ...clipboardRef.current,
+        
+        if (clipboardRef.current.length > 0 && project && slide) {
+          e.preventDefault();
+          const newBlocks: Block[] = clipboardRef.current.map((clipboardBlock) => ({
+            ...clipboardBlock,
             id: crypto.randomUUID(),
-            x: Math.min(clipboardRef.current.x + 20, 960 - clipboardRef.current.width),
-            y: Math.min(clipboardRef.current.y + 20, 540 - clipboardRef.current.height),
-          };
-          addBlock(project.id, slide.id, newBlock);
-          setSelectedBlock(newBlock.id);
-          toast.success("Bloco colado!");
+            x: Math.min(clipboardBlock.x + 20, 960 - clipboardBlock.width),
+            y: Math.min(clipboardBlock.y + 20, 540 - clipboardBlock.height),
+          }));
+          addBlocks(project.id, slide.id, newBlocks);
+          toast.success(newBlocks.length > 1 ? `${newBlocks.length} blocos colados!` : "Bloco colado!");
+          return;
+        } else if (clipboardSlideRef.current && project && slide) {
+          e.preventDefault();
+          insertSlideContextual(project.id, clipboardSlideRef.current, slide.id);
+          toast.success("Slide colado!");
+          return;
         }
-        return;
       }
 
-      // Ctrl+D — Duplicate block or slide
+      // Ctrl+D — Duplicate blocks or slide
       if (isCtrl && e.key === "d") {
         e.preventDefault();
         const project = getCurrentProject();
         const slide = getCurrentSlide();
         if (project && slide) {
-          if (selectedBlockId) {
-            duplicateBlock(project.id, slide.id, selectedBlockId);
-            toast.success("Bloco duplicado!");
+          if (selectedBlockIds.length > 0) {
+            duplicateBlocks(project.id, slide.id, selectedBlockIds);
+            toast.success(selectedBlockIds.length > 1 ? `${selectedBlockIds.length} blocos duplicados!` : "Bloco duplicado!");
           } else {
             duplicateSlide(project.id, slide.id);
             toast.success("Slide duplicado!");
@@ -256,16 +302,52 @@ export default function EditorPage() {
         return;
       }
 
-      // Arrow keys — Move selected block (1px, 10px with Shift)
+      // Z-Index Shortcuts (PowerPoint style)
+      if (isCtrl && selectedBlockIds.length > 0) {
+        const project = getCurrentProject();
+        const slide = getCurrentSlide();
+        const blocks = getSelectedBlocks();
+        
+        if (project && slide && blocks.length > 0) {
+          let zIndexChange = false;
+          let newUpdates: { id: string; changes: Partial<Block> }[] = [];
+          
+          if (e.shiftKey && e.key === "]") { // Trazer para o primeiro plano
+            e.preventDefault();
+            const maxZ = Math.max(...slide.blocks.map(b => b.zIndex || 0));
+            newUpdates = blocks.map(b => ({ id: b.id, changes: { zIndex: maxZ + 1 } }));
+            zIndexChange = true;
+          } else if (e.shiftKey && e.key === "[") { // Enviar para o fundo
+            e.preventDefault();
+            newUpdates = blocks.map(b => ({ id: b.id, changes: { zIndex: 0 } }));
+            zIndexChange = true;
+          } else if (e.key === "]") { // Avançar
+            e.preventDefault();
+            newUpdates = blocks.map(b => ({ id: b.id, changes: { zIndex: (b.zIndex || 0) + 1 } }));
+            zIndexChange = true;
+          } else if (e.key === "[") { // Recuar
+            e.preventDefault();
+            newUpdates = blocks.map(b => ({ id: b.id, changes: { zIndex: Math.max(0, (b.zIndex || 0) - 1) } }));
+            zIndexChange = true;
+          }
+          
+          if (zIndexChange) {
+            updateBlocks(project.id, slide.id, newUpdates);
+            return;
+          }
+        }
+      }
+
+      // Arrow keys — Move selected blocks (1px, 10px with Shift)
       if (
         ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) &&
-        selectedBlockId
+        selectedBlockIds.length > 0
       ) {
         e.preventDefault();
         const project = getCurrentProject();
         const slide = getCurrentSlide();
-        const block = getSelectedBlock();
-        if (!project || !slide || !block) return;
+        const blocks = getSelectedBlocks();
+        if (!project || !slide || blocks.length === 0) return;
 
         const step = e.shiftKey ? 10 : 1;
         let dx = 0, dy = 0;
@@ -274,10 +356,15 @@ export default function EditorPage() {
         if (e.key === "ArrowLeft") dx = -step;
         if (e.key === "ArrowRight") dx = step;
 
-        updateBlock(project.id, slide.id, selectedBlockId, {
-          x: Math.max(0, Math.min(960 - block.width, block.x + dx)),
-          y: Math.max(0, Math.min(540 - block.height, block.y + dy)),
-        });
+        const updates = blocks.map(block => ({
+          id: block.id,
+          changes: {
+            x: Math.max(0, Math.min(960 - block.width, block.x + dx)),
+            y: Math.max(0, Math.min(540 - block.height, block.y + dy)),
+          }
+        }));
+
+        updateBlocks(project.id, slide.id, updates);
         return;
       }
     };
@@ -287,15 +374,16 @@ export default function EditorPage() {
   }, [
     undo,
     redo,
-    selectedBlockId,
-    deleteBlock,
-    duplicateBlock,
-    updateBlock,
+    selectedBlockIds,
+    deleteBlocks,
+    duplicateBlocks,
+    updateBlocks,
     getCurrentProject,
     getCurrentSlide,
-    getSelectedBlock,
+    getSelectedBlocks,
+    selectAllBlocks,
     setSelectedBlock,
-    addBlock,
+    addBlocks,
     courseId,
     duplicateSlide,
     doSave,

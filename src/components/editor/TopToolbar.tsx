@@ -601,489 +601,53 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
           />
         </div>
 
-        {/* Right: Save */}
-        <div className="flex items-center gap-1.5">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-1.5 rounded-lg text-xs h-7 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
-            onClick={handleSaveToCloud}
-            disabled={saving || !project}
-          >
-            {saving ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <CloudUpload className="h-3.5 w-3.5" />
-            )}
-            {saving ? "Salvando..." : "Salvar"}
-          </Button>
-        </div>
-      </div>
+        {/* Right: Tools & Actions */}
+        <div className="flex items-center gap-2">
+          
+          <div className="flex items-center gap-1 border-r border-white/10 pr-2 mr-1">
+            <PreviewDialog />
+            <KeyboardShortcutsDialog />
+            <CourseSettingsDialog />
+          </div>
 
-      {/* Ribbon Tabs */}
-      <div className="border-b border-white/5 flex-shrink-0" style={{ background: '#1E293B' }}>
-        {/* Tab Headers */}
-        <div className="flex items-center gap-0 px-3 border-b border-white/5">
-          {RIBBON_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "px-4 py-1.5 text-xs font-medium transition-all relative",
-                activeTab === tab.id
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
+          <div className="flex items-center gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 rounded-lg text-xs h-8 bg-transparent border-white/10 hover:bg-white/5 text-slate-200"
+              onClick={handleShare}
+              disabled={sharing || !project}
             >
-              {tab.label}
-              {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-t-full" />
+              {sharing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Share2 className="h-3.5 w-3.5" />}
+              Compartilhar
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 rounded-lg text-xs h-8 bg-transparent border-white/10 hover:bg-white/5 text-slate-200"
+              onClick={handleExport}
+              disabled={exporting || !project}
+            >
+              {exporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5 text-blue-400" />}
+              SCORM
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1.5 rounded-lg text-xs h-8 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 cursor-pointer border border-emerald-500/20"
+              onClick={handleSaveToCloud}
+              disabled={saving || !project}
+            >
+              {saving ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <CloudUpload className="h-3.5 w-3.5" />
               )}
-            </button>
-          ))}
-        </div>
-
-        {/* Tab Content */}
-        <div className="flex items-stretch px-2 py-1.5 min-h-[66px]">
-          {/* ─── HOME TAB ─── */}
-          {activeTab === "home" && (
-            <>
-              <RibbonGroup label="Área de Transferência">
-                <RibbonButton
-                  icon={<ClipboardPaste className="h-4 w-4" />}
-                  label="Colar"
-                  variant="large"
-                  onClick={handlePaste}
-                  disabled={!clipboardRef.current}
-                />
-                <div className="flex flex-col gap-0.5">
-                  <RibbonButton
-                    icon={<Scissors className="h-3.5 w-3.5" />}
-                    title="Recortar"
-                    onClick={handleCut}
-                    disabled={!block}
-                  />
-                  <RibbonButton
-                    icon={<Copy className="h-3.5 w-3.5" />}
-                    title="Copiar"
-                    onClick={handleCopy}
-                    disabled={!block}
-                  />
-                </div>
-              </RibbonGroup>
-
-              <RibbonGroup label="Fonte">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-0.5">
-                    <RibbonButton
-                      icon={<Bold className="h-3.5 w-3.5" />}
-                      onClick={() => handleTextFormat("fontWeight", block?.type === "text" && block.fontWeight === "bold" ? "normal" : "bold")}
-                      active={block?.type === "text" && block.fontWeight === "bold"}
-                      disabled={!block || block.type !== "text"}
-                      title="Negrito"
-                    />
-                    <RibbonButton
-                      icon={<Italic className="h-3.5 w-3.5" />}
-                      onClick={() => handleTextFormat("fontStyle", block?.type === "text" && block.fontStyle === "italic" ? "normal" : "italic")}
-                      active={block?.type === "text" && block.fontStyle === "italic"}
-                      disabled={!block || block.type !== "text"}
-                      title="Itálico"
-                    />
-                    <RibbonButton
-                      icon={<Underline className="h-3.5 w-3.5" />}
-                      onClick={() => handleTextFormat("textDecorationLine", block?.type === "text" && block.textDecorationLine === "underline" ? "none" : "underline")}
-                      active={block?.type === "text" && block.textDecorationLine === "underline"}
-                      disabled={!block || block.type !== "text"}
-                      title="Sublinhado"
-                    />
-                  </div>
-                  <div className="flex items-center gap-0.5">
-                    <RibbonButton
-                      icon={<AlignLeft className="h-3.5 w-3.5" />}
-                      onClick={() => handleTextFormat("textAlign", "left")}
-                      active={block?.type === "text" && block.textAlign === "left"}
-                      disabled={!block || block.type !== "text"}
-                      title="Alinhar à Esquerda"
-                    />
-                    <RibbonButton
-                      icon={<AlignCenter className="h-3.5 w-3.5" />}
-                      onClick={() => handleTextFormat("textAlign", "center")}
-                      active={block?.type === "text" && block.textAlign === "center"}
-                      disabled={!block || block.type !== "text"}
-                      title="Centralizar"
-                    />
-                    <RibbonButton
-                      icon={<AlignRight className="h-3.5 w-3.5" />}
-                      onClick={() => handleTextFormat("textAlign", "right")}
-                      active={block?.type === "text" && block.textAlign === "right"}
-                      disabled={!block || block.type !== "text"}
-                      title="Alinhar à Direita"
-                    />
-                  </div>
-                </div>
-              </RibbonGroup>
-
-              <RibbonGroup label="Visualização">
-                <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
-                  <RibbonButton
-                    icon={<Monitor className="h-3.5 w-3.5" />}
-                    onClick={() => setPreviewMode("desktop")}
-                    active={previewMode === "desktop"}
-                    title="Desktop"
-                  />
-                  <RibbonButton
-                    icon={<Smartphone className="h-3.5 w-3.5" />}
-                    onClick={() => setPreviewMode("mobile")}
-                    active={previewMode === "mobile"}
-                    title="Mobile"
-                  />
-                </div>
-              </RibbonGroup>
-            </>
-          )}
-
-          {/* ─── INSERT TAB ─── */}
-          {activeTab === "insert" && (
-            <>
-              <RibbonGroup label="Biblioteca">
-                <RibbonButton
-                  icon={<Layers className="h-5 w-5" />}
-                  label="Componentes"
-                  variant="large"
-                  onClick={() => onToggleComponentLib?.()}
-                />
-              </RibbonGroup>
-
-              <RibbonGroup label="Texto">
-                <RibbonButton
-                  icon={<Type className="h-5 w-5" />}
-                  label="Texto"
-                  variant="large"
-                  onClick={() => handleAddBlock("text")}
-                />
-              </RibbonGroup>
-
-              <RibbonGroup label="Mídia">
-                <RibbonButton
-                  icon={<Image className="h-5 w-5" />}
-                  label="Imagem"
-                  variant="large"
-                  onClick={() => handleAddBlock("image")}
-                />
-                <RibbonButton
-                  icon={<Play className="h-5 w-5" />}
-                  label="Vídeo"
-                  variant="large"
-                  onClick={() => handleAddBlock("video")}
-                />
-                <RibbonButton
-                  icon={<Music className="h-5 w-5" />}
-                  label="Áudio"
-                  variant="large"
-                  onClick={() => handleAddBlock("audio")}
-                />
-              </RibbonGroup>
-
-              <RibbonGroup label="Conteúdo">
-                <RibbonButton
-                  icon={<CreditCard className="h-5 w-5" />}
-                  label="Flashcard"
-                  variant="large"
-                  onClick={() => handleAddBlock("flashcard")}
-                />
-                <RibbonButton
-                  icon={<HelpCircle className="h-5 w-5" />}
-                  label="Quiz"
-                  variant="large"
-                  onClick={() => handleAddBlock("quiz")}
-                />
-                <RibbonButton
-                  icon={<Hexagon className="h-5 w-5" />}
-                  label="Forma"
-                  variant="large"
-                  onClick={() => handleAddBlock("shape")}
-                />
-              </RibbonGroup>
-            </>
-          )}
-
-          {/* ─── INTERACTIONS TAB ─── */}
-          {activeTab === "interactions" && (
-            <>
-              <RibbonGroup label="Avaliações">
-                <RibbonButton
-                  icon={<CheckCircle2 className="h-5 w-5" />}
-                  label="V ou F"
-                  variant="large"
-                  onClick={() => handleAddBlock("truefalse")}
-                />
-                <RibbonButton
-                  icon={<Link2 className="h-5 w-5" />}
-                  label="Liga Pontos"
-                  variant="large"
-                  onClick={() => handleAddBlock("matching")}
-                />
-                <RibbonButton
-                  icon={<PenLine className="h-5 w-5" />}
-                  label="Lacunas"
-                  variant="large"
-                  onClick={() => handleAddBlock("fillblank")}
-                />
-                <RibbonButton
-                  icon={<ArrowUpDown className="h-5 w-5" />}
-                  label="Ordenação"
-                  variant="large"
-                  onClick={() => handleAddBlock("sorting")}
-                />
-                <RibbonButton
-                  icon={<MousePointer className="h-5 w-5" />}
-                  label="Hotspot"
-                  variant="large"
-                  onClick={() => handleAddBlock("hotspot")}
-                />
-              </RibbonGroup>
-
-              <RibbonGroup label="Apresentação">
-                <RibbonButton
-                  icon={<ChevronDown className="h-5 w-5" />}
-                  label="Accordion"
-                  variant="large"
-                  onClick={() => handleAddBlock("accordion")}
-                />
-                <RibbonButton
-                  icon={<PanelTop className="h-5 w-5" />}
-                  label="Tabs"
-                  variant="large"
-                  onClick={() => handleAddBlock("tabs")}
-                />
-              </RibbonGroup>
-
-              <RibbonGroup label="Avançado">
-                <RibbonButton
-                  icon={<GitBranch className="h-5 w-5" />}
-                  label="Branching"
-                  variant="large"
-                  onClick={() => handleAddBlock("branching")}
-                />
-                <RibbonButton
-                  icon={<Clock className="h-5 w-5" />}
-                  label="Timeline"
-                  variant="large"
-                  onClick={() => handleAddBlock("timeline")}
-                />
-                <RibbonButton
-                  icon={<GripVertical className="h-5 w-5" />}
-                  label="Drag & Drop"
-                  variant="large"
-                  onClick={() => handleAddBlock("dragdrop")}
-                />
-                <RibbonButton
-                  icon={<Video className="h-5 w-5" />}
-                  label="Vídeo Int."
-                  variant="large"
-                  onClick={() => handleAddBlock("interactiveVideo")}
-                />
-              </RibbonGroup>
-            </>
-          )}
-
-          {/* ─── DESIGN TAB ─── */}
-          {activeTab === "design" && (
-            <>
-              <RibbonGroup label="Slides">
-                <SlideLayoutsDialog />
-                <SlideTemplatesDialog />
-              </RibbonGroup>
-
-              <RibbonGroup label="Tema">
-                <div className="flex items-center gap-1">
-                  {THEME_PRESETS.slice(0, 8).map((preset) => (
-                    <button
-                      key={preset.name}
-                      onClick={() =>
-                        project &&
-                        setTheme(project.id, {
-                          primaryColor: preset.primary,
-                          secondaryColor: preset.secondary,
-                        })
-                      }
-                      className={cn(
-                        "w-7 h-7 rounded-full border-2 transition-all hover:scale-110 shadow-sm cursor-pointer",
-                        project?.theme.primaryColor === preset.primary
-                          ? "border-foreground scale-110 ring-2 ring-primary/30"
-                          : "border-white"
-                      )}
-                      style={{ backgroundColor: preset.primary }}
-                      title={preset.name}
-                    />
-                  ))}
-                  <div className="flex flex-col items-center ml-1">
-                    <div className="flex items-center gap-1">
-                      <Palette className="h-3 w-3 text-muted-foreground" />
-                      <input
-                        type="color"
-                        value={project?.theme.primaryColor ?? "#7c3aed"}
-                        onChange={(e) =>
-                          project &&
-                          setTheme(project.id, { primaryColor: e.target.value })
-                        }
-                        className="w-6 h-6 rounded-md border border-border cursor-pointer"
-                        title="Cor personalizada"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </RibbonGroup>
-
-              <RibbonGroup label="Fundo do Slide">
-                <div className="flex items-center gap-1">
-                  {SLIDE_BG_PRESETS.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() =>
-                        project &&
-                        slide &&
-                        updateSlideBackground(project.id, slide.id, color)
-                      }
-                      className={cn(
-                        "w-5 h-5 rounded border transition-all hover:scale-125 cursor-pointer",
-                        slide?.background === color
-                          ? "border-primary ring-1 ring-primary/40 scale-110"
-                          : "border-border/60"
-                      )}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                    />
-                  ))}
-                  <input
-                    type="color"
-                    value={slide?.background ?? "#ffffff"}
-                    onChange={(e) =>
-                      project &&
-                      slide &&
-                      updateSlideBackground(project.id, slide.id, e.target.value)
-                    }
-                    className="w-5 h-5 rounded border border-border cursor-pointer ml-1"
-                    title="Cor personalizada"
-                  />
-                </div>
-              </RibbonGroup>
-
-              <RibbonGroup label="Tipografia">
-                <div className="flex items-center gap-2">
-                  <Paintbrush className="h-3.5 w-3.5 text-muted-foreground" />
-                  <input
-                    value={
-                      project?.theme.fontFamily?.replace(", sans-serif", "") ??
-                      "Inter"
-                    }
-                    onChange={(e) =>
-                      project &&
-                      setTheme(project.id, {
-                        fontFamily: `${e.target.value}, sans-serif`,
-                        customFontUrl: null,
-                      })
-                    }
-                    className="h-7 w-28 text-xs rounded-md border border-border bg-background px-2"
-                    placeholder="Google Font..."
-                  />
-                </div>
-              </RibbonGroup>
-            </>
-          )}
-
-          {/* ─── EXPORT TAB ─── */}
-          {activeTab === "export" && (
-            <>
-              <RibbonGroup label="Publicar">
-                <RibbonButton
-                  icon={<Download className="h-5 w-5" />}
-                  label="SCORM"
-                  variant="large"
-                  onClick={handleExport}
-                  disabled={exporting || !project}
-                />
-                <RibbonButton
-                  icon={<Download className="h-5 w-5 text-red-400" />}
-                  label="PDF"
-                  variant="large"
-                  onClick={() => {
-                    if (!project) return;
-                    try {
-                      exportAsPDF(project);
-                      toast.success("PDF gerado — use Ctrl+P para salvar");
-                    } catch { toast.error("Erro ao gerar PDF"); }
-                  }}
-                  disabled={!project}
-                />
-              </RibbonGroup>
-
-              <RibbonGroup label="Compartilhar">
-                <RibbonButton
-                  icon={<Share2 className="h-5 w-5" />}
-                  label="Revisão"
-                  variant="large"
-                  onClick={handleShare}
-                  disabled={sharing || !project}
-                />
-              </RibbonGroup>
-
-              <RibbonGroup label="Importar">
-                <ImportPPTXDialog />
-              </RibbonGroup>
-            </>
-          )}
-
-          {/* ─── TOOLS TAB ─── */}
-          {activeTab === "tools" && (
-            <>
-              <RibbonGroup label="Inteligência Artificial">
-                <AIQuizDialog
-                  onInsertQuiz={(data) => {
-                    if (!project || !slide) return;
-                    addBlock(project.id, slide.id, {
-                      id: crypto.randomUUID(),
-                      type: "quiz",
-                      x: 100,
-                      y: 100,
-                      width: 700,
-                      height: 350,
-                      zIndex: slide.blocks.length,
-                      ...data,
-                    });
-                  }}
-                  onInsertTrueFalse={(data) => {
-                    if (!project || !slide) return;
-                    addBlock(project.id, slide.id, {
-                      id: crypto.randomUUID(),
-                      type: "truefalse",
-                      x: 100,
-                      y: 100,
-                      width: 600,
-                      height: 200,
-                      zIndex: slide.blocks.length,
-                      ...data,
-                    });
-                  }}
-                />
-                {project && <AICourseDialog projectId={project.id} />}
-              </RibbonGroup>
-
-              <RibbonGroup label="Acessibilidade">
-                <ContrastChecker />
-              </RibbonGroup>
-
-              <RibbonGroup label="Recursos">
-                <AssetLibraryDialog />
-              </RibbonGroup>
-
-              <RibbonGroup label="Geral">
-                <PreviewDialog />
-                <CourseSettingsDialog />
-                <KeyboardShortcutsDialog />
-              </RibbonGroup>
-            </>
-          )}
+              {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </div>
         </div>
       </div>
 

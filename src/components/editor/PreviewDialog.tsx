@@ -90,6 +90,43 @@ export function PreviewDialog() {
             ))}
           </div>
         );
+      case "flashcard":
+        return (
+          <div key={block.id} style={{ ...baseStyle, backgroundColor: block.frontBg || "#fff", color: block.frontColor || "#000", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "16px", borderRadius: "12px", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)", border: "1px solid #e2e8f0" }}>
+            {block.frontImage && (
+              <div style={{ width: "60px", height: "60px", marginBottom: "12px" }}>
+                <img src={block.frontImage} style={{ width: "100%", height: "100%", objectFit: "contain" }} alt="Flashcard Front" />
+              </div>
+            )}
+            <div style={{ textAlign: "center", fontSize: "16px", fontWeight: 600 }}>{block.frontContent || "Flashcard"}</div>
+            <div style={{ marginTop: "16px", fontSize: "10px", opacity: 0.6, textTransform: "uppercase", letterSpacing: "1px" }}>Gire para revelar</div>
+          </div>
+        );
+      case "fillblank":
+        return (
+          <div key={block.id} style={{ ...baseStyle, backgroundColor: "#fff", padding: "16px", borderRadius: "12px", border: "1px solid #e2e8f0", fontSize: "16px", lineHeight: "1.6", color: "#334155" }}>
+            {block.segments?.map((seg: any, i: number) => 
+               seg.type === "text" 
+                 ? <span key={i}>{seg.content}</span> 
+                 : <span key={i} style={{ display: "inline-block", borderBottom: "2px solid #cbd5e1", margin: "0 4px", padding: "0 8px", color: "#94a3b8", fontStyle: "italic", fontSize: "14px" }}>Lacuna</span>
+            )}
+          </div>
+        );
+      case "sorting":
+      case "dragdrop":
+      case "interactiveVideo":
+      case "accordion":
+      case "tabs":
+      case "branching":
+      case "timeline":
+      case "hotspot":
+        return (
+          <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #f0f9ff, #e0f2fe)", borderRadius: "12px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontSize: "13px", color: "#0284c7", fontWeight: 600, border: "2px solid #bae6fd", padding: "16px", textAlign: "center" }}>
+            <span style={{ fontSize: "24px", marginBottom: "8px" }}>✨</span>
+            Componente Interativo ({block.type})
+            <span style={{ fontSize: "10px", color: "#38bdf8", marginTop: "4px", fontWeight: 400 }}>Visível dinamicamente no Player oficial</span>
+          </div>
+        );
       default:
         return (
           <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #f8fafc, #f1f5f9)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "#94a3b8", fontWeight: 500, border: "1px dashed #cbd5e1" }}>
@@ -107,7 +144,7 @@ export function PreviewDialog() {
           Preview
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0 border-0 rounded-2xl overflow-hidden bg-slate-900 flex flex-col">
+      <DialogContent className="max-w-[100vw] w-screen h-screen p-0 m-0 border-0 rounded-none bg-slate-950 flex flex-col justify-center">
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-2 bg-slate-800/80 backdrop-blur-sm border-b border-white/5 shrink-0">
           <div className="flex items-center gap-3">
@@ -125,10 +162,14 @@ export function PreviewDialog() {
         </div>
 
         {/* Slide area */}
-        <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
+        <div className="flex-1 flex items-center justify-center p-8 overflow-hidden relative">
           <div
-            className="relative bg-white rounded-xl shadow-2xl overflow-hidden w-full max-w-[960px]"
+            className="relative bg-white shadow-2xl overflow-hidden"
             style={{
+              height: "100%",
+              maxHeight: "calc(100vw * 9 / 16)",
+              width: "100%",
+              maxWidth: "calc(100vh * 16 / 9)",
               aspectRatio: "16 / 9",
               backgroundColor: currentSlide?.background || "#ffffff",
               fontFamily: project.theme.fontFamily,

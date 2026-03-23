@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useEditorStore, Block, QuizOption, AnimationType, AnimationEasing } from "@/store/useEditorStore";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Type,
   Image,
@@ -155,10 +156,19 @@ export function PropertiesPanel() {
   const setTheme = useEditorStore((s) => s.setTheme);
   const updateSlideNotes = useEditorStore((s) => s.updateSlideNotes);
   const applyThemeToAllSlides = useEditorStore((s) => s.applyThemeToAllSlides);
+  const addBlock = useEditorStore((s) => s.addBlock);
 
   const project = getCurrentProject();
   const slide = getCurrentSlide();
   const block = getSelectedBlock();
+
+  const [activeTab, setActiveTab] = useState("design");
+
+  React.useEffect(() => {
+    if (block) {
+      setActiveTab("design");
+    }
+  }, [block?.id]);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -287,18 +297,164 @@ export function PropertiesPanel() {
     } as Partial<Block>);
   };
 
+  const handleAddBlock = (type: Block["type"]) => {
+    if (!project || !slide) return;
+    const baseBlock = {
+      id: crypto.randomUUID(),
+      x: 80 + Math.random() * 200,
+      y: 60 + Math.random() * 100,
+      zIndex: 0,
+    };
+
+    let newBlock: Block;
+    switch (type) {
+      case "text":
+        newBlock = {
+          ...baseBlock,
+          type: "text",
+          width: 300,
+          height: 40,
+          content: "Digite seu texto...",
+          fontSize: 18,
+          fontWeight: "normal",
+          color: "#1a1a2e",
+          textAlign: "left",
+          backgroundColor: "transparent",
+        } as Block;
+        break;
+      case "image":
+        newBlock = {
+          ...baseBlock,
+          type: "image",
+          width: 300,
+          height: 200,
+          src: "",
+          alt: "Imagem",
+          objectFit: "cover",
+          borderRadius: 12,
+        } as Block;
+        break;
+      case "video":
+        newBlock = {
+          ...baseBlock,
+          type: "video",
+          width: 480,
+          height: 270,
+          url: "",
+          provider: "youtube",
+          autoplay: false,
+          controls: true,
+          loop: false,
+          muted: false,
+          borderRadius: 12,
+        } as unknown as Block;
+        break;
+      case "flashcard":
+        newBlock = {
+          ...baseBlock,
+          type: "flashcard",
+          width: 320,
+          height: 200,
+          frontContent: "Frente",
+          backContent: "Verso",
+          frontBg: "#7c3aed",
+          backBg: "#4f46e5",
+          frontColor: "#ffffff",
+          backColor: "#ffffff",
+        } as unknown as Block;
+        break;
+      case "shape":
+        newBlock = {
+          ...baseBlock,
+          type: "shape",
+          width: 100,
+          height: 100,
+          shapeType: "rectangle",
+          backgroundColor: "#e2e8f0",
+          borderRadius: 0,
+        } as unknown as Block;
+        break;
+      case "quiz":
+        newBlock = {
+          ...baseBlock,
+          type: "quiz",
+          width: 450,
+          height: 280,
+          question: "Qual a resposta?",
+          options: [
+            { id: crypto.randomUUID(), text: "Opção A", isCorrect: true },
+            { id: crypto.randomUUID(), text: "Opção B", isCorrect: false }
+          ],
+          feedback: { correct: "Muito bem!", incorrect: "Tente novamente." },
+          pointsValue: 10,
+        } as Block;
+        break;
+      default:
+        return;
+    }
+    addBlock(project.id, slide.id, newBlock);
+  };
+
   return (
     <div className="w-[280px] border-l border-white/5 flex flex-col flex-shrink-0" style={{ background: '#1E293B' }}>
-      {/* Panel Header */}
-      <div className="px-4 py-2.5 border-b border-border/40 flex items-center gap-2">
-        <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />
-        <h2 className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider">
-          Inspector
-        </h2>
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+        {/* Modern Tab Header */}
+        <div className="px-3 py-2 border-b border-border/40 bg-[#1E293B]">
+          <TabsList className="w-full grid grid-cols-2 bg-slate-900/50 border border-white/5 h-9">
+            <TabsTrigger value="insert" className="text-[11px] data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm">Inserir</TabsTrigger>
+            <TabsTrigger value="design" className="text-[11px] data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm">Design</TabsTrigger>
+          </TabsList>
+        </div>
 
-      <ScrollArea className="flex-1">
-        {block ? (
+        {/* ─── ABA INSERIR ─── */}
+        <TabsContent value="insert" className="m-0 flex-1 overflow-hidden flex flex-col">
+          <ScrollArea className="flex-1">
+            <div className="p-4 space-y-6">
+              
+              <div>
+                <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Básico</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => handleAddBlock("text")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
+                    <Type className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
+                    <span className="text-[10px] text-slate-300 font-medium">Texto</span>
+                  </button>
+                  <button onClick={() => handleAddBlock("image")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
+                    <Image className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
+                    <span className="text-[10px] text-slate-300 font-medium">Imagem</span>
+                  </button>
+                  <button onClick={() => handleAddBlock("video")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
+                    <Play className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
+                    <span className="text-[10px] text-slate-300 font-medium">Vídeo</span>
+                  </button>
+                  <button onClick={() => handleAddBlock("shape")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
+                    <Hexagon className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
+                    <span className="text-[10px] text-slate-300 font-medium">Formas</span>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Interativo</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={() => handleAddBlock("flashcard")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
+                    <CreditCard className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
+                    <span className="text-[10px] text-slate-300 font-medium">Flashcard</span>
+                  </button>
+                  <button onClick={() => handleAddBlock("quiz")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
+                    <HelpCircle className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
+                    <span className="text-[10px] text-slate-300 font-medium">Quiz</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        {/* ─── ABA DESIGN ─── */}
+        <TabsContent value="design" className="m-0 flex-1 overflow-hidden flex flex-col">
+          <ScrollArea className="flex-1">
+            {block ? (
           <div>
             {/* Block Header */}
             <div className="px-4 py-3 border-b border-border/30 flex items-center justify-between">
@@ -2494,7 +2650,9 @@ export function PropertiesPanel() {
             </div>
           </div>
         )}
-      </ScrollArea>
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

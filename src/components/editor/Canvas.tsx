@@ -9,6 +9,8 @@ import {
   PointerSensor,
   DragEndEvent,
   DragStartEvent,
+  DragMoveEvent,
+  Modifier,
 } from "@dnd-kit/core";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 import { MousePointerClick, ZoomIn, ZoomOut, Maximize } from "lucide-react";
@@ -18,12 +20,14 @@ export function Canvas() {
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
   const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
   const selectedBlockId = useEditorStore((s) => s.selectedBlockId);
+  const selectedBlockIds = useEditorStore((s) => s.selectedBlockIds);
   const setSelectedBlock = useEditorStore((s) => s.setSelectedBlock);
   const updateBlock = useEditorStore((s) => s.updateBlock);
   const previewMode = useEditorStore((s) => s.previewMode);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [snapGuides, setSnapGuides] = useState<{ axis: "x" | "y"; position: number }[]>([]);
   const zoom = useEditorStore((s) => s.zoom);
   const setZoom = useEditorStore((s) => s.setZoom);
   const zoomIn = useEditorStore((s) => s.zoomIn);
@@ -88,44 +92,179 @@ export function Canvas() {
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
       setIsDragging(true);
-      setSelectedBlock(event.active.id as string);
+      // If the block dragged is already selected, don't change selection, keep multi-select.
+      const blockId = event.active.id as string;
+      const state = useEditorStore.getState();
+      if (!state.selectedBlockIds.includes(blockId)) {
+        setSelectedBlock(blockId);
+      }
     },
     [setSelectedBlock]
   );
 
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      setIsDragging(false);
+  const snapModifier: Modifier = useCallback(
+    ({ transform, active }) => {
+      if (!project || !slide || !canvasRef.current || !active) return transform;
+
+      const rect = canvasRef.current.getBoundingClientRect();
+      const scaleX = 960 / rect.width;
+      const scaleY = 540 / rect.height;
+      const zoomFactor = zoom / 100;
+
+      const block = slide.blocks.find((b) => b.id === active.id);
+      if (!block) return transform;
+
+      let rawX = block.x + (transform.x * scaleX) / zoomFactor;
+      let rawY = block.y + (transform.y * scaleY) / zoomFactor;
+
+      const SNAP_THRESHOLD = 8;
+      
+      let targetXs: number[] = [0, 480, 960, 480 - block.width / 2, 960 - block.width];
+      let targetYs: number[] = [0, 270, 540, 270 - block.height / 2, 540 - block.height];
+
+      slide.blocks.forEach((b) => {
+        if (b.id !== block.id && !selectedBlockIds.includes(b.id)) {
+          // Left, center, right snapping relative to other blocks
+          targetXs.push(b.x, b.x + b.width / 2, b.x + b.width, b.x + b.width / 2 - block.width / 2, b.x - block.width);
+          // Top, center, bottom snapping
+          targetYs.push(b.y, b.y + b.height / 2, b.y + b.height, b.y + b.height / 2 - block.height / 2, b.y - block.height);
+        }
+      });
+
+      let bestSnapX = rawX;
+      let minDiffX = Infinity;
+      for (const tx of targetXs) {
+        const diff = Math.abs(rawX - tx);
+        if (diff < SNAP_THRESHOLD && diff < minDiffX) {
+          minDiffX = diff;
+          bestSnapX = tx;
+        }
+      }
+
+      let bestSnapY = rawY;
+      let minDiffY = Infinity;
+      for (const ty of targetYs) {
+        const diff = Math.abs(rawY - ty);
+        if (diff < SNAP_THRESHOLD && diff < minDiffY) {
+          minDiffY = diff;
+          bestSnapY = ty;
+        }
+      }
+
+      const newTransform = { ...transform };
+
+      // Apply the snapped delta to transform (convert back to DOM pixels)
+      if (minDiffX < SNAP_THRESHOLD) {
+        newTransform.x = ((bestSnapX - block.x) * zoomFactor) / scaleX;
+      }
+      if (minDiffY < SNAP_THRESHOLD) {
+        newTransform.y = ((bestSnapY - block.y) * zoomFactor) / scaleY;
+      }
+
+      return newTransform;
+    },
+    [project, slide, zoom, selectedBlockIds]
+  );
+
+  const handleDragMove = useCallback(
+    (event: DragMoveEvent) => {
       const { active, delta } = event;
       if (!project || !slide || !canvasRef.current) return;
 
       const block = slide.blocks.find((b) => b.id === active.id);
       if (!block) return;
 
-      // Get canvas dimensions to convert delta pixels to 960x540 coordinates
+      const rect = canvasRef.current.getBoundingClientRect();
+      const scaleX = 960 / rect.width;
+      const scaleY = 540 / rect.height;
+      const zoomFactor = zoom / 100;
+
+      // The delta here is ALREADY modified by snapModifier, so it reflects snapped values
+      const currentX = block.x + (delta.x * scaleX) / zoomFactor;
+      const currentY = block.y + (delta.y * scaleY) / zoomFactor;
+
+      const guides: { axis: "x" | "y"; position: number }[] = [];
+      const DRAW_THRESHOLD = 0.5; // Since we are already snapped, we just check for exact matches (allowing floating point imprecision)
+
+      // Only draw guides for major alignments (center of canvas, center of other blocks, edges)
+      const majorXs = [480, 0, 960];
+      const majorYs = [270, 0, 540];
+
+      slide.blocks.forEach((b) => {
+        if (b.id !== block.id && !selectedBlockIds.includes(b.id)) {
+          majorXs.push(b.x, b.x + b.width / 2, b.x + b.width);
+          majorYs.push(b.y, b.y + b.height / 2, b.y + b.height);
+        }
+      });
+
+      // Check which major lines the current boundaries match
+      const currentBoundariesX = [currentX, currentX + block.width / 2, currentX + block.width];
+      const currentBoundariesY = [currentY, currentY + block.height / 2, currentY + block.height];
+
+      for (const bx of currentBoundariesX) {
+        for (const mx of majorXs) {
+          if (Math.abs(bx - mx) < DRAW_THRESHOLD) {
+            if (!guides.find(g => g.axis === 'x' && Math.abs(g.position - mx) < 1)) guides.push({ axis: "x", position: mx });
+          }
+        }
+      }
+
+      for (const by of currentBoundariesY) {
+        for (const my of majorYs) {
+          if (Math.abs(by - my) < DRAW_THRESHOLD) {
+            if (!guides.find(g => g.axis === 'y' && Math.abs(g.position - my) < 1)) guides.push({ axis: "y", position: my });
+          }
+        }
+      }
+
+      setSnapGuides(guides);
+    },
+    [project, slide, zoom, selectedBlockIds]
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setIsDragging(false);
+      setSnapGuides([]);
+      const { active, delta } = event;
+      if (!project || !slide || !canvasRef.current) return;
+
+      const block = slide.blocks.find((b) => b.id === active.id);
+      if (!block) return;
+
       const rect = canvasRef.current.getBoundingClientRect();
       const scaleX = 960 / rect.width;
       const scaleY = 540 / rect.height;
 
       // Adjust delta for zoom level
       const zoomFactor = zoom / 100;
-      const rawX = block.x + (delta.x * scaleX) / zoomFactor;
-      const rawY = block.y + (delta.y * scaleY) / zoomFactor;
+      
+      const state = useEditorStore.getState();
+      const blocksToMove = state.selectedBlockIds.includes(block.id)
+        ? slide.blocks.filter(b => state.selectedBlockIds.includes(b.id))
+        : [block];
 
-      // Snap to grid (10px)
-      const GRID = 10;
-      const snappedX = Math.round(rawX / GRID) * GRID;
-      const snappedY = Math.round(rawY / GRID) * GRID;
+      const updates = blocksToMove.map(b => {
+        const rawX = b.x + (delta.x * scaleX) / zoomFactor;
+        const rawY = b.y + (delta.y * scaleY) / zoomFactor;
 
-      const newX = Math.max(0, Math.min(960 - block.width, snappedX));
-      const newY = Math.max(0, Math.min(540 - block.height, snappedY));
+        // Snapping was already handled by snapModifier! 
+        // We just round to nearest pixel to avoid messy floating points
+        const finalX = Math.round(rawX);
+        const finalY = Math.round(rawY);
 
-      updateBlock(project.id, slide.id, block.id, {
-        x: newX,
-        y: newY,
+        const newX = Math.max(0, Math.min(960 - b.width, finalX));
+        const newY = Math.max(0, Math.min(540 - b.height, finalY));
+        
+        return {
+          id: b.id,
+          changes: { x: newX, y: newY }
+        };
       });
+
+      state.updateBlocks(project.id, slide.id, updates);
     },
-    [project, slide, updateBlock]
+    [project, slide, zoom]
   );
 
   // Calculate slide info
@@ -217,15 +356,29 @@ export function Canvas() {
             {/* Blocks with DnD */}
             <DndContext
               sensors={sensors}
-              modifiers={[restrictToParentElement]}
+              modifiers={[restrictToParentElement, snapModifier]}
               onDragStart={handleDragStart}
+              onDragMove={handleDragMove}
               onDragEnd={handleDragEnd}
             >
+              {/* Render Snap Guides below blocks but above background */}
+              {isDragging && snapGuides.map((guide, i) => (
+                <div
+                  key={i}
+                  className={`absolute bg-red-400 z-[15] pointer-events-none drop-shadow`}
+                  style={{
+                    [guide.axis === "x" ? "left" : "top"]: `${(guide.position / (guide.axis === "x" ? 960 : 540)) * 100}%`,
+                    [guide.axis === "x" ? "width" : "height"]: "1px",
+                    [guide.axis === "x" ? "height" : "width"]: "100%",
+                  }}
+                />
+              ))}
+
               {slide?.blocks.map((block) => (
                 <DraggableBlock
                   key={block.id}
                   block={block}
-                  isSelected={selectedBlockId === block.id}
+                  isSelected={selectedBlockIds.includes(block.id)}
                   canvasWidth={
                     canvasRef.current?.getBoundingClientRect().width ?? 960
                   }

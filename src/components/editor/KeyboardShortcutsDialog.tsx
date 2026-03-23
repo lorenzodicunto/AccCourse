@@ -15,18 +15,26 @@ const SHORTCUTS = [
     { keys: "Ctrl + S", action: "Salvar curso" },
     { keys: "Ctrl + Z", action: "Desfazer" },
     { keys: "Ctrl + Y", action: "Refazer" },
-    { keys: "Esc", action: "Deselecionar bloco" },
+  ]},
+  { category: "Seleção", items: [
+    { keys: "Esc", action: "Deselecionar tudo" },
+    { keys: "Shift + Click", action: "Selecionar múltiplos blocos" },
+    { keys: "Ctrl + A", action: "Selecionar todos os blocos" },
   ]},
   { category: "Blocos", items: [
-    { keys: "Ctrl + C", action: "Copiar bloco" },
-    { keys: "Ctrl + V", action: "Colar bloco" },
-    { keys: "Ctrl + X", action: "Recortar bloco" },
-    { keys: "Ctrl + D", action: "Duplicar bloco/slide" },
-    { keys: "Delete", action: "Excluir bloco" },
+    { keys: "Ctrl + C", action: "Copiar bloco(s)" },
+    { keys: "Ctrl + V", action: "Colar bloco(s)" },
+    { keys: "Ctrl + X", action: "Recortar bloco(s)" },
+    { keys: "Ctrl + D", action: "Duplicar bloco(s)/slide" },
+    { keys: "Delete / Backspace", action: "Excluir bloco(s)" },
   ]},
-  { category: "Posicionamento", items: [
-    { keys: "↑ ↓ ← →", action: "Mover bloco 1px" },
-    { keys: "Shift + ↑↓←→", action: "Mover bloco 10px" },
+  { category: "Posicionamento e Camadas", items: [
+    { keys: "↑ ↓ ← →", action: "Mover bloco(s) em 1px" },
+    { keys: "Shift + Setas", action: "Mover bloco(s) em 10px" },
+    { keys: "Ctrl + ]", action: "Avançar bloco(s)" },
+    { keys: "Ctrl + [", action: "Recuar bloco(s)" },
+    { keys: "Ctrl + Shift + ]", action: "Trazer para o primeiro plano" },
+    { keys: "Ctrl + Shift + [", action: "Enviar para o plano de fundo" },
   ]},
 ];
 

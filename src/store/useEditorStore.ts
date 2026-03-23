@@ -333,6 +333,11 @@ interface EditorActions {
   duplicateSlide: (projectId: string, slideId: string) => void;
   deleteSlide: (projectId: string, slideId: string) => void;
   reorderSlides: (projectId: string, slideIds: string[]) => void;
+  insertSlideContextual: (
+    projectId: string,
+    targetSlide: Slide,
+    insertAfterId?: string
+  ) => void;
   setCurrentSlide: (id: string | null) => void;
   updateSlideBackground: (
     projectId: string,
@@ -342,25 +347,42 @@ interface EditorActions {
 
   // Block CRUD
   addBlock: (projectId: string, slideId: string, block: Block) => void;
+  addBlocks: (projectId: string, slideId: string, blocks: Block[]) => void;
   updateBlock: (
     projectId: string,
     slideId: string,
     blockId: string,
     updates: Partial<Block>
   ) => void;
+  updateBlocks: (
+    projectId: string,
+    slideId: string,
+    updates: { id: string; changes: Partial<Block> }[]
+  ) => void;
   deleteBlock: (
     projectId: string,
     slideId: string,
     blockId: string
+  ) => void;
+  deleteBlocks: (
+    projectId: string,
+    slideId: string,
+    blockIds: string[]
   ) => void;
   duplicateBlock: (
     projectId: string,
     slideId: string,
     blockId: string
   ) => void;
+  duplicateBlocks: (
+    projectId: string,
+    slideId: string,
+    blockIds: string[]
+  ) => void;
   setSelectedBlock: (id: string | null) => void;
   toggleBlockSelection: (blockId: string) => void;
   clearBlockSelection: () => void;
+  selectAllBlocks: (projectId: string, slideId: string) => void;
 
   // Slide extras
   updateSlideTransition: (
@@ -399,6 +421,7 @@ interface EditorActions {
   getCurrentProject: () => CourseProject | null;
   getCurrentSlide: () => Slide | null;
   getSelectedBlock: () => Block | null;
+  getSelectedBlocks: () => Block[];
 }
 
 type EditorStore = EditorState & EditorActions;
@@ -569,6 +592,47 @@ export const useEditorStore = create<EditorStore>()(
         });
       },
 
+      insertSlideContextual: (projectId, targetSlide, insertAfterId) => {
+        const state = get();
+        const project = state.projects.find((p) => p.id === projectId);
+        if (!project) return;
+
+        const newSlide: Slide = {
+          ...JSON.parse(JSON.stringify(targetSlide)),
+          id: generateId(),
+          blocks: targetSlide.blocks.map((b: Block) => ({ ...b, id: generateId() })),
+        };
+
+        let newSlides = [...project.slides];
+        if (insertAfterId) {
+          const idx = newSlides.findIndex((s) => s.id === insertAfterId);
+          if (idx >= 0) {
+            newSlides.splice(idx + 1, 0, newSlide);
+          } else {
+            newSlides.push(newSlide);
+          }
+        } else {
+          newSlides.push(newSlide);
+        }
+
+        newSlides = newSlides.map((s, i) => ({ ...s, order: i }));
+
+        set({
+          past: [...state.past, state.projects].slice(-MAX_HISTORY),
+          future: [],
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  slides: newSlides,
+                  updatedAt: new Date().toISOString(),
+                }
+              : p
+          ),
+          currentSlideId: newSlide.id,
+        });
+      },
+
       reorderSlides: (projectId, slideIds) => {
         const state = get();
         const project = state.projects.find((p) => p.id === projectId);
@@ -639,6 +703,30 @@ export const useEditorStore = create<EditorStore>()(
               : p
           ),
           selectedBlockId: block.id,
+          selectedBlockIds: [block.id],
+        });
+      },
+
+      addBlocks: (projectId, slideId, blocks) => {
+        const state = get();
+        set({
+          past: [...state.past, state.projects].slice(-MAX_HISTORY),
+          future: [],
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  slides: p.slides.map((s) =>
+                    s.id === slideId
+                      ? { ...s, blocks: [...s.blocks, ...blocks] }
+                      : s
+                  ),
+                  updatedAt: new Date().toISOString(),
+                }
+              : p
+          ),
+          selectedBlockIds: blocks.map((b) => b.id),
+          selectedBlockId: blocks.length === 1 ? blocks[0].id : null,
         });
       },
 
@@ -658,6 +746,33 @@ export const useEditorStore = create<EditorStore>()(
                           blocks: s.blocks.map((b) =>
                             b.id === blockId ? ({ ...b, ...updates } as Block) : b
                           ),
+                        }
+                      : s
+                  ),
+                  updatedAt: new Date().toISOString(),
+                }
+              : p
+          ),
+        });
+      },
+
+      updateBlocks: (projectId, slideId, blockUpdates) => {
+        const state = get();
+        set({
+          past: [...state.past, state.projects].slice(-MAX_HISTORY),
+          future: [],
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  slides: p.slides.map((s) =>
+                    s.id === slideId
+                      ? {
+                          ...s,
+                          blocks: s.blocks.map((b) => {
+                            const update = blockUpdates.find((u) => u.id === b.id);
+                            return update ? ({ ...b, ...update.changes } as Block) : b;
+                          }),
                         }
                       : s
                   ),
@@ -688,6 +803,36 @@ export const useEditorStore = create<EditorStore>()(
           ),
           selectedBlockId:
             state.selectedBlockId === blockId ? null : state.selectedBlockId,
+          selectedBlockIds: state.selectedBlockIds.filter((id) => id !== blockId),
+        });
+      },
+
+      deleteBlocks: (projectId, slideId, blockIds) => {
+        const state = get();
+        set({
+          past: [...state.past, state.projects].slice(-MAX_HISTORY),
+          future: [],
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  slides: p.slides.map((s) =>
+                    s.id === slideId
+                      ? {
+                          ...s,
+                          blocks: s.blocks.filter((b) => !blockIds.includes(b.id)),
+                        }
+                      : s
+                  ),
+                  updatedAt: new Date().toISOString(),
+                }
+              : p
+          ),
+          selectedBlockIds: state.selectedBlockIds.filter((id) => !blockIds.includes(id)),
+          selectedBlockId:
+            state.selectedBlockId && blockIds.includes(state.selectedBlockId)
+              ? null
+              : state.selectedBlockId,
         });
       },
 
@@ -700,7 +845,21 @@ export const useEditorStore = create<EditorStore>()(
       }),
       clearBlockSelection: () => set({ selectedBlockIds: [], selectedBlockId: null }),
 
-      // ─── Duplicate Block ──────────────────────────────
+      // ─── Duplicate Blocks ──────────────────────────────
+
+      selectAllBlocks: (projectId, slideId) => {
+        const state = get();
+        const project = state.projects.find((p) => p.id === projectId);
+        if (!project) return;
+        const slide = project.slides.find((s) => s.id === slideId);
+        if (!slide) return;
+        
+        const allIds = slide.blocks.map(b => b.id);
+        set({
+          selectedBlockIds: allIds,
+          selectedBlockId: allIds.length === 1 ? allIds[0] : null,
+        });
+      },
 
       duplicateBlock: (projectId, slideId, blockId) => {
         const state = get();
@@ -735,6 +894,45 @@ export const useEditorStore = create<EditorStore>()(
               : p
           ),
           selectedBlockId: newBlock.id,
+          selectedBlockIds: [newBlock.id],
+        });
+      },
+
+      duplicateBlocks: (projectId, slideId, blockIds) => {
+        const state = get();
+        const project = state.projects.find((p) => p.id === projectId);
+        if (!project) return;
+        const slide = project.slides.find((s) => s.id === slideId);
+        if (!slide) return;
+
+        const blocksToDuplicate = slide.blocks.filter((b) => blockIds.includes(b.id));
+        if (blocksToDuplicate.length === 0) return;
+
+        const newBlocks: Block[] = blocksToDuplicate.map((block) => ({
+          ...JSON.parse(JSON.stringify(block)),
+          id: generateId(),
+          x: Math.min(block.x + 20, 960 - block.width),
+          y: Math.min(block.y + 20, 540 - block.height),
+        }));
+
+        set({
+          past: [...state.past, state.projects].slice(-MAX_HISTORY),
+          future: [],
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  slides: p.slides.map((s) =>
+                    s.id === slideId
+                      ? { ...s, blocks: [...s.blocks, ...newBlocks] }
+                      : s
+                  ),
+                  updatedAt: new Date().toISOString(),
+                }
+              : p
+          ),
+          selectedBlockIds: newBlocks.map((b) => b.id),
+          selectedBlockId: newBlocks.length === 1 ? newBlocks[0].id : null,
         });
       },
 
@@ -904,6 +1102,19 @@ export const useEditorStore = create<EditorStore>()(
         );
         if (!slide) return null;
         return slide.blocks.find((b) => b.id === state.selectedBlockId) ?? null;
+      },
+
+      getSelectedBlocks: () => {
+        const state = get();
+        const project = state.projects.find(
+          (p) => p.id === state.currentProjectId
+        );
+        if (!project) return [];
+        const slide = project.slides.find(
+          (s) => s.id === state.currentSlideId
+        );
+        if (!slide) return [];
+        return slide.blocks.filter((b) => state.selectedBlockIds.includes(b.id));
       },
       // ─── Cloud Hydration ──────────────────────────────
 

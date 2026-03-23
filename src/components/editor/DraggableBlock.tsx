@@ -15,6 +15,11 @@ import {
   Play,
   Check,
   Loader2,
+  Bold,
+  Italic,
+  Underline,
+  List,
+  Eraser,
 } from "lucide-react";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
@@ -192,6 +197,11 @@ export function DraggableBlock({
     }
   };
 
+  const handleFormat = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+    textRef.current?.focus();
+  };
+
   // ─── Image upload (via /api/upload) ───
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -291,15 +301,38 @@ export function DraggableBlock({
 
       {/* ─── TEXT BLOCK ─── */}
       {block.type === "text" && (
-        <div
-          ref={textRef}
-          className={cn(
-            "w-full h-full overflow-hidden text-sm",
-            isTransparentText ? "" : "rounded-lg",
-            isEditing
-              ? "outline-none cursor-text"
-              : ""
+        <>
+          {isEditing && (
+            <div 
+              className="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700/60 shadow-xl rounded-lg py-1 px-1.5 flex items-center gap-1 z-[100] whitespace-nowrap backdrop-blur-sm"
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <button type="button" onClick={() => handleFormat('bold')} className="p-1.5 hover:bg-slate-800 rounded text-slate-300 hover:text-white transition-colors" title="Negrito">
+                <Bold className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={() => handleFormat('italic')} className="p-1.5 hover:bg-slate-800 rounded text-slate-300 hover:text-white transition-colors" title="Itálico">
+                <Italic className="w-4 h-4" />
+              </button>
+              <button type="button" onClick={() => handleFormat('underline')} className="p-1.5 hover:bg-slate-800 rounded text-slate-300 hover:text-white transition-colors" title="Sublinhado">
+                <Underline className="w-4 h-4" />
+              </button>
+              <div className="w-px h-4 bg-slate-700 mx-1" />
+              <button type="button" onClick={() => handleFormat('insertUnorderedList')} className="p-1.5 hover:bg-slate-800 rounded text-slate-300 hover:text-white transition-colors" title="Lista com Marcadores">
+                <List className="w-4 h-4" />
+              </button>
+              <div className="w-px h-4 bg-slate-700 mx-1" />
+              <button type="button" onClick={() => handleFormat('removeFormat')} className="p-1.5 hover:bg-slate-800 rounded text-slate-300 hover:text-white transition-colors" title="Limpar Formatação">
+                <Eraser className="w-4 h-4" />
+              </button>
+            </div>
           )}
+          <div
+            ref={textRef}
+            className={cn(
+              "w-full h-full overflow-hidden text-sm",
+              isTransparentText ? "" : "rounded-lg",
+              isEditing ? "outline-none cursor-text" : ""
+            )}
           style={{
             fontSize: `${Math.max(10, block.fontSize * 0.7)}px`,
             fontWeight: block.fontWeight,
@@ -325,6 +358,7 @@ export function DraggableBlock({
               : undefined
           }
         />
+        </>
       )}
 
       {/* ─── IMAGE BLOCK ─── */}
