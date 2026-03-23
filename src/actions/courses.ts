@@ -3,15 +3,27 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
-// ─── Get courses for logged-in user (filtered by tenantId) ───
-export async function getUserCourses() {
+// ─── Helper: Get authenticated user with ownership check ───
+async function getAuthenticatedUser() {
   const session = await auth();
   if (!session?.user) throw new Error("Unauthorized");
-
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
   });
   if (!user) throw new Error("User not found");
+  return user;
+}
+
+// ─── Helper: Build ownership filter for queries ───
+function ownershipFilter(user: { id: string; role: string; tenantId: string | null }) {
+  if (user.role === "SUPER_ADMIN") return {};
+  if (!user.tenantId) return { tenantId: null, authorId: user.id };
+  return { tenantId: user.tenantId };
+}
+
+// ─── Get courses for logged-in user (filtered by tenantId) ───
+export async function getUserCourses() {
+  const user = await getAuthenticatedUser();
 
   const selectFields = {
     id: true,
@@ -41,29 +53,22 @@ export async function getUserCourses() {
   });
 }
 
-// ─── Get a single course by ID ───
+// ─── Get a single course by ID (with ownership check) ───
 export async function getCourse(id: string) {
-  const session = await auth();
-  if (!session?.user) throw new Error("Unauthorized");
+  const user = await getAuthenticatedUser();
 
-  const course = await prisma.course.findUnique({
-    where: { id },
+  const course = await prisma.course.findFirst({
+    where: { id, ...ownershipFilter(user) },
   });
 
+  if (!course) throw new Error("Curso não encontrado ou sem permissão.");
   return course;
 }
 
 // ─── Create a new course ───
 export async function createCourse(title: string, description: string, thumbnail: string, courseData: string) {
-  const session = await auth();
-  if (!session?.user) throw new Error("Unauthorized");
+  const user = await getAuthenticatedUser();
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-  });
-  if (!user) throw new Error("User not found");
-
-  // Super Admin can create courses without a tenant
   // Regular users must have a tenant
   if (user.role !== "SUPER_ADMIN" && !user.tenantId) {
     throw new Error("User has no tenant");
@@ -74,7 +79,7 @@ export async function createCourse(title: string, description: string, thumbnail
       title,
       description,
       thumbnail,
-      courseData,
+      courseData: JSON.parse(courseData), // Store as JSON object for PostgreSQL
       tenantId: user.tenantId || null,
       authorId: user.id,
     },
@@ -83,19 +88,25 @@ export async function createCourse(title: string, description: string, thumbnail
   return { id: course.id };
 }
 
-// ─── Save course data (update) ───
+// ─── Save course data (update with ownership check) ───
 export async function saveCourse(
   id: string,
   courseData: string,
   metadata?: { title?: string; description?: string; thumbnail?: string }
 ) {
-  const session = await auth();
-  if (!session?.user) throw new Error("Unauthorized");
+  const user = await getAuthenticatedUser();
+
+  // Verify ownership before updating
+  const existing = await prisma.course.findFirst({
+    where: { id, ...ownershipFilter(user) },
+    select: { id: true },
+  });
+  if (!existing) throw new Error("Curso não encontrado ou sem permissão.");
 
   await prisma.course.update({
     where: { id },
     data: {
-      courseData,
+      courseData: JSON.parse(courseData), // Store as JSON object
       ...(metadata?.title && { title: metadata.title }),
       ...(metadata?.description !== undefined && { description: metadata.description }),
       ...(metadata?.thumbnail && { thumbnail: metadata.thumbnail }),
@@ -106,10 +117,15 @@ export async function saveCourse(
   return { success: true };
 }
 
-// ─── Update course metadata ───
+// ─── Update course metadata (with ownership check) ───
 export async function updateCourseMetadata(id: string, data: { title?: string; description?: string }) {
-  const session = await auth();
-  if (!session?.user) throw new Error("Unauthorized");
+  const user = await getAuthenticatedUser();
+
+  const existing = await prisma.course.findFirst({
+    where: { id, ...ownershipFilter(user) },
+    select: { id: true },
+  });
+  if (!existing) throw new Error("Curso não encontrado ou sem permissão.");
 
   await prisma.course.update({
     where: { id },
@@ -119,10 +135,15 @@ export async function updateCourseMetadata(id: string, data: { title?: string; d
   return { success: true };
 }
 
-// ─── Delete a course ───
+// ─── Delete a course (with ownership check) ───
 export async function deleteCourse(id: string) {
-  const session = await auth();
-  if (!session?.user) throw new Error("Unauthorized");
+  const user = await getAuthenticatedUser();
+
+  const existing = await prisma.course.findFirst({
+    where: { id, ...ownershipFilter(user) },
+    select: { id: true },
+  });
+  if (!existing) throw new Error("Curso não encontrado ou sem permissão.");
 
   await prisma.course.delete({
     where: { id },

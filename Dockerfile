@@ -16,8 +16,9 @@ COPY . .
 RUN npx prisma generate
 
 # Build Next.js (standalone)
+# DATABASE_URL is provided at runtime via env var — use a dummy for build
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV DATABASE_URL="file:/app/data/prod.db"
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 RUN npm run build
 
 # ── Production ────────────────────────────────────────────────
@@ -43,12 +44,12 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/entrypoint.sh ./entrypoint.sh
 RUN chmod +x entrypoint.sh
 
-# Create data directory (will be a volume mount point)
+# Create data directory for uploads
 RUN mkdir -p /app/data
 
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
-ENV DATABASE_URL="file:/app/data/prod.db"
 
+# DATABASE_URL is injected by Coolify at runtime
 CMD ["./entrypoint.sh"]

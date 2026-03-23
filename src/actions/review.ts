@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // ─── Share a Course ───
 export async function shareCourse(title: string, courseData: string) {
   const shared = await prisma.sharedCourse.create({
-    data: { title, courseData },
+    data: { title, courseData: JSON.parse(courseData) },
   });
   return { id: shared.id };
 }

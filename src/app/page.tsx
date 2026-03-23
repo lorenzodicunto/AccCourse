@@ -45,21 +45,22 @@ type CourseRow = {
   title: string;
   description: string;
   thumbnail: string;
-  courseData: string | null;
+  courseData: unknown;
   updatedAt: Date;
   author: { name: string; email: string };
   tenant: { name: string } | null;
 };
 
 // Parse courseData to extract first slide info
-function getFirstSlidePreview(courseData: string | null): {
+function getFirstSlidePreview(courseData: unknown): {
   background: string;
   blocks: { type: string; x: number; y: number; width: number; height: number; content?: string; color?: string; fontSize?: number }[];
   slideCount: number;
 } | null {
   if (!courseData) return null;
   try {
-    const project = JSON.parse(courseData);
+    // PostgreSQL Json: Prisma may return object directly
+    const project = typeof courseData === 'string' ? JSON.parse(courseData) : courseData;
     if (!project.slides || project.slides.length === 0) return null;
     const firstSlide = project.slides[0];
     return {
@@ -151,7 +152,7 @@ export default function DashboardPage() {
         `${course.title} (cópia)`,
         course.description,
         course.thumbnail,
-        course.courseData || ""
+        typeof course.courseData === 'string' ? course.courseData : JSON.stringify(course.courseData || {})
       );
       toast.success("Curso duplicado com sucesso!");
       loadCourses();

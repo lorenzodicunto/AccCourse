@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -29,6 +29,8 @@ model User {
   courses      Course[]
   assets       Asset[]    @relation("uploadedAssets")
   createdAt    DateTime @default(now())
+
+  @@index([tenantId])
 }
 
 model Course {
@@ -36,21 +38,24 @@ model Course {
   title       String
   description String   @default("")
   thumbnail   String   @default("")
-  courseData   String   @default("{}")
+  courseData   Json     @default("{}")
   tenantId    String?
   authorId    String
   tenant      Tenant?  @relation(fields: [tenantId], references: [id])
   author      User     @relation(fields: [authorId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([authorId])
 }
 
-// ─── Review Portal Models (Legacy V1) ─────────────────────────────────────────
+// ─── Review Portal Models ─────────────────────────────────────────────────────
 
 model SharedCourse {
   id         String    @id @default(cuid())
   title      String
-  courseData  String
+  courseData  Json
   createdAt  DateTime  @default(now())
   comments   Comment[]
 }
@@ -72,6 +77,9 @@ model Comment {
   createdAt      DateTime     @default(now())
   sharedCourse   SharedCourse @relation(fields: [sharedCourseId], references: [id], onDelete: Cascade)
   reviewer       Reviewer     @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@index([sharedCourseId])
+  @@index([reviewerId])
 }
 
 // ─── Asset Library ────────────────────────────────────────────────────────────
@@ -87,4 +95,7 @@ model Asset {
   tenant     Tenant?  @relation(fields: [tenantId], references: [id])
   uploader   User     @relation("uploadedAssets", fields: [uploadedBy], references: [id])
   createdAt  DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([uploadedBy])
 }

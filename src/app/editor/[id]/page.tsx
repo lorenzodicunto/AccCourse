@@ -65,7 +65,10 @@ export default function EditorPage() {
 
         let projectData: CourseProject;
         try {
-          projectData = JSON.parse(course.courseData) as CourseProject;
+          // PostgreSQL Json: Prisma returns an object directly
+          projectData = (typeof course.courseData === 'string'
+            ? JSON.parse(course.courseData)
+            : course.courseData) as CourseProject;
           projectData.id = course.id;
         } catch {
           setError("Dados do curso corrompidos.");

@@ -4,6 +4,9 @@ import path from "path";
 import crypto from "crypto";
 import { auth } from "@/lib/auth";
 
+// Maximum file size: 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 export async function POST(request: NextRequest) {
   try {
     // Verify authentication
@@ -25,7 +28,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type (images and fonts only)
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json(
+        { error: `Arquivo muito grande. Máximo permitido: ${MAX_FILE_SIZE / (1024 * 1024)}MB` },
+        { status: 413 }
+      );
+    }
+
+    // Validate file type (images and fonts only — no octet-stream fallback)
     const allowedTypes = [
       "image/jpeg",
       "image/png",
@@ -36,19 +47,16 @@ export async function POST(request: NextRequest) {
       "font/woff2",
       "application/x-font-ttf",
       "application/font-woff2",
-      "application/octet-stream", // fallback for font files
     ];
 
     const ext = path.extname(file.name).toLowerCase();
     const fontExtensions = [".ttf", ".woff2"];
     const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
+    const allowedExtensions = [...fontExtensions, ...imageExtensions];
 
-    if (
-      !allowedTypes.includes(file.type) &&
-      ![...fontExtensions, ...imageExtensions].includes(ext)
-    ) {
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(ext)) {
       return NextResponse.json(
-        { error: "File type not allowed" },
+        { error: "Tipo de arquivo não permitido. Aceitos: imagens (jpg, png, gif, webp, svg) e fontes (ttf, woff2)." },
         { status: 400 }
       );
     }

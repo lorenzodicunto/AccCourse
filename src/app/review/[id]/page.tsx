@@ -71,7 +71,7 @@ export default function ReviewPage() {
           setLoading(false);
           return;
         }
-        const parsed = JSON.parse(data.courseData) as CourseProject;
+        const parsed = (typeof data.courseData === 'string' ? JSON.parse(data.courseData) : data.courseData) as CourseProject;
         setProject(parsed);
 
         // Check for existing reviewer in localStorage

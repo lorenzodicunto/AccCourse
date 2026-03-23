@@ -1,18 +1,26 @@
 #!/bin/sh
 set -e
 
-# Initialize database only if it doesn't exist
-if [ ! -f /app/data/prod.db ]; then
-  echo "🗄️  Database not found. Creating new database..."
-  mkdir -p /app/data
-  npx prisma db push --skip-generate
-  node prisma/seed.js
-  echo "✅ Database created and seeded."
-else
-  echo "✅ Existing database found. Applying schema changes..."
-  npx prisma db push --skip-generate 2>&1 || echo "⚠️  Schema push had warnings — review above output."
-  echo "✅ Database ready."
-fi
+echo "🗄️  Applying database schema to PostgreSQL..."
+npx prisma db push --skip-generate 2>&1 || echo "⚠️  Schema push had warnings — review above output."
+
+# Seed if no users exist (idempotent check)
+node -e "
+  const { PrismaClient } = require('@prisma/client');
+  const prisma = new PrismaClient();
+  (async () => {
+    const count = await prisma.user.count();
+    if (count === 0) {
+      console.log('🌱 No users found. Running seed...');
+      require('./prisma/seed.js');
+    } else {
+      console.log('✅ Database already has data. Skipping seed.');
+    }
+    await prisma.\$disconnect();
+  })().catch(e => { console.error(e); process.exit(1); });
+"
+
+echo "✅ Database ready."
 
 # Ensure uploads directory exists
 mkdir -p /app/data/uploads
