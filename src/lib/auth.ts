@@ -14,16 +14,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
+        console.log("[AUTH] Attempting login for:", credentials.email);
+
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
         });
 
-        if (!user) return null;
+        if (!user) {
+          console.log("[AUTH] User not found:", credentials.email);
+          return null;
+        }
+
+        console.log("[AUTH] User found:", user.email, "role:", user.role, "hash length:", user.passwordHash?.length);
 
         const isValid = await bcrypt.compare(
           credentials.password as string,
           user.passwordHash
         );
+
+        console.log("[AUTH] Password valid:", isValid);
 
         if (!isValid) return null;
 
