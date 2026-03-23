@@ -12,12 +12,12 @@ export function RibbonGroup({ label, children, className }: RibbonGroupProps) {
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-1 px-3 border-r border-border/30 last:border-r-0",
+        "flex flex-col items-center gap-1 px-3 border-r border-white/5 last:border-r-0",
         className
       )}
     >
       <div className="flex items-center gap-1 flex-1">{children}</div>
-      <span className="text-[9px] font-medium text-muted-foreground/70 tracking-wide uppercase whitespace-nowrap">
+      <span className="text-[9px] font-medium text-slate-500 tracking-wide uppercase whitespace-nowrap">
         {label}
       </span>
     </div>
@@ -52,9 +52,9 @@ export function RibbonButton({
         disabled={disabled}
         title={title ?? label}
         className={cn(
-          "flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg transition-all text-muted-foreground",
-          "hover:bg-accent/10 hover:text-accent-foreground",
-          active && "bg-accent/15 text-primary shadow-sm",
+          "flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg transition-all text-slate-400 cursor-pointer",
+          "hover:bg-white/10 hover:text-white",
+          active && "bg-purple-500/15 text-purple-400 shadow-sm",
           disabled && "opacity-40 pointer-events-none",
           className
         )}
@@ -75,9 +75,9 @@ export function RibbonButton({
       disabled={disabled}
       title={title ?? label}
       className={cn(
-        "h-8 w-8 flex items-center justify-center rounded-md transition-all text-muted-foreground",
-        "hover:bg-accent/10 hover:text-accent-foreground",
-        active && "bg-accent/15 text-primary",
+        "h-8 w-8 flex items-center justify-center rounded-md transition-all text-slate-400 cursor-pointer",
+        "hover:bg-white/10 hover:text-white",
+        active && "bg-purple-500/15 text-purple-400",
         disabled && "opacity-40 pointer-events-none",
         className
       )}

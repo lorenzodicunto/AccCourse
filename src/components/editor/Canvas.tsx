@@ -131,9 +131,9 @@ export function Canvas() {
   const currentSlideIndex = slides.findIndex((s) => s.id === slide?.id);
 
   return (
-    <div className="flex-1 flex flex-col bg-gradient-to-b from-slate-100 to-slate-200/80 overflow-hidden relative">
+    <div className="flex-1 flex flex-col overflow-hidden relative" style={{ background: '#0F172A' }}>
       {/* Ruler Horizontal */}
-      <div className="h-6 bg-white/80 border-b border-border/30 flex items-end px-0 flex-shrink-0 pointer-events-none overflow-hidden">
+      <div className="h-6 border-b border-white/5 flex items-end px-0 flex-shrink-0 pointer-events-none overflow-hidden" style={{ background: '#1E293B' }}>
         <div className="flex-1 flex items-end justify-center">
           <div
             className="relative"
@@ -164,7 +164,7 @@ export function Canvas() {
       {/* Canvas Area with Vertical Ruler */}
       <div className="flex-1 flex overflow-hidden">
         {/* Ruler Vertical */}
-        <div className="w-6 bg-white/80 border-r border-border/30 flex-shrink-0 pointer-events-none relative overflow-hidden">
+        <div className="w-6 border-r border-white/5 flex-shrink-0 pointer-events-none relative overflow-hidden" style={{ background: '#1E293B' }}>
           <div className="absolute inset-0 flex items-center justify-center">
             <div
               className="relative"
@@ -196,7 +196,7 @@ export function Canvas() {
         <div className="flex-1 flex items-center justify-center p-6 overflow-auto">
           <div
             ref={canvasRef}
-            className={`relative bg-white rounded-xl shadow-xl shadow-black/[0.06] border border-border/30 transition-all duration-300 origin-center ${
+            className={`relative bg-white rounded-xl shadow-2xl shadow-black/30 border border-white/10 transition-all duration-300 origin-center ${
               previewMode === "mobile"
                 ? "w-[375px]"
                 : "w-full max-w-[960px]"
@@ -277,7 +277,7 @@ export function Canvas() {
       </div>
 
       {/* Slide indicator at bottom of canvas */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1 rounded-full bg-black/5 backdrop-blur-sm text-[10px] text-muted-foreground/60 font-mono">
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3 py-1 rounded-full backdrop-blur-sm text-[10px] font-mono" style={{ background: 'rgba(30, 41, 59, 0.8)', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.08)' }}>
         <span>
           Slide {currentSlideIndex + 1} de {slides.length}
         </span>
@@ -286,9 +286,9 @@ export function Canvas() {
       </div>
 
       {/* Zoom Controls */}
-      <div className="absolute bottom-2 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 backdrop-blur-sm border border-border/30 shadow-sm">
-        <button onClick={zoomOut} className="p-0.5 rounded hover:bg-slate-100 transition-colors" title="Zoom Out (Ctrl+-)">
-          <ZoomOut className="h-3.5 w-3.5 text-slate-500" />
+      <div className="absolute bottom-2 right-3 flex items-center gap-1 px-2 py-1 rounded-full backdrop-blur-sm shadow-sm" style={{ background: 'rgba(30, 41, 59, 0.9)', border: '1px solid rgba(255,255,255,0.08)' }}>
+        <button onClick={zoomOut} className="p-0.5 rounded hover:bg-white/10 transition-colors cursor-pointer" title="Zoom Out (Ctrl+-)">
+          <ZoomOut className="h-3.5 w-3.5 text-slate-400" />
         </button>
         <input
           type="range"
@@ -299,11 +299,11 @@ export function Canvas() {
           className="w-16 h-1 accent-violet-500 cursor-pointer"
           title={`Zoom: ${zoom}%`}
         />
-        <button onClick={zoomIn} className="p-0.5 rounded hover:bg-slate-100 transition-colors" title="Zoom In (Ctrl+=)">
+        <button onClick={zoomIn} className="p-0.5 rounded hover:bg-white/10 transition-colors cursor-pointer" title="Zoom In (Ctrl+=)">
           <ZoomIn className="h-3.5 w-3.5 text-slate-500" />
         </button>
         <span className="text-[9px] font-mono text-slate-400 w-7 text-center">{zoom}%</span>
-        <button onClick={zoomFit} className="p-0.5 rounded hover:bg-slate-100 transition-colors" title="Ajustar (Ctrl+0)">
+        <button onClick={zoomFit} className="p-0.5 rounded hover:bg-white/10 transition-colors cursor-pointer" title="Ajustar (Ctrl+0)">
           <Maximize className="h-3 w-3 text-slate-400" />
         </button>
       </div>

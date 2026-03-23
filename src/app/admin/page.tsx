@@ -85,17 +85,17 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex">
+    <div className="min-h-screen flex" style={{ background: '#0F172A' }}>
       {/* Sidebar */}
-      <aside className="w-64 bg-zinc-900 text-white flex flex-col flex-shrink-0">
+      <aside className="w-64 flex flex-col flex-shrink-0" style={{ background: '#0F172A', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
         <div className="p-5 border-b border-white/10">
           <div className="flex items-center gap-3 mb-1">
-            <div className="h-9 w-9 rounded-xl bg-primary flex items-center justify-center">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}>
               <Shield className="h-4.5 w-4.5 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight">Admin Portal</h1>
-              <p className="text-[10px] text-zinc-400">AccCourse Enterprise</p>
+              <h1 className="text-sm font-bold tracking-tight text-white">Admin Portal</h1>
+              <p className="text-[10px] text-slate-500">AccCourse 2.0</p>
             </div>
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function AdminPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start gap-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl"
+            className="w-full justify-start gap-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl cursor-pointer"
             onClick={() => router.push("/")}
           >
             <ArrowLeft className="h-4 w-4" />
@@ -138,7 +138,7 @@ export default function AdminPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start gap-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl"
+            className="w-full justify-start gap-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl cursor-pointer"
             onClick={() => signOut({ callbackUrl: "/login" })}
           >
             <LogOut className="h-4 w-4" />
@@ -148,8 +148,8 @@ export default function AdminPage() {
 
         <div className="px-4 pb-4">
           <div className="bg-white/5 rounded-xl p-3">
-            <p className="text-xs text-zinc-400">{session?.user?.email}</p>
-            <p className="text-[10px] text-zinc-500 mt-0.5">Super Admin</p>
+            <p className="text-xs text-slate-400">{session?.user?.email}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Super Admin</p>
           </div>
         </div>
       </aside>
@@ -170,8 +170,9 @@ export default function AdminPage() {
               </p>
             </div>
             <Button
-              className="gap-2 rounded-xl bg-primary shadow-lg shadow-primary/25"
+              className="gap-2 rounded-xl text-white shadow-lg shadow-purple-500/25 cursor-pointer"
               onClick={() => setDialogOpen(true)}
+              style={{ background: 'linear-gradient(135deg, #7C3AED, #6D28D9)' }}
             >
               <Plus className="h-4 w-4" />
               Provisionar Cliente
@@ -184,11 +185,11 @@ export default function AdminPage() {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : activeTab === "tenants" ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-border/50 overflow-hidden">
+            <div className="rounded-2xl overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.06)' }}>
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border/50 bg-zinc-50/50">
-                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3.5">
+                  <tr className="border-b border-white/5" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                    <th className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-6 py-3.5">
                       Empresa
                     </th>
                     <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3.5">
@@ -202,7 +203,7 @@ export default function AdminPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/30">
+                <tbody className="divide-y divide-white/5">
                   {tenants.length === 0 ? (
                     <tr>
                       <td
@@ -215,7 +216,7 @@ export default function AdminPage() {
                     </tr>
                   ) : (
                     tenants.map((t) => (
-                      <tr key={t.id} className="hover:bg-zinc-50/50 transition-colors">
+                      <tr key={t.id} className="hover:bg-white/5 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -242,10 +243,10 @@ export default function AdminPage() {
               </table>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl shadow-sm border border-border/50 overflow-hidden">
+            <div className="rounded-2xl overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.06)' }}>
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border/50 bg-zinc-50/50">
+                  <tr className="border-b border-white/5" style={{ background: 'rgba(255,255,255,0.02)' }}>
                     <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3.5">
                       Usuário
                     </th>
@@ -260,9 +261,9 @@ export default function AdminPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/30">
+                <tbody className="divide-y divide-white/5">
                   {users.map((u) => (
-                    <tr key={u.id} className="hover:bg-zinc-50/50 transition-colors">
+                    <tr key={u.id} className="hover:bg-white/5 transition-colors">
                       <td className="px-6 py-4">
                         <div>
                           <p className="text-sm font-medium text-foreground">
@@ -277,8 +278,8 @@ export default function AdminPage() {
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             u.role === "SUPER_ADMIN"
-                              ? "bg-red-50 text-red-700 border border-red-200"
-                              : "bg-violet-50 text-violet-700 border border-violet-200"
+                              ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                              : "bg-purple-500/10 text-purple-400 border border-purple-500/20"
                           }`}
                         >
                           {u.role === "SUPER_ADMIN" ? "Super Admin" : "Author"}
@@ -306,7 +307,7 @@ export default function AdminPage() {
           onClick={() => setDialogOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200"
+            className="glass-card rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-5">

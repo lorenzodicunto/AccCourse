@@ -509,13 +509,13 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
   return (
     <>
       {/* Title Bar — Above the Ribbon */}
-      <div className="h-10 bg-white border-b border-border/40 flex items-center justify-between px-3 flex-shrink-0">
+      <div className="h-10 border-b border-white/5 flex items-center justify-between px-3 flex-shrink-0" style={{ background: '#0F172A' }}>
         {/* Left: Back + Logo + Title */}
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
-            className="rounded-lg h-7 w-7 p-0"
+            className="rounded-lg h-7 w-7 p-0 text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
             onClick={() => router.push("/")}
             title="Voltar ao Dashboard"
           >
@@ -532,13 +532,13 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
                 onChange={(e) => setTitleValue(e.target.value)}
                 onBlur={handleTitleBlur}
                 onKeyDown={(e) => e.key === "Enter" && handleTitleBlur()}
-                className="text-sm font-semibold bg-transparent border-b-2 border-primary outline-none py-0.5 px-1 min-w-[200px]"
+                className="text-sm font-semibold bg-transparent border-b-2 border-primary outline-none py-0.5 px-1 min-w-[200px] text-white"
                 autoFocus
               />
             ) : (
               <button
                 onClick={handleTitleClick}
-                className="text-sm font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+                className="text-sm font-semibold text-white hover:text-purple-300 transition-colors cursor-pointer"
               >
                 {project?.title ?? "Sem título"}
               </button>
@@ -567,7 +567,7 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="gap-1.5 rounded-lg text-xs h-7 text-emerald-700 hover:bg-emerald-50"
+            className="gap-1.5 rounded-lg text-xs h-7 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
             onClick={handleSaveToCloud}
             disabled={saving || !project}
           >
@@ -582,7 +582,7 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="gap-1.5 rounded-lg text-xs h-7 text-primary hover:bg-primary/5"
+            className="gap-1.5 rounded-lg text-xs h-7 text-purple-400 hover:bg-purple-500/10 cursor-pointer"
             onClick={handleShare}
             disabled={sharing || !project}
           >
@@ -668,9 +668,9 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
       </div>
 
       {/* Ribbon Tabs */}
-      <div className="bg-white border-b border-border/40 flex-shrink-0">
+      <div className="border-b border-white/5 flex-shrink-0" style={{ background: '#1E293B' }}>
         {/* Tab Headers */}
-        <div className="flex items-center gap-0 px-3 border-b border-border/20">
+        <div className="flex items-center gap-0 px-3 border-b border-white/5">
           {RIBBON_TABS.map((tab) => (
             <button
               key={tab.id}

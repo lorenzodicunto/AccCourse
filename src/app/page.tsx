@@ -33,6 +33,10 @@ import {
   HelpCircle,
   CreditCard,
   Play,
+  Bell,
+  BookOpen,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -143,7 +147,7 @@ export default function DashboardPage() {
 
   const handleDuplicate = async (course: CourseRow) => {
     try {
-      const result = await createCourse(
+      await createCourse(
         `${course.title} (cópia)`,
         course.description,
         course.thumbnail,
@@ -175,44 +179,77 @@ export default function DashboardPage() {
 
   const isAdmin = session?.user?.role === "SUPER_ADMIN";
 
+  // Stats
+  const totalCourses = courses.length;
+  const totalSlides = courses.reduce((sum, c) => {
+    const preview = getFirstSlidePreview(c.courseData);
+    return sum + (preview?.slideCount || 1);
+  }, 0);
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen" style={{ background: '#0F172A' }}>
+      {/* Ambient background glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-8 blur-3xl"
+          style={{ background: 'radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%)' }}
+        />
+        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full opacity-8 blur-3xl"
+          style={{ background: 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)' }}
+        />
+      </div>
+
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-border/50 bg-white/80 backdrop-blur-xl">
-        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-40 border-b border-white/5"
+        style={{ background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(16px)' }}
+      >
+        <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-primary shadow-lg shadow-primary/25">
+            <div className="flex items-center justify-center h-10 w-10 rounded-xl shadow-lg"
+              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)', boxShadow: '0 4px 20px rgba(124, 58, 237, 0.3)' }}
+            >
               <GraduationCap className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-foreground">
+              <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
                 AccCourse
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md text-purple-300"
+                  style={{ background: 'rgba(124, 58, 237, 0.2)' }}
+                >
+                  2.0
+                </span>
               </h1>
-              <p className="text-[11px] text-muted-foreground leading-none -mt-0.5">
+              <p className="text-[11px] text-slate-500 leading-none -mt-0.5">
                 Plataforma Enterprise E-Learning
               </p>
             </div>
           </div>
 
           {/* Right side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {isAdmin && (
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 rounded-xl border-red-200 text-red-700 hover:bg-red-50"
+                className="gap-2 rounded-xl border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent cursor-pointer"
                 onClick={() => router.push("/admin")}
               >
                 <Shield className="h-4 w-4" />
                 Admin
               </Button>
             )}
+
+            {/* Notifications */}
+            <button className="relative p-2 rounded-xl hover:bg-white/5 transition-colors text-slate-400 hover:text-white cursor-pointer">
+              <Bell className="h-5 w-5" />
+            </button>
+
             <Button
-              className="gap-2 rounded-xl bg-primary shadow-lg shadow-primary/25"
+              className="gap-2 rounded-xl text-white shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 transition-all cursor-pointer"
               size="sm"
               onClick={handleCreateCourse}
               disabled={creating}
+              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)' }}
             >
               {creating ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -223,19 +260,24 @@ export default function DashboardPage() {
             </Button>
 
             {/* User info + Logout */}
-            <div className="flex items-center gap-2 ml-2 pl-3 border-l border-border/50">
-              <div className="text-right">
-                <p className="text-xs font-medium text-foreground">
+            <div className="flex items-center gap-2 ml-1 pl-3 border-l border-white/10">
+              <div className="flex items-center justify-center h-8 w-8 rounded-full text-xs font-semibold text-white"
+                style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)' }}
+              >
+                {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
+              </div>
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-medium text-white">
                   {session?.user?.name}
                 </p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[10px] text-slate-500">
                   {session?.user?.email}
                 </p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 rounded-lg"
+                className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer"
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 title="Sair"
               >
@@ -247,14 +289,47 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-6 py-10">
+      <main className="relative mx-auto max-w-7xl px-6 py-8">
+        {/* Stats Cards — only show if there are courses */}
+        {!loading && courses.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 animate-fade-in">
+            <div className="glass-card rounded-xl p-4 flex items-center gap-3">
+              <div className="flex items-center justify-center h-10 w-10 rounded-lg" style={{ background: 'rgba(124, 58, 237, 0.15)' }}>
+                <BookOpen className="h-5 w-5 text-purple-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">{totalCourses}</p>
+                <p className="text-xs text-slate-400">Cursos Criados</p>
+              </div>
+            </div>
+            <div className="glass-card rounded-xl p-4 flex items-center gap-3">
+              <div className="flex items-center justify-center h-10 w-10 rounded-lg" style={{ background: 'rgba(59, 130, 246, 0.15)' }}>
+                <Layers className="h-5 w-5 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">{totalSlides}</p>
+                <p className="text-xs text-slate-400">Total de Slides</p>
+              </div>
+            </div>
+            <div className="glass-card rounded-xl p-4 flex items-center gap-3">
+              <div className="flex items-center justify-center h-10 w-10 rounded-lg" style={{ background: 'rgba(16, 185, 129, 0.15)' }}>
+                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">{totalCourses}</p>
+                <p className="text-xs text-slate-400">Publicados</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Section Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-foreground">
+            <h2 className="text-2xl font-bold text-white">
               Meus Cursos
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-slate-400 mt-1">
               {loading
                 ? "Carregando..."
                 : courses.length === 0
@@ -266,12 +341,12 @@ export default function DashboardPage() {
           {/* Search */}
           {courses.length > 0 && (
             <div className="relative w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
               <Input
                 placeholder="Buscar cursos..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 rounded-xl bg-muted/50 border-0 focus-visible:bg-white focus-visible:ring-1"
+                className="pl-9 rounded-xl bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/30 focus:bg-white/8"
               />
             </div>
           )}
@@ -280,17 +355,23 @@ export default function DashboardPage() {
         {/* Projects Grid */}
         {loading ? (
           <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
           </div>
         ) : filteredCourses.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filteredCourses.map((course) => {
               const slidePreview = getFirstSlidePreview(course.courseData);
               return (
                 <div
                   key={course.id}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-border/50 shadow-sm hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-1"
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 transition-all duration-300 hover:border-purple-500/30 cursor-pointer animate-fade-in"
+                  style={{ background: '#1E293B' }}
                 >
+                  {/* Hover glow */}
+                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    style={{ boxShadow: '0 0 40px rgba(124, 58, 237, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)' }}
+                  />
+
                   {/* Thumbnail / Slide Preview */}
                   <button
                     onClick={() => router.push(`/editor/${course.id}`)}
@@ -329,8 +410,8 @@ export default function DashboardPage() {
                                 }}
                               />
                             ) : (
-                              <div className="w-full h-full rounded-sm bg-muted/30 flex items-center justify-center">
-                                <div className="h-3 w-3 text-muted-foreground/40">
+                              <div className="w-full h-full rounded-sm bg-slate-200/30 flex items-center justify-center">
+                                <div className="h-3 w-3 text-slate-400/40">
                                   <MiniBlockIcon type={block.type} />
                                 </div>
                               </div>
@@ -341,7 +422,7 @@ export default function DashboardPage() {
                         {/* Empty slide indicator */}
                         {slidePreview.blocks.length === 0 && (
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-xs text-muted-foreground/30 font-medium">
+                            <div className="text-xs text-slate-400/30 font-medium">
                               Slide vazio
                             </div>
                           </div>
@@ -354,15 +435,17 @@ export default function DashboardPage() {
                         style={{
                           background:
                             course.thumbnail ||
-                            "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            "linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)",
                         }}
                       />
                     )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
 
                     {/* Slide count badge */}
                     <div className="absolute bottom-2 left-2">
-                      <span className="inline-flex items-center gap-1 bg-white/90 backdrop-blur-sm text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm"
+                        style={{ background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)', color: '#E2E8F0', border: '1px solid rgba(255,255,255,0.1)' }}
+                      >
                         <Layers className="h-3 w-3" />
                         {slidePreview?.slideCount ?? 1} slide
                         {(slidePreview?.slideCount ?? 1) !== 1 ? "s" : ""}
@@ -374,24 +457,27 @@ export default function DashboardPage() {
                   <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button
                       onClick={() => router.push(`/editor/${course.id}`)}
-                      className="p-1.5 rounded-lg bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg shadow-sm hover:bg-white/20 transition-colors cursor-pointer"
                       title="Editar"
+                      style={{ background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}
                     >
-                      <Pencil className="h-3.5 w-3.5 text-foreground" />
+                      <Pencil className="h-3.5 w-3.5 text-white" />
                     </button>
                     <button
                       onClick={() => handleDuplicate(course)}
-                      className="p-1.5 rounded-lg bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg shadow-sm hover:bg-white/20 transition-colors cursor-pointer"
                       title="Duplicar"
+                      style={{ background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}
                     >
-                      <Copy className="h-3.5 w-3.5 text-foreground" />
+                      <Copy className="h-3.5 w-3.5 text-white" />
                     </button>
                     <button
                       onClick={() => handleDelete(course)}
-                      className="p-1.5 rounded-lg bg-white/90 backdrop-blur-sm shadow-sm hover:bg-red-50 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg shadow-sm hover:bg-red-500/20 transition-colors cursor-pointer"
                       title="Excluir"
+                      style={{ background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}
                     >
-                      <Trash2 className="h-3.5 w-3.5 text-red-600" />
+                      <Trash2 className="h-3.5 w-3.5 text-red-400" />
                     </button>
                   </div>
 
@@ -402,7 +488,7 @@ export default function DashboardPage() {
                         onClick={() => router.push(`/editor/${course.id}`)}
                         className="text-left flex-1 cursor-pointer"
                       >
-                        <h3 className="font-semibold text-sm text-foreground leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+                        <h3 className="font-semibold text-sm text-white leading-tight line-clamp-1 group-hover:text-purple-300 transition-colors">
                           {course.title}
                         </h3>
                       </button>
@@ -411,30 +497,30 @@ export default function DashboardPage() {
                       <DropdownMenu>
                         <DropdownMenuTrigger
                           render={
-                            <button className="p-1.5 rounded-lg hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" />
+                            <button className="p-1.5 rounded-lg hover:bg-white/5 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" />
                           }
                         >
-                          <MoreVertical className="h-4 w-4 text-muted-foreground" />
+                          <MoreVertical className="h-4 w-4 text-slate-400" />
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 rounded-xl">
+                        <DropdownMenuContent align="end" className="w-48 rounded-xl bg-slate-800 border-white/10">
                           <DropdownMenuItem
                             onClick={() => router.push(`/editor/${course.id}`)}
-                            className="gap-2 cursor-pointer"
+                            className="gap-2 cursor-pointer text-slate-300 hover:text-white focus:text-white focus:bg-white/5"
                           >
                             <Pencil className="h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDuplicate(course)}
-                            className="gap-2 cursor-pointer"
+                            className="gap-2 cursor-pointer text-slate-300 hover:text-white focus:text-white focus:bg-white/5"
                           >
                             <Copy className="h-4 w-4" />
                             Duplicar
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator />
+                          <DropdownMenuSeparator className="bg-white/5" />
                           <DropdownMenuItem
                             onClick={() => handleDelete(course)}
-                            className="gap-2 text-destructive focus:text-destructive cursor-pointer"
+                            className="gap-2 text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
                           >
                             <Trash2 className="h-4 w-4" />
                             Excluir
@@ -444,14 +530,16 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Date */}
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Atualizado{" "}
-                      {new Date(course.updatedAt).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <Clock className="h-3 w-3 text-slate-500" />
+                      <p className="text-xs text-slate-500">
+                        {new Date(course.updatedAt).toLocaleDateString("pt-BR", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
                   </div>
                 </div>
               );
@@ -459,21 +547,24 @@ export default function DashboardPage() {
           </div>
         ) : courses.length === 0 ? (
           /* Empty State */
-          <div className="flex flex-col items-center justify-center py-24">
-            <div className="flex items-center justify-center h-20 w-20 rounded-3xl bg-primary/10 mb-6">
-              <LayoutGrid className="h-10 w-10 text-primary" />
+          <div className="flex flex-col items-center justify-center py-24 animate-fade-in">
+            <div className="flex items-center justify-center h-24 w-24 rounded-3xl mb-6"
+              style={{ background: 'rgba(124, 58, 237, 0.1)', border: '1px solid rgba(124, 58, 237, 0.2)' }}
+            >
+              <LayoutGrid className="h-12 w-12 text-purple-400" />
             </div>
-            <h3 className="text-xl font-semibold text-foreground mb-2">
+            <h3 className="text-xl font-semibold text-white mb-2">
               Nenhum curso criado ainda
             </h3>
-            <p className="text-muted-foreground text-center max-w-md mb-8">
+            <p className="text-slate-400 text-center max-w-md mb-8">
               Crie seu primeiro curso interativo e-learning com nosso editor
               visual drag-and-drop. Exporte para SCORM 1.2 com um clique.
             </p>
             <Button
-              className="gap-2 rounded-xl"
+              className="gap-2 rounded-xl text-white shadow-lg shadow-purple-500/25 cursor-pointer"
               onClick={handleCreateCourse}
               disabled={creating}
+              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)' }}
             >
               <Plus className="h-4 w-4" />
               Criar Primeiro Curso
@@ -482,11 +573,11 @@ export default function DashboardPage() {
         ) : (
           /* No results */
           <div className="flex flex-col items-center justify-center py-24">
-            <Search className="h-12 w-12 text-muted-foreground/40 mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-1">
+            <Search className="h-12 w-12 text-slate-600 mb-4" />
+            <h3 className="text-lg font-semibold text-white mb-1">
               Nenhum resultado encontrado
             </h3>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-slate-400 text-sm">
               Tente buscar com outros termos
             </p>
           </div>

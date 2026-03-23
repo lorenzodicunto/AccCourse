@@ -229,7 +229,7 @@ export function SlideNavigator() {
   };
 
   return (
-    <div className="w-[200px] bg-slate-900 flex flex-col flex-shrink-0">
+    <div className="w-[200px] flex flex-col flex-shrink-0" style={{ background: '#1E293B', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
       {/* Header */}
       <div className="p-3 border-b border-white/10 flex items-center justify-between">
         <h3 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">

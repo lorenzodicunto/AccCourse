@@ -104,13 +104,13 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-border/30 last:border-b-0">
+    <div className="border-b border-white/5 last:border-b-0">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-muted/30 transition-colors text-left"
+        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-white/5 transition-colors text-left cursor-pointer"
       >
         {icon}
-        <span className="text-[11px] font-semibold text-foreground/80 uppercase tracking-wider flex-1">
+        <span className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex-1">
           {title}
         </span>
         <ChevronDown
@@ -288,7 +288,7 @@ export function PropertiesPanel() {
   };
 
   return (
-    <div className="w-[280px] bg-white border-l border-border/40 flex flex-col flex-shrink-0">
+    <div className="w-[280px] border-l border-white/5 flex flex-col flex-shrink-0" style={{ background: '#1E293B' }}>
       {/* Panel Header */}
       <div className="px-4 py-2.5 border-b border-border/40 flex items-center gap-2">
         <Settings2 className="h-3.5 w-3.5 text-muted-foreground" />

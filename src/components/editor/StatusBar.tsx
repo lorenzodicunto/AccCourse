@@ -92,7 +92,7 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
   };
 
   return (
-    <div className="h-7 bg-slate-800 flex items-center justify-between px-3 flex-shrink-0 text-slate-400 select-none">
+    <div className="h-7 flex items-center justify-between px-3 flex-shrink-0 text-slate-400 select-none" style={{ background: '#0F172A', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
       {/* Left: Breadcrumb */}
       <div className="flex items-center gap-1.5">
         <span className="text-[10px] font-mono">
