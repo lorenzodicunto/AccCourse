@@ -67,6 +67,10 @@ export interface FlashcardBlock extends BaseBlock {
   backContent: string;
   frontBg: string;
   backBg: string;
+  frontColor: string;
+  backColor: string;
+  frontImage?: string;
+  backImage?: string;
 }
 
 export interface QuizOption {

@@ -388,13 +388,22 @@ export function DraggableBlock({
           >
             {/* Front */}
             <div
-              className="absolute inset-0 rounded-lg flex items-center justify-center text-white font-semibold text-sm shadow-inner"
+              className="absolute inset-0 rounded-lg flex items-center justify-center font-semibold text-sm shadow-inner overflow-hidden"
               style={{
                 backgroundColor: block.frontBg,
+                color: block.frontColor || "#ffffff",
                 backfaceVisibility: "hidden",
               }}
             >
-              <div className="text-center px-4">
+              {block.frontImage && (
+                <img
+                  src={block.frontImage}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                  draggable={false}
+                />
+              )}
+              <div className="text-center px-4 relative z-10">
                 <CreditCard className="h-6 w-6 mx-auto mb-2 opacity-60" />
                 <p className="line-clamp-3">{block.frontContent}</p>
                 <span className="text-[10px] opacity-50 mt-2 block">
@@ -404,14 +413,23 @@ export function DraggableBlock({
             </div>
             {/* Back */}
             <div
-              className="absolute inset-0 rounded-lg flex items-center justify-center text-white font-semibold text-sm shadow-inner"
+              className="absolute inset-0 rounded-lg flex items-center justify-center font-semibold text-sm shadow-inner overflow-hidden"
               style={{
                 backgroundColor: block.backBg,
+                color: block.backColor || "#ffffff",
                 backfaceVisibility: "hidden",
                 transform: "rotateY(180deg)",
               }}
             >
-              <div className="text-center px-4">
+              {block.backImage && (
+                <img
+                  src={block.backImage}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                  draggable={false}
+                />
+              )}
+              <div className="text-center px-4 relative z-10">
                 <p className="line-clamp-4">{block.backContent}</p>
                 <span className="text-[10px] opacity-50 mt-2 block">
                   ← Clique para voltar

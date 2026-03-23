@@ -876,8 +876,10 @@ export function PropertiesPanel() {
                     placeholder="Conteúdo do verso..."
                   />
                 </FieldRow>
+
+                {/* Cores de fundo */}
                 <div className="grid grid-cols-2 gap-2">
-                  <FieldRow label="Cor 1">
+                  <FieldRow label="Fundo Frente">
                     <input
                       type="color"
                       value={block.frontBg}
@@ -889,7 +891,7 @@ export function PropertiesPanel() {
                       className="w-full h-7 rounded-md border border-border cursor-pointer"
                     />
                   </FieldRow>
-                  <FieldRow label="Cor 2">
+                  <FieldRow label="Fundo Verso">
                     <input
                       type="color"
                       value={block.backBg}
@@ -902,6 +904,132 @@ export function PropertiesPanel() {
                     />
                   </FieldRow>
                 </div>
+
+                {/* Cores de texto */}
+                <div className="grid grid-cols-2 gap-2">
+                  <FieldRow label="Texto Frente">
+                    <input
+                      type="color"
+                      value={block.frontColor || "#ffffff"}
+                      onChange={(e) =>
+                        handleUpdate({
+                          frontColor: e.target.value,
+                        } as Partial<Block>)
+                      }
+                      className="w-full h-7 rounded-md border border-border cursor-pointer"
+                    />
+                  </FieldRow>
+                  <FieldRow label="Texto Verso">
+                    <input
+                      type="color"
+                      value={block.backColor || "#ffffff"}
+                      onChange={(e) =>
+                        handleUpdate({
+                          backColor: e.target.value,
+                        } as Partial<Block>)
+                      }
+                      className="w-full h-7 rounded-md border border-border cursor-pointer"
+                    />
+                  </FieldRow>
+                </div>
+
+                {/* Imagem da Frente */}
+                <FieldRow label="Imagem Frente">
+                  <div className="space-y-1.5">
+                    {block.frontImage ? (
+                      <div className="relative group rounded-md overflow-hidden border border-border">
+                        <img
+                          src={block.frontImage}
+                          alt="Frente"
+                          className="w-full h-16 object-contain bg-black/20"
+                        />
+                        <button
+                          onClick={() =>
+                            handleUpdate({ frontImage: undefined } as Partial<Block>)
+                          }
+                          className="absolute top-1 right-1 p-0.5 rounded bg-red-500/80 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remover imagem"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : null}
+                    <label className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors">
+                      <ImageUp className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">
+                        {block.frontImage ? "Trocar imagem" : "Upload imagem"}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const formData = new FormData();
+                          formData.append("file", file);
+                          try {
+                            const res = await fetch("/api/upload", { method: "POST", body: formData });
+                            const data = await res.json();
+                            if (data.url) handleUpdate({ frontImage: data.url } as Partial<Block>);
+                          } catch (err) {
+                            console.error("Upload failed:", err);
+                          }
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+                </FieldRow>
+
+                {/* Imagem do Verso */}
+                <FieldRow label="Imagem Verso">
+                  <div className="space-y-1.5">
+                    {block.backImage ? (
+                      <div className="relative group rounded-md overflow-hidden border border-border">
+                        <img
+                          src={block.backImage}
+                          alt="Verso"
+                          className="w-full h-16 object-contain bg-black/20"
+                        />
+                        <button
+                          onClick={() =>
+                            handleUpdate({ backImage: undefined } as Partial<Block>)
+                          }
+                          className="absolute top-1 right-1 p-0.5 rounded bg-red-500/80 hover:bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Remover imagem"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ) : null}
+                    <label className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-dashed border-border hover:border-primary/50 hover:bg-primary/5 cursor-pointer transition-colors">
+                      <ImageUp className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground">
+                        {block.backImage ? "Trocar imagem" : "Upload imagem"}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          const formData = new FormData();
+                          formData.append("file", file);
+                          try {
+                            const res = await fetch("/api/upload", { method: "POST", body: formData });
+                            const data = await res.json();
+                            if (data.url) handleUpdate({ backImage: data.url } as Partial<Block>);
+                          } catch (err) {
+                            console.error("Upload failed:", err);
+                          }
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                  </div>
+                </FieldRow>
               </Section>
             )}
 

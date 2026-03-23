@@ -268,6 +268,8 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
           backContent: "Verso do Flashcard",
           frontBg: "#7c3aed",
           backBg: "#4f46e5",
+          frontColor: "#ffffff",
+          backColor: "#ffffff",
         };
         break;
       case "quiz":

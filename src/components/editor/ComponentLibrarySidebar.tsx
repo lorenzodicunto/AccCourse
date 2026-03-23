@@ -118,7 +118,7 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
         newBlock = { ...baseBlock, type: "image", width: 300, height: 200, src: "", alt: "Imagem", objectFit: "cover", opacity: 1, borderRadius: 12, borderWidth: 0, borderColor: "#e2e8f0", boxShadow: "none" };
         break;
       case "flashcard":
-        newBlock = { ...baseBlock, type: "flashcard", width: 320, height: 200, frontContent: "Frente do Flashcard", backContent: "Verso do Flashcard", frontBg: "#7c3aed", backBg: "#4f46e5" };
+        newBlock = { ...baseBlock, type: "flashcard", width: 320, height: 200, frontContent: "Frente do Flashcard", backContent: "Verso do Flashcard", frontBg: "#7c3aed", backBg: "#4f46e5", frontColor: "#ffffff", backColor: "#ffffff" };
         break;
       case "quiz":
         newBlock = { ...baseBlock, type: "quiz", width: 450, height: 280, question: "Qual é a resposta correta?", options: [{ id: crypto.randomUUID(), text: "Opção A", isCorrect: true }, { id: crypto.randomUUID(), text: "Opção B", isCorrect: false }, { id: crypto.randomUUID(), text: "Opção C", isCorrect: false }], feedback: { correct: "Parabéns!", incorrect: "Tente novamente." }, pointsValue: 10 };
