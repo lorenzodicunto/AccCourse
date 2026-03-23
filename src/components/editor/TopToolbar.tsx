@@ -45,6 +45,7 @@ import {
   GitBranch,
   Clock,
   GripVertical,
+  Video,
 } from "lucide-react";
 import { useState } from "react";
 import { exportScormPackage } from "@/lib/scorm/packager";
@@ -59,6 +60,7 @@ import { AIQuizDialog } from "./AIQuizDialog";
 import { AICourseDialog } from "./AICourseDialog";
 import { ContrastChecker } from "./ContrastChecker";
 import { ImportPPTXDialog } from "./ImportPPTXDialog";
+import { PreviewDialog } from "./PreviewDialog";
 
 interface TopToolbarProps {
   courseId?: string;
@@ -473,6 +475,21 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           pointsValue: 10,
         };
         break;
+      case "interactiveVideo":
+        newBlock = {
+          ...baseBlock,
+          type: "interactiveVideo",
+          width: 640,
+          height: 360,
+          src: "",
+          poster: "",
+          chapters: [],
+          quizPoints: [],
+          bookmarks: [],
+          autoplay: false,
+          loop: false,
+        };
+        break;
     }
 
     addBlock(project.id, slide.id, newBlock);
@@ -623,6 +640,7 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
 
           <ContrastChecker />
           <ImportPPTXDialog />
+          <PreviewDialog />
           <KeyboardShortcutsDialog />
         </div>
       </div>
@@ -865,6 +883,12 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
                   label="Drag & Drop"
                   variant="large"
                   onClick={() => handleAddBlock("dragdrop")}
+                />
+                <RibbonButton
+                  icon={<Video className="h-5 w-5" />}
+                  label="Vídeo Int."
+                  variant="large"
+                  onClick={() => handleAddBlock("interactiveVideo")}
                 />
               </RibbonGroup>
             </>

@@ -216,7 +216,34 @@ export interface DragDropBlock extends BaseBlock {
   pointsValue: number;
 }
 
-export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock;
+export interface InteractiveVideoBlock extends BaseBlock {
+  type: "interactiveVideo";
+  src: string;
+  poster: string;
+  chapters: {
+    id: string;
+    time: number; // seconds
+    title: string;
+    description: string;
+  }[];
+  quizPoints: {
+    id: string;
+    time: number; // seconds — video pauses here
+    question: string;
+    options: string[];
+    correctIndex: number;
+    pointsValue: number;
+  }[];
+  bookmarks: {
+    id: string;
+    time: number;
+    label: string;
+  }[];
+  autoplay: boolean;
+  loop: boolean;
+}
+
+export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock | InteractiveVideoBlock;
 
 export type SlideTransition = "none" | "fade" | "slide" | "zoom";
 

@@ -11,7 +11,7 @@ import {
   DragStartEvent,
 } from "@dnd-kit/core";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
-import { MousePointerClick } from "lucide-react";
+import { MousePointerClick, ZoomIn, ZoomOut, Maximize } from "lucide-react";
 import { DraggableBlock } from "./DraggableBlock";
 
 export function Canvas() {
@@ -24,6 +24,22 @@ export function Canvas() {
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [zoom, setZoom] = useState(100);
+
+  const zoomIn = () => setZoom((z) => Math.min(200, z + 10));
+  const zoomOut = () => setZoom((z) => Math.max(25, z - 10));
+  const zoomFit = () => setZoom(100);
+
+  // Keyboard zoom shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) { e.preventDefault(); zoomIn(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === '-') { e.preventDefault(); zoomOut(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === '0') { e.preventDefault(); zoomFit(); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const project = getCurrentProject();
   const slide = getCurrentSlide();
@@ -89,8 +105,10 @@ export function Canvas() {
       const scaleX = 960 / rect.width;
       const scaleY = 540 / rect.height;
 
-      const rawX = block.x + delta.x * scaleX;
-      const rawY = block.y + delta.y * scaleY;
+      // Adjust delta for zoom level
+      const zoomFactor = zoom / 100;
+      const rawX = block.x + (delta.x * scaleX) / zoomFactor;
+      const rawY = block.y + (delta.y * scaleY) / zoomFactor;
 
       // Snap to grid (10px)
       const GRID = 10;
@@ -178,12 +196,12 @@ export function Canvas() {
         <div className="flex-1 flex items-center justify-center p-6 overflow-auto">
           <div
             ref={canvasRef}
-            className={`relative bg-white rounded-xl shadow-xl shadow-black/[0.06] border border-border/30 transition-all duration-500 ${
+            className={`relative bg-white rounded-xl shadow-xl shadow-black/[0.06] border border-border/30 transition-all duration-300 origin-center ${
               previewMode === "mobile"
                 ? "w-[375px]"
                 : "w-full max-w-[960px]"
             }`}
-            style={{ aspectRatio: "16 / 9" }}
+            style={{ aspectRatio: "16 / 9", transform: `scale(${zoom / 100})` }}
             onClick={handleCanvasClick}
           >
             {/* Slide background */}
@@ -265,6 +283,29 @@ export function Canvas() {
         </span>
         <span className="text-muted-foreground/30">•</span>
         <span>16:9</span>
+      </div>
+
+      {/* Zoom Controls */}
+      <div className="absolute bottom-2 right-3 flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 backdrop-blur-sm border border-border/30 shadow-sm">
+        <button onClick={zoomOut} className="p-0.5 rounded hover:bg-slate-100 transition-colors" title="Zoom Out (Ctrl+-)">
+          <ZoomOut className="h-3.5 w-3.5 text-slate-500" />
+        </button>
+        <input
+          type="range"
+          min={25}
+          max={200}
+          value={zoom}
+          onChange={(e) => setZoom(Number(e.target.value))}
+          className="w-16 h-1 accent-violet-500 cursor-pointer"
+          title={`Zoom: ${zoom}%`}
+        />
+        <button onClick={zoomIn} className="p-0.5 rounded hover:bg-slate-100 transition-colors" title="Zoom In (Ctrl+=)">
+          <ZoomIn className="h-3.5 w-3.5 text-slate-500" />
+        </button>
+        <span className="text-[9px] font-mono text-slate-400 w-7 text-center">{zoom}%</span>
+        <button onClick={zoomFit} className="p-0.5 rounded hover:bg-slate-100 transition-colors" title="Ajustar (Ctrl+0)">
+          <Maximize className="h-3 w-3 text-slate-400" />
+        </button>
       </div>
     </div>
   );
