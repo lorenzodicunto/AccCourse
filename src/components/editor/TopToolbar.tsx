@@ -42,6 +42,9 @@ import {
   MousePointer,
   ChevronDown,
   PanelTop,
+  GitBranch,
+  Clock,
+  GripVertical,
 } from "lucide-react";
 import { useState } from "react";
 import { exportScormPackage } from "@/lib/scorm/packager";
@@ -418,6 +421,56 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           style: "underline",
         };
         break;
+      case "branching":
+        newBlock = {
+          ...baseBlock,
+          type: "branching",
+          width: 700,
+          height: 350,
+          scenario: "O colaborador encontra um cliente insatisfeito. O que ele deve fazer?",
+          choices: [
+            { id: crypto.randomUUID(), text: "Ouvir o cliente com empatia", targetSlideId: "", feedback: "Excelente! Ouvir com empatia é o primeiro passo.", isCorrect: true },
+            { id: crypto.randomUUID(), text: "Transferir para o supervisor", targetSlideId: "", feedback: "Transferir sem ouvir pode piorar a situação.", isCorrect: false },
+            { id: crypto.randomUUID(), text: "Ignorar a reclamação", targetSlideId: "", feedback: "Ignorar um cliente nunca é a resposta correta.", isCorrect: false },
+          ],
+          pointsValue: 10,
+        };
+        break;
+      case "timeline":
+        newBlock = {
+          ...baseBlock,
+          type: "timeline",
+          width: 800,
+          height: 200,
+          events: [
+            { id: crypto.randomUUID(), date: "2020", title: "Fundação", description: "Início das operações", icon: "🏢" },
+            { id: crypto.randomUUID(), date: "2022", title: "Expansão", description: "Abertura de novas filiais", icon: "📈" },
+            { id: crypto.randomUUID(), date: "2024", title: "Inovação", description: "Lançamento de novos produtos", icon: "🚀" },
+          ],
+          orientation: "horizontal",
+          style: "detailed",
+        };
+        break;
+      case "dragdrop":
+        newBlock = {
+          ...baseBlock,
+          type: "dragdrop",
+          width: 700,
+          height: 350,
+          categories: [
+            { id: crypto.randomUUID(), label: "Categoria A" },
+            { id: crypto.randomUUID(), label: "Categoria B" },
+          ],
+          items: [
+            { id: crypto.randomUUID(), content: "Item 1", correctCategoryId: "" },
+            { id: crypto.randomUUID(), content: "Item 2", correctCategoryId: "" },
+            { id: crypto.randomUUID(), content: "Item 3", correctCategoryId: "" },
+          ],
+          feedbackCorrect: "Parabéns! Todos os itens estão corretos! 🎉",
+          feedbackIncorrect: "Alguns itens estão no lugar errado. Tente novamente!",
+          pointsValue: 10,
+        };
+        break;
     }
 
     addBlock(project.id, slide.id, newBlock);
@@ -787,6 +840,27 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
                   label="Tabs"
                   variant="large"
                   onClick={() => handleAddBlock("tabs")}
+                />
+              </RibbonGroup>
+
+              <RibbonGroup label="Avançado">
+                <RibbonButton
+                  icon={<GitBranch className="h-5 w-5" />}
+                  label="Branching"
+                  variant="large"
+                  onClick={() => handleAddBlock("branching")}
+                />
+                <RibbonButton
+                  icon={<Clock className="h-5 w-5" />}
+                  label="Timeline"
+                  variant="large"
+                  onClick={() => handleAddBlock("timeline")}
+                />
+                <RibbonButton
+                  icon={<GripVertical className="h-5 w-5" />}
+                  label="Drag & Drop"
+                  variant="large"
+                  onClick={() => handleAddBlock("dragdrop")}
                 />
               </RibbonGroup>
             </>

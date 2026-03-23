@@ -179,7 +179,44 @@ export interface TabsBlock extends BaseBlock {
   style: "underline" | "boxed" | "pills";
 }
 
-export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock;
+// ─── Advanced Blocks ───────────────────────────────────────────────────────
+
+export interface BranchingBlock extends BaseBlock {
+  type: "branching";
+  scenario: string;
+  choices: {
+    id: string;
+    text: string;
+    targetSlideId: string;
+    feedback: string;
+    isCorrect?: boolean;
+  }[];
+  pointsValue: number;
+}
+
+export interface TimelineBlock extends BaseBlock {
+  type: "timeline";
+  events: {
+    id: string;
+    date: string;
+    title: string;
+    description: string;
+    icon?: string;
+  }[];
+  orientation: "horizontal" | "vertical";
+  style: "minimal" | "detailed" | "cards";
+}
+
+export interface DragDropBlock extends BaseBlock {
+  type: "dragdrop";
+  categories: { id: string; label: string }[];
+  items: { id: string; content: string; correctCategoryId: string }[];
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+  pointsValue: number;
+}
+
+export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock;
 
 export type SlideTransition = "none" | "fade" | "slide" | "zoom";
 

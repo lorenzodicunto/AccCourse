@@ -41,6 +41,8 @@ import {
   ArrowUpDown,
   MousePointer,
   PanelTop,
+  GitBranch,
+  GripVertical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -61,6 +63,9 @@ function BlockIcon({ type }: { type: Block["type"] }) {
     hotspot: <MousePointer className="h-4 w-4 text-cyan-500" />,
     accordion: <ChevronDown className="h-4 w-4 text-slate-500" />,
     tabs: <PanelTop className="h-4 w-4 text-indigo-500" />,
+    branching: <GitBranch className="h-4 w-4 text-rose-500" />,
+    timeline: <Clock className="h-4 w-4 text-sky-500" />,
+    dragdrop: <GripVertical className="h-4 w-4 text-teal-500" />,
   };
   return icons[type];
 }
@@ -80,6 +85,9 @@ const BLOCK_LABELS: Record<string, string> = {
   hotspot: "Hotspot",
   accordion: "Accordion",
   tabs: "Tabs",
+  branching: "Cenário",
+  timeline: "Linha do Tempo",
+  dragdrop: "Drag & Drop",
 };
 
 // ─── Collapsible Section ───
@@ -1543,6 +1551,113 @@ export function PropertiesPanel() {
                 </FieldRow>
               </Section>
             )}
+
+            {/* ─── BRANCHING PROPERTIES ─── */}
+            {block.type === "branching" && (
+              <Section title="Cenário de Decisão" icon={<GitBranch className="h-3 w-3 text-rose-500" />}>
+                <FieldRow label="Cenário">
+                  <Input value={(block as any).scenario || ""} onChange={(e) => handleUpdate({ scenario: e.target.value } as any)} className="h-7 text-xs" placeholder="Descreva a situação..." />
+                </FieldRow>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted-foreground font-medium">Escolhas:</p>
+                  {((block as any).choices || []).map((choice: any, i: number) => (
+                    <div key={choice.id} className="p-1.5 rounded border border-slate-200 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Input value={choice.text} onChange={(e) => { const choices = [...(block as any).choices]; choices[i] = { ...choices[i], text: e.target.value }; handleUpdate({ choices } as any); }} className="h-5 text-[9px] flex-1" placeholder="Texto da escolha" />
+                        <label className="flex items-center gap-1 shrink-0" title="Correta">
+                          <input type="checkbox" checked={choice.isCorrect || false} onChange={(e) => { const choices = [...(block as any).choices]; choices[i] = { ...choices[i], isCorrect: e.target.checked }; handleUpdate({ choices } as any); }} className="rounded" />
+                          <span className="text-[8px]">✓</span>
+                        </label>
+                        <button onClick={() => { handleUpdate({ choices: (block as any).choices.filter((_: any, j: number) => j !== i) } as any); }} className="text-red-400 hover:text-red-600 text-xs">✕</button>
+                      </div>
+                      <Input value={choice.feedback} onChange={(e) => { const choices = [...(block as any).choices]; choices[i] = { ...choices[i], feedback: e.target.value }; handleUpdate({ choices } as any); }} className="h-5 text-[8px]" placeholder="Feedback..." />
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" className="w-full h-6 text-[10px]" onClick={() => { const choices = [...((block as any).choices || []), { id: crypto.randomUUID(), text: "Nova opção", targetSlideId: "", feedback: "Feedback", isCorrect: false }]; handleUpdate({ choices } as any); }}>
+                    <Plus className="h-3 w-3 mr-1" /> Adicionar Escolha
+                  </Button>
+                </div>
+                <FieldRow label="Pontos">
+                  <Input type="number" min={0} value={(block as any).pointsValue ?? 10} onChange={(e) => handleUpdate({ pointsValue: Number(e.target.value) } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── TIMELINE PROPERTIES ─── */}
+            {block.type === "timeline" && (
+              <Section title="Linha do Tempo" icon={<Clock className="h-3 w-3 text-sky-500" />}>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted-foreground font-medium">Eventos:</p>
+                  {((block as any).events || []).map((event: any, i: number) => (
+                    <div key={event.id} className="p-1.5 rounded border border-slate-200 space-y-1">
+                      <div className="flex items-center gap-1">
+                        <Input value={event.icon || ""} onChange={(e) => { const events = [...(block as any).events]; events[i] = { ...events[i], icon: e.target.value }; handleUpdate({ events } as any); }} className="h-5 text-[9px] w-8" placeholder="🎯" />
+                        <Input value={event.date} onChange={(e) => { const events = [...(block as any).events]; events[i] = { ...events[i], date: e.target.value }; handleUpdate({ events } as any); }} className="h-5 text-[9px] w-16" placeholder="Data" />
+                        <Input value={event.title} onChange={(e) => { const events = [...(block as any).events]; events[i] = { ...events[i], title: e.target.value }; handleUpdate({ events } as any); }} className="h-5 text-[9px] flex-1" placeholder="Título" />
+                        <button onClick={() => { handleUpdate({ events: (block as any).events.filter((_: any, j: number) => j !== i) } as any); }} className="text-red-400 hover:text-red-600 text-xs">✕</button>
+                      </div>
+                      <Input value={event.description} onChange={(e) => { const events = [...(block as any).events]; events[i] = { ...events[i], description: e.target.value }; handleUpdate({ events } as any); }} className="h-5 text-[8px]" placeholder="Descrição..." />
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" className="w-full h-6 text-[10px]" onClick={() => { const events = [...((block as any).events || []), { id: crypto.randomUUID(), date: "2025", title: "Novo evento", description: "", icon: "📌" }]; handleUpdate({ events } as any); }}>
+                    <Plus className="h-3 w-3 mr-1" /> Adicionar Evento
+                  </Button>
+                </div>
+                <FieldRow label="Orientação">
+                  <select value={(block as any).orientation || "horizontal"} onChange={(e) => handleUpdate({ orientation: e.target.value } as any)} className="h-7 text-xs rounded-md border bg-background px-2 w-full">
+                    <option value="horizontal">Horizontal</option>
+                    <option value="vertical">Vertical</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Estilo">
+                  <select value={(block as any).style || "detailed"} onChange={(e) => handleUpdate({ style: e.target.value } as any)} className="h-7 text-xs rounded-md border bg-background px-2 w-full">
+                    <option value="minimal">Minimal</option>
+                    <option value="detailed">Detailed</option>
+                    <option value="cards">Cards</option>
+                  </select>
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── DRAG & DROP PROPERTIES ─── */}
+            {block.type === "dragdrop" && (
+              <Section title="Drag & Drop" icon={<GripVertical className="h-3 w-3 text-teal-500" />}>
+                <div className="space-y-2">
+                  <p className="text-[10px] text-muted-foreground font-medium">Categorias:</p>
+                  {((block as any).categories || []).map((cat: any, i: number) => (
+                    <div key={cat.id} className="flex items-center gap-1">
+                      <Input value={cat.label} onChange={(e) => { const categories = [...(block as any).categories]; categories[i] = { ...categories[i], label: e.target.value }; handleUpdate({ categories } as any); }} className="h-6 text-[10px] flex-1" placeholder="Categoria" />
+                      <button onClick={() => { handleUpdate({ categories: (block as any).categories.filter((_: any, j: number) => j !== i) } as any); }} className="text-red-400 hover:text-red-600 text-xs">✕</button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" className="w-full h-6 text-[10px]" onClick={() => { const categories = [...((block as any).categories || []), { id: crypto.randomUUID(), label: "Nova Categoria" }]; handleUpdate({ categories } as any); }}>
+                    <Plus className="h-3 w-3 mr-1" /> Adicionar Categoria
+                  </Button>
+                </div>
+                <div className="space-y-2 mt-2">
+                  <p className="text-[10px] text-muted-foreground font-medium">Itens:</p>
+                  {((block as any).items || []).map((item: any, i: number) => (
+                    <div key={item.id} className="flex items-center gap-1">
+                      <Input value={item.content} onChange={(e) => { const items = [...(block as any).items]; items[i] = { ...items[i], content: e.target.value }; handleUpdate({ items } as any); }} className="h-6 text-[10px] flex-1" placeholder="Item" />
+                      <select value={item.correctCategoryId} onChange={(e) => { const items = [...(block as any).items]; items[i] = { ...items[i], correctCategoryId: e.target.value }; handleUpdate({ items } as any); }} className="h-6 text-[8px] rounded border bg-background px-1 w-24">
+                        <option value="">Categoria...</option>
+                        {((block as any).categories || []).map((cat: any) => (
+                          <option key={cat.id} value={cat.id}>{cat.label}</option>
+                        ))}
+                      </select>
+                      <button onClick={() => { handleUpdate({ items: (block as any).items.filter((_: any, j: number) => j !== i) } as any); }} className="text-red-400 hover:text-red-600 text-xs">✕</button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" className="w-full h-6 text-[10px]" onClick={() => { const items = [...((block as any).items || []), { id: crypto.randomUUID(), content: "Novo Item", correctCategoryId: "" }]; handleUpdate({ items } as any); }}>
+                    <Plus className="h-3 w-3 mr-1" /> Adicionar Item
+                  </Button>
+                </div>
+                <FieldRow label="Pontos">
+                  <Input type="number" min={0} value={(block as any).pointsValue ?? 10} onChange={(e) => handleUpdate({ pointsValue: Number(e.target.value) } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
             {block.type === "video" && (
               <>
                 <Section

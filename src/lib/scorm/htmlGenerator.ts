@@ -1,7 +1,7 @@
 // SCORM Course HTML Generator
 // Generates the index.html content from course slides and blocks
 
-import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock } from "@/store/useEditorStore";
+import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock, BranchingBlock, TimelineBlock, DragDropBlock } from "@/store/useEditorStore";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 export function generateCourseHTML(project: CourseProject, assetMap?: Map<string, string>): string {
@@ -294,6 +294,12 @@ function generateBlockHTML(block: Block, assetMap?: Map<string, string>): string
       return generateAccordionBlockHTML(block as AccordionBlock, style);
     case "tabs":
       return generateTabsBlockHTML(block as TabsBlock, style);
+    case "branching":
+      return generateBranchingBlockHTML(block as BranchingBlock, style);
+    case "timeline":
+      return generateTimelineBlockHTML(block as TimelineBlock, style);
+    case "dragdrop":
+      return generateDragDropBlockHTML(block as DragDropBlock, style);
     default:
       return "";
   }
@@ -694,6 +700,123 @@ function generateTabsBlockHTML(block: TabsBlock, style: string): string {
             block.style === 'pills' ? `btn${i}.style.background=${i}===idx?"#eef2ff":"transparent";` :
             `btn${i}.style.background=${i}===idx?"white":"transparent";btn${i}.style.boxShadow=${i}===idx?"0 1px 3px rgba(0,0,0,0.1)":"none";`}
         `).join('')}
+      }
+    </script>
+  </div>`;
+}
+
+// ─── BRANCHING BLOCK ───
+function generateBranchingBlockHTML(block: BranchingBlock, style: string): string {
+  const uid = block.id.slice(0, 8);
+  return `<div class="block branching-block" style="${style}" id="branch-${uid}">
+    <div style="background:linear-gradient(135deg,#fff1f2,#fef2f2);border:1px solid #fecdd3;border-radius:12px;padding:20px;height:100%;display:flex;flex-direction:column;">
+      <div style="font-size:10px;font-weight:700;color:#be123c;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🌿 Cenário de Decisão</div>
+      <p style="font-size:15px;color:#1e293b;margin-bottom:16px;font-weight:500;">${block.scenario}</p>
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;" id="branch-choices-${uid}">
+        ${block.choices.map((c, i) => `
+          <button onclick="chooseBranch_${uid}(${i},${!!c.isCorrect},'${c.id}')" id="bc-${uid}-${i}"
+            style="padding:10px 16px;border-radius:10px;border:2px solid #e5e7eb;background:white;color:#374151;font-size:14px;cursor:pointer;text-align:left;transition:all 0.2s;font-family:inherit;">
+            ${c.text}
+          </button>
+        `).join('')}
+      </div>
+      <div id="branch-fb-${uid}" style="display:none;margin-top:12px;padding:10px 16px;border-radius:10px;font-size:13px;"></div>
+    </div>
+    <script>
+      function chooseBranch_${uid}(idx,isCorrect,id) {
+        var feedbacks=${JSON.stringify(block.choices.map(c => c.feedback))};
+        var fb=document.getElementById('branch-fb-${uid}');
+        fb.style.display='block';
+        fb.textContent=feedbacks[idx];
+        fb.style.background=isCorrect?'#ecfdf5':'#fef2f2';
+        fb.style.color=isCorrect?'#047857':'#dc2626';
+        document.querySelectorAll('#branch-choices-${uid} button').forEach(function(b){b.style.pointerEvents='none';b.style.opacity='0.6';});
+        document.getElementById('bc-${uid}-'+idx).style.borderColor=isCorrect?'#10b981':'#ef4444';
+        document.getElementById('bc-${uid}-'+idx).style.opacity='1';
+        if(window.SCORM)SCORM.setInteraction('${uid}','choice',id,${JSON.stringify(block.choices.filter(c=>c.isCorrect).map(c=>c.id).join(','))},isCorrect?'correct':'wrong',${block.pointsValue});
+      }
+    </script>
+  </div>`;
+}
+
+// ─── TIMELINE BLOCK ───
+function generateTimelineBlockHTML(block: TimelineBlock, style: string): string {
+  const uid = block.id.slice(0, 8);
+  const isVert = block.orientation === 'vertical';
+  return `<div class="block timeline-block" style="${style}" id="tl-${uid}">
+    <div style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:12px;padding:16px;height:100%;display:flex;flex-direction:column;overflow:auto;">
+      <div style="font-size:10px;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">⏱ Linha do Tempo</div>
+      <div style="display:flex;flex-direction:${isVert ? 'column' : 'row'};align-items:${isVert ? 'flex-start' : 'center'};gap:${isVert ? '16px' : '8px'};flex:1;${isVert ? '' : 'justify-content:space-around;'}">
+        ${block.events.map((ev, i) => `
+          <div style="display:flex;${isVert ? 'flex-direction:row;gap:12px;' : 'flex-direction:column;align-items:center;gap:4px;'}">
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#38bdf8);display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(14,165,233,0.3);flex-shrink:0;">
+              ${ev.icon || '📌'}
+            </div>
+            <div style="${isVert ? '' : 'text-align:center;'}">
+              <div style="font-size:11px;font-weight:700;color:#0369a1;">${ev.date}</div>
+              <div style="font-size:12px;font-weight:600;color:#1e293b;">${ev.title}</div>
+              ${block.style !== 'minimal' ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">${ev.description}</div>` : ''}
+            </div>
+          </div>
+          ${!isVert && i < block.events.length - 1 ? '<div style="flex:1;height:2px;background:linear-gradient(90deg,#38bdf8,#bae6fd);border-radius:1px;min-width:20px;"></div>' : ''}
+        `).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── DRAG & DROP BLOCK ───
+function generateDragDropBlockHTML(block: DragDropBlock, style: string): string {
+  const uid = block.id.slice(0, 8);
+  return `<div class="block dragdrop-block" style="${style}" id="dd-${uid}">
+    <div style="background:linear-gradient(135deg,#f0fdfa,#ccfbf1);border:1px solid #99f6e4;border-radius:12px;padding:16px;height:100%;display:flex;flex-direction:column;">
+      <div style="font-size:10px;font-weight:700;color:#0f766e;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">↕ Drag & Drop</div>
+      <div style="display:flex;gap:16px;flex:1;">
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:120px;" id="dd-items-${uid}">
+          ${block.items.map((item) => `
+            <div draggable="true" data-id="${item.id}" data-cat="${item.correctCategoryId}"
+              style="padding:8px 12px;background:white;border:1px solid #14b8a6;border-radius:8px;cursor:grab;font-size:12px;color:#134e4a;"
+              ondragstart="event.dataTransfer.setData('text/plain',this.dataset.id)">
+              ≡ ${item.content}
+            </div>
+          `).join('')}
+        </div>
+        <div style="display:flex;gap:8px;flex:1;">
+          ${block.categories.map((cat) => `
+            <div id="dd-cat-${uid}-${cat.id}" data-cat="${cat.id}"
+              style="flex:1;border:2px dashed #5eead4;border-radius:12px;padding:8px;display:flex;flex-direction:column;gap:4px;min-height:60px;background:rgba(204,251,241,0.3);transition:all 0.2s;"
+              ondragover="event.preventDefault();this.style.borderColor='#14b8a6';this.style.background='rgba(204,251,241,0.6)'"
+              ondragleave="this.style.borderColor='#5eead4';this.style.background='rgba(204,251,241,0.3)'"
+              ondrop="dropDD_${uid}(event,this)">
+              <div style="font-size:10px;font-weight:600;color:#0f766e;text-align:center;margin-bottom:4px;">${cat.label}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <button onclick="checkDD_${uid}()" style="margin-top:12px;padding:8px 20px;border-radius:8px;background:#0d9488;color:white;border:none;cursor:pointer;font-weight:600;align-self:center;font-size:13px;">Verificar</button>
+      <div id="dd-fb-${uid}" style="display:none;margin-top:8px;font-size:13px;text-align:center;"></div>
+    </div>
+    <script>
+      function dropDD_${uid}(e,zone){
+        e.preventDefault();
+        var id=e.dataTransfer.getData('text/plain');
+        var item=document.querySelector('[data-id=\"'+id+'\"]');
+        if(item)zone.appendChild(item);
+        zone.style.borderColor='#5eead4';zone.style.background='rgba(204,251,241,0.3)';
+      }
+      function checkDD_${uid}(){
+        var correct=true;
+        var correctMap=${JSON.stringify(Object.fromEntries(block.items.map(i => [i.id, i.correctCategoryId])))};
+        ${block.categories.map(cat => `
+          var zone_${cat.id.slice(0,6)}=document.getElementById('dd-cat-${uid}-${cat.id}');
+          zone_${cat.id.slice(0,6)}.querySelectorAll('[data-id]').forEach(function(el){
+            if(correctMap[el.dataset.id]!=='${cat.id}')correct=false;
+          });
+        `).join('')}
+        var fb=document.getElementById('dd-fb-${uid}');fb.style.display='block';
+        fb.textContent=correct?${JSON.stringify(block.feedbackCorrect)}:${JSON.stringify(block.feedbackIncorrect)};
+        fb.style.color=correct?'#047857':'#dc2626';
+        if(window.SCORM)SCORM.setInteraction('${uid}','performance','dragdrop','all_correct',correct?'correct':'wrong',${block.pointsValue});
       }
     </script>
   </div>`;

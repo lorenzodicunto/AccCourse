@@ -670,6 +670,64 @@ export function DraggableBlock({
         </div>
       )}
 
+      {/* ─── BRANCHING ─── */}
+      {block.type === "branching" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-rose-50 to-orange-50 border border-rose-200/50 flex flex-col p-3">
+          <div className="text-[8px] font-bold text-rose-600 uppercase tracking-wider mb-1">🌿 Cenário de Decisão</div>
+          <p className="text-[10px] text-slate-700 font-medium mb-2 leading-tight">{(block as any).scenario}</p>
+          <div className="flex flex-col gap-1 flex-1">
+            {((block as any).choices || []).map((choice: any, i: number) => (
+              <div key={i} className={`px-2 py-1 rounded text-[8px] border cursor-pointer ${choice.isCorrect ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-white border-slate-200 text-slate-600'}`}>
+                {choice.isCorrect && <span className="mr-1">✓</span>}{choice.text}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── TIMELINE ─── */}
+      {block.type === "timeline" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-200/50 p-3 flex flex-col">
+          <div className="text-[8px] font-bold text-sky-600 uppercase tracking-wider mb-2">⏱ Linha do Tempo</div>
+          <div className={`flex-1 flex ${(block as any).orientation === 'vertical' ? 'flex-col' : 'flex-row'} items-center justify-around gap-1`}>
+            {((block as any).events || []).map((event: any, i: number) => (
+              <div key={i} className="flex flex-col items-center text-center gap-0.5">
+                <div className="w-6 h-6 rounded-full bg-sky-100 border-2 border-sky-400 flex items-center justify-center text-[9px]">
+                  {event.icon || '📌'}
+                </div>
+                <span className="text-[8px] font-bold text-sky-700">{event.date}</span>
+                <span className="text-[7px] text-slate-500 leading-tight">{event.title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── DRAG & DROP ─── */}
+      {block.type === "dragdrop" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200/50 p-3 flex flex-col">
+          <div className="text-[8px] font-bold text-teal-600 uppercase tracking-wider mb-2">↕ Drag & Drop</div>
+          <div className="flex gap-2 flex-1">
+            <div className="flex flex-col gap-1 flex-1">
+              <span className="text-[7px] text-slate-400 uppercase">Itens</span>
+              {((block as any).items || []).map((item: any, i: number) => (
+                <div key={i} className="px-1.5 py-0.5 bg-white border border-teal-200 rounded text-[8px] text-teal-700 shadow-sm">
+                  ≡ {item.content}
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col gap-1 flex-1">
+              <span className="text-[7px] text-slate-400 uppercase">Categorias</span>
+              {((block as any).categories || []).map((cat: any, i: number) => (
+                <div key={i} className="px-1.5 py-2 bg-teal-100/50 border border-dashed border-teal-300 rounded text-[8px] text-teal-600 text-center">
+                  {cat.label}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Dimension tooltip when selected */}
       {isSelected && !isDragging && (
         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-800 text-white text-[9px] rounded font-mono whitespace-nowrap z-40 shadow-lg">
