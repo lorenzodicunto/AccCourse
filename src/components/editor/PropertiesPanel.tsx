@@ -34,6 +34,7 @@ import {
   ImageUp,
   Copy,
   Hexagon,
+  Music,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -46,6 +47,7 @@ function BlockIcon({ type }: { type: Block["type"] }) {
     quiz: <HelpCircle className="h-4 w-4 text-rose-500" />,
     video: <Play className="h-4 w-4 text-orange-500" />,
     shape: <Hexagon className="h-4 w-4 text-indigo-500" />,
+    audio: <Music className="h-4 w-4 text-violet-500" />,
   };
   return icons[type];
 }
@@ -57,6 +59,7 @@ const BLOCK_LABELS: Record<string, string> = {
   quiz: "Quiz",
   video: "Vídeo",
   shape: "Forma",
+  audio: "Áudio",
 };
 
 // ─── Collapsible Section ───
@@ -1077,6 +1080,58 @@ export function PropertiesPanel() {
                     className="h-7 text-xs rounded-md"
                     placeholder="graus"
                   />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── AUDIO PROPERTIES ─── */}
+            {block.type === "audio" && (
+              <Section
+                title="Áudio"
+                icon={
+                  <svg className="h-3 w-3 text-muted-foreground/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" /></svg>
+                }
+              >
+                <FieldRow label="URL do Áudio">
+                  <Input
+                    value={(block as any).src || ""}
+                    onChange={(e) => handleUpdate({ src: e.target.value })}
+                    placeholder="https://... ou /api/uploads/..."
+                    className="h-7 text-xs"
+                  />
+                </FieldRow>
+                <FieldRow label="Autoplay">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={(block as any).autoplay || false}
+                      onChange={(e) => handleUpdate({ autoplay: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-xs text-muted-foreground">Iniciar automaticamente</span>
+                  </label>
+                </FieldRow>
+                <FieldRow label="Loop">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={(block as any).loop || false}
+                      onChange={(e) => handleUpdate({ loop: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-xs text-muted-foreground">Repetir continuamente</span>
+                  </label>
+                </FieldRow>
+                <FieldRow label="Controles">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={(block as any).showControls !== false}
+                      onChange={(e) => handleUpdate({ showControls: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-xs text-muted-foreground">Mostrar player</span>
+                  </label>
                 </FieldRow>
               </Section>
             )}

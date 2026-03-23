@@ -98,7 +98,15 @@ export interface ShapeBlock extends BaseBlock {
   rotation: number;
 }
 
-export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock;
+export interface AudioBlock extends BaseBlock {
+  type: "audio";
+  src: string;
+  autoplay: boolean;
+  loop: boolean;
+  showControls: boolean;
+}
+
+export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock;
 
 export type SlideTransition = "none" | "fade" | "slide" | "zoom";
 

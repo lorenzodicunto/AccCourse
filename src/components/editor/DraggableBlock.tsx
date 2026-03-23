@@ -513,6 +513,29 @@ export function DraggableBlock({
         </div>
       )}
 
+      {/* ─── AUDIO BLOCK ─── */}
+      {block.type === "audio" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-200/30 flex flex-col items-center justify-center">
+          {(block as any).src ? (
+            <audio
+              src={(block as any).src}
+              controls={(block as any).showControls !== false}
+              autoPlay={false}
+              loop={(block as any).loop}
+              className="w-[90%]"
+              style={{ maxHeight: "40px" }}
+            />
+          ) : (
+            <div className="flex flex-col items-center gap-1 text-violet-400">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" />
+              </svg>
+              <span className="text-[9px]">Adicione URL do áudio</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Dimension tooltip when selected */}
       {isSelected && !isDragging && (
         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-800 text-white text-[9px] rounded font-mono whitespace-nowrap z-40 shadow-lg">

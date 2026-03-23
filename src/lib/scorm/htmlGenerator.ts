@@ -1,7 +1,7 @@
 // SCORM Course HTML Generator
 // Generates the index.html content from course slides and blocks
 
-import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock } from "@/store/useEditorStore";
+import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock } from "@/store/useEditorStore";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 export function generateCourseHTML(project: CourseProject, assetMap?: Map<string, string>): string {
@@ -278,6 +278,8 @@ function generateBlockHTML(block: Block, assetMap?: Map<string, string>): string
       return generateVideoBlockHTML(block as VideoBlock, style);
     case "shape":
       return generateShapeBlockHTML(block as ShapeBlock, style);
+    case "audio":
+      return generateAudioBlockHTML(block as AudioBlock, style);
     default:
       return "";
   }
@@ -436,4 +438,17 @@ function generateShapeBlockHTML(block: ShapeBlock, style: string): string {
             ${shapeSVG}
           </svg>
         </div>`;
+}
+
+function generateAudioBlockHTML(block: AudioBlock, style: string): string {
+  const attrs = [];
+  if (block.showControls !== false) attrs.push('controls');
+  if (block.autoplay) attrs.push('autoplay');
+  if (block.loop) attrs.push('loop');
+  
+  if (!block.src) {
+    return `<div class="block audio-block" style="${style};display:flex;align-items:center;justify-content:center;background:rgba(139,92,246,0.1);border-radius:8px;color:#8b5cf6;font-size:12px;">🎵 Áudio</div>`;
+  }
+  
+  return `<div class="block audio-block" style="${style};display:flex;align-items:center;justify-content:center;"><audio src="${block.src}" ${attrs.join(' ')} style="width:90%;max-height:40px;">Seu navegador não suporta áudio.</audio></div>`;
 }

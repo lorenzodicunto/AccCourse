@@ -34,6 +34,7 @@ import {
   Scissors,
   ClipboardPaste,
   Hexagon,
+  Music,
 } from "lucide-react";
 import { useState } from "react";
 import { exportScormPackage } from "@/lib/scorm/packager";
@@ -43,6 +44,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
 import { AssetLibraryDialog } from "./AssetLibraryDialog";
+import { SlideTemplatesDialog } from "./SlideTemplatesDialog";
 
 interface TopToolbarProps {
   courseId?: string;
@@ -284,6 +286,18 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           rotation: 0,
         };
         break;
+      case "audio":
+        newBlock = {
+          ...baseBlock,
+          type: "audio",
+          width: 300,
+          height: 60,
+          src: "",
+          autoplay: false,
+          loop: false,
+          showControls: true,
+        };
+        break;
     }
 
     addBlock(project.id, slide.id, newBlock);
@@ -399,6 +413,7 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
             Exportar SCORM
           </Button>
 
+          <SlideTemplatesDialog />
           <AssetLibraryDialog />
           <KeyboardShortcutsDialog />
         </div>
@@ -564,6 +579,15 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
                   label="Forma"
                   variant="large"
                   onClick={() => handleAddBlock("shape")}
+                />
+              </RibbonGroup>
+
+              <RibbonGroup label="Áudio">
+                <RibbonButton
+                  icon={<Music className="h-5 w-5" />}
+                  label="Áudio"
+                  variant="large"
+                  onClick={() => handleAddBlock("audio")}
                 />
               </RibbonGroup>
             </>
