@@ -31,11 +31,11 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
         .join("\n");
 
       return `
-    <div class="slide" id="slide-${index}" data-index="${index}" style="background-color: ${slide.background};">
+    <section class="slide" id="slide-${index}" data-index="${index}" role="region" aria-roledescription="slide" aria-label="Slide ${index + 1} de ${totalSlides}" style="background-color: ${slide.background};" tabindex="0">
       <div class="slide-content">
         ${blocksHTML}
       </div>
-    </div>`;
+    </section>`;
     })
     .join("\n");
 
@@ -49,28 +49,31 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
   <script src="scorm-api.js"><\/script>
 </head>
 <body>
+  <!-- Skip Navigation (WCAG) -->
+  <a href="#main-content" class="skip-link" style="position:absolute;top:-40px;left:8px;background:#1e293b;color:white;padding:8px 16px;z-index:9999;border-radius:0 0 8px 8px;font-size:14px;transition:top 0.2s;text-decoration:none;" onfocus="this.style.top='0'" onblur="this.style.top='-40px'">Pular para o conteúdo</a>
+
   <!-- Top Bar -->
-  <header class="top-bar">
+  <header class="top-bar" role="banner" aria-label="Barra do curso">
     <div class="course-title">${escapeHtml(project.title)}</div>
-    <div class="slide-counter">
+    <div class="slide-counter" aria-live="polite" aria-atomic="true">
       <span id="currentSlide">1</span> / ${totalSlides}
     </div>
   </header>
 
   <!-- Slides Container -->
-  <main class="slides-container">
+  <main class="slides-container" id="main-content" role="main" aria-label="Conteúdo do curso">
     ${slidesHTML}
   </main>
 
   <!-- Navigation -->
-  <nav class="navigation">
-    <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled>
+  <nav class="navigation" role="navigation" aria-label="Navegação do curso">
+    <button class="nav-btn" id="prevBtn" onclick="prevSlide()" disabled aria-label="Slide anterior">
       &#8592; Anterior
     </button>
-    <div class="progress-bar">
+    <div class="progress-bar" role="progressbar" aria-valuenow="${totalSlides > 0 ? Math.round((1 / totalSlides) * 100) : 0}" aria-valuemin="0" aria-valuemax="100" aria-label="Progresso do curso">
       <div class="progress-fill" id="progressFill" style="width: ${totalSlides > 0 ? (1 / totalSlides) * 100 : 0}%"></div>
     </div>
-    <button class="nav-btn" id="nextBtn" onclick="nextSlide()">
+    <button class="nav-btn" id="nextBtn" onclick="nextSlide()" aria-label="Próximo slide">
       Próximo &#8594;
     </button>
   </nav>
@@ -203,6 +206,17 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
         card.addEventListener('click', function() {
           this.classList.toggle('flipped');
         });
+      });
+
+      // Keyboard Navigation (WCAG)
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          window.nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          window.prevSlide();
+        }
       });
 
       // Quiz handlers with scoring

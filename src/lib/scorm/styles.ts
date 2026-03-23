@@ -324,6 +324,31 @@ body {
   transition: width 0.4s ease;
 }
 
+/* ─── WCAG Focus Styles ─── */
+*:focus-visible {
+  outline: 3px solid ${primaryColor};
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.nav-btn:focus-visible {
+  outline: 3px solid ${primaryColor};
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px ${primaryColor}33;
+}
+
+.quiz-option:focus-visible,
+button:focus-visible {
+  outline: 3px solid ${primaryColor};
+  outline-offset: 2px;
+}
+
+/* ─── Reduced Motion (WCAG) ─── */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+  .progress-fill { transition: none !important; }
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   .slides-container { padding: 12px; }
