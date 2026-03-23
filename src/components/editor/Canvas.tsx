@@ -24,11 +24,13 @@ export function Canvas() {
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [zoom, setZoom] = useState(100);
+  const zoom = useEditorStore((s) => s.zoom);
+  const setZoom = useEditorStore((s) => s.setZoom);
+  const zoomIn = useEditorStore((s) => s.zoomIn);
+  const zoomOut = useEditorStore((s) => s.zoomOut);
+  const zoomFit = useEditorStore((s) => s.zoomFit);
 
-  const zoomIn = () => setZoom((z) => Math.min(200, z + 10));
-  const zoomOut = () => setZoom((z) => Math.max(25, z - 10));
-  const zoomFit = () => setZoom(100);
+
 
   // Keyboard zoom shortcuts
   useEffect(() => {

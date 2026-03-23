@@ -314,6 +314,7 @@ interface EditorState {
   past: CourseProject[][];
   future: CourseProject[][];
   previewMode: "desktop" | "mobile";
+  zoom: number;
 }
 
 interface EditorActions {
@@ -380,6 +381,12 @@ interface EditorActions {
   // Preview
   setPreviewMode: (mode: "desktop" | "mobile") => void;
 
+  // Zoom
+  setZoom: (zoom: number) => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  zoomFit: () => void;
+
   // Cloud Hydration
   hydrateProject: (project: CourseProject) => void;
   setProjects: (projects: CourseProject[]) => void;
@@ -425,6 +432,7 @@ export const useEditorStore = create<EditorStore>()(
       past: [],
       future: [],
       previewMode: "desktop",
+      zoom: 100,
 
       // ─── Snapshot helpers (undo/redo) ──────────────────
       // We push a snapshot of `projects` before every mutation.
@@ -855,6 +863,13 @@ export const useEditorStore = create<EditorStore>()(
       // ─── Preview ───────────────────────────────────────
 
       setPreviewMode: (mode) => set({ previewMode: mode }),
+
+      // ─── Zoom ───────────────────────────────────────────
+
+      setZoom: (zoom) => set({ zoom: Math.max(25, Math.min(200, zoom)) }),
+      zoomIn: () => set((state) => ({ zoom: Math.min(200, state.zoom + 10) })),
+      zoomOut: () => set((state) => ({ zoom: Math.max(25, state.zoom - 10) })),
+      zoomFit: () => set({ zoom: 100 }),
 
       // ─── Getters ───────────────────────────────────────
 

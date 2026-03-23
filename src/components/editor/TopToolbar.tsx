@@ -48,7 +48,7 @@ import {
   Video,
   Layers,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { exportScormPackage } from "@/lib/scorm/packager";
 import { shareCourse } from "@/actions/review";
 import { saveCourse } from "@/actions/courses";
@@ -116,6 +116,9 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
   const updateProject = useEditorStore((s) => s.updateProject);
   const updateBlock = useEditorStore((s) => s.updateBlock);
   const addBlock = useEditorStore((s) => s.addBlock);
+  const deleteBlock = useEditorStore((s) => s.deleteBlock);
+  const setSelectedBlock = useEditorStore((s) => s.setSelectedBlock);
+  const selectedBlockId = useEditorStore((s) => s.selectedBlockId);
   const undo = useEditorStore((s) => s.undo);
   const redo = useEditorStore((s) => s.redo);
   const past = useEditorStore((s) => s.past);
@@ -511,6 +514,35 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
     } as Partial<Block>);
   };
 
+  // Clipboard helpers
+  const clipboardRef = useRef<Block | null>(null);
+
+  const handleCopy = () => {
+    if (!block) return;
+    clipboardRef.current = JSON.parse(JSON.stringify(block));
+    toast.success("Bloco copiado!");
+  };
+
+  const handleCut = () => {
+    if (!project || !slide || !block) return;
+    clipboardRef.current = JSON.parse(JSON.stringify(block));
+    deleteBlock(project.id, slide.id, block.id);
+    toast.success("Bloco recortado!");
+  };
+
+  const handlePaste = () => {
+    if (!project || !slide || !clipboardRef.current) return;
+    const newBlock: Block = {
+      ...clipboardRef.current,
+      id: crypto.randomUUID(),
+      x: Math.min(clipboardRef.current.x + 20, 960 - clipboardRef.current.width),
+      y: Math.min(clipboardRef.current.y + 20, 540 - clipboardRef.current.height),
+    };
+    addBlock(project.id, slide.id, newBlock);
+    setSelectedBlock(newBlock.id);
+    toast.success("Bloco colado!");
+  };
+
   return (
     <>
       {/* Title Bar — Above the Ribbon */}
@@ -619,15 +651,21 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   icon={<ClipboardPaste className="h-4 w-4" />}
                   label="Colar"
                   variant="large"
+                  onClick={handlePaste}
+                  disabled={!clipboardRef.current}
                 />
                 <div className="flex flex-col gap-0.5">
                   <RibbonButton
                     icon={<Scissors className="h-3.5 w-3.5" />}
                     title="Recortar"
+                    onClick={handleCut}
+                    disabled={!block}
                   />
                   <RibbonButton
                     icon={<Copy className="h-3.5 w-3.5" />}
                     title="Copiar"
+                    onClick={handleCopy}
+                    disabled={!block}
                   />
                 </div>
               </RibbonGroup>
@@ -644,11 +682,15 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                     />
                     <RibbonButton
                       icon={<Italic className="h-3.5 w-3.5" />}
+                      onClick={() => handleTextFormat("fontStyle", block?.type === "text" && block.fontStyle === "italic" ? "normal" : "italic")}
+                      active={block?.type === "text" && block.fontStyle === "italic"}
                       disabled={!block || block.type !== "text"}
                       title="Itálico"
                     />
                     <RibbonButton
                       icon={<Underline className="h-3.5 w-3.5" />}
+                      onClick={() => handleTextFormat("textDecorationLine", block?.type === "text" && block.textDecorationLine === "underline" ? "none" : "underline")}
+                      active={block?.type === "text" && block.textDecorationLine === "underline"}
                       disabled={!block || block.type !== "text"}
                       title="Sublinhado"
                     />

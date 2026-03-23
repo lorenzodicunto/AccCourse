@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { setLocale as setLocaleGlobal, getLocale, Locale } from "@/lib/i18n";
 import type { SaveStatus } from "@/app/editor/[id]/page";
 
-const ZOOM_LEVELS = [50, 75, 100, 125, 150, 200];
+const ZOOM_LEVELS = [25, 50, 75, 100, 125, 150, 200];
 
 interface StatusBarProps {
   saveStatus?: SaveStatus;
@@ -35,7 +35,8 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
   const slides = project?.slides ?? [];
   const currentSlideIndex = slides.findIndex((s) => s.id === slide?.id);
 
-  const [zoom, setZoom] = useState(100);
+  const zoom = useEditorStore((s) => s.zoom);
+  const setZoom = useEditorStore((s) => s.setZoom);
   const [showGrid, setShowGrid] = useState(false);
   const [locale, setLocaleLoc] = useState<Locale>(getLocale());
 
