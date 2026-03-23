@@ -31,7 +31,7 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
         .join("\n");
 
       return `
-    <section class="slide" id="slide-${index}" data-index="${index}" role="region" aria-roledescription="slide" aria-label="Slide ${index + 1} de ${totalSlides}" style="background-color: ${slide.background};" tabindex="0">
+    <section class="slide" id="slide-${index}" data-index="${index}" data-transition="${slide.transition || 'none'}" role="region" aria-roledescription="slide" aria-label="Slide ${index + 1} de ${totalSlides}" style="background-color: ${slide.background};" tabindex="0">
       <div class="slide-content">
         ${blocksHTML}
       </div>
@@ -143,7 +143,19 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
 
       function showSlide(index) {
         slides.forEach(function(s, i) {
-          s.classList.toggle('active', i === index);
+          if (i === index) {
+            s.classList.add('active');
+            // Apply transition animation
+            var transition = s.getAttribute('data-transition') || 'none';
+            s.style.animation = 'none';
+            s.offsetHeight; // trigger reflow
+            if (transition === 'fade') s.style.animation = 'fadeIn 0.5s ease forwards';
+            else if (transition === 'slide') s.style.animation = 'slideLeft 0.4s ease forwards';
+            else if (transition === 'zoom') s.style.animation = 'zoomIn 0.4s ease forwards';
+            else s.style.animation = 'none';
+          } else {
+            s.classList.remove('active');
+          }
         });
         currentSlideEl.textContent = index + 1;
         prevBtn.disabled = index === 0;

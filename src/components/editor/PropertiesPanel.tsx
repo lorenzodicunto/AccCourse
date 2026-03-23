@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useEditorStore, Block, QuizOption } from "@/store/useEditorStore";
+import { useEditorStore, Block, QuizOption, AnimationType, AnimationEasing } from "@/store/useEditorStore";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -153,6 +153,7 @@ export function PropertiesPanel() {
     (s) => s.updateSlideBackground
   );
   const setTheme = useEditorStore((s) => s.setTheme);
+  const updateSlideNotes = useEditorStore((s) => s.updateSlideNotes);
   const applyThemeToAllSlides = useEditorStore((s) => s.applyThemeToAllSlides);
 
   const project = getCurrentProject();
@@ -406,6 +407,89 @@ export function PropertiesPanel() {
                   className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center"
                   title="Trazer para frente"
                 >↑ Frente</button>
+              </div>
+            </Section>
+
+            {/* ─── ANIMATION ─── */}
+            <Section
+              title="Animação"
+              icon={<Sparkles className="h-3 w-3 text-muted-foreground/60" />}
+              defaultOpen={false}
+            >
+              <div className="space-y-2">
+                <FieldRow label="Tipo">
+                  <select
+                    value={block.animation?.type || "none"}
+                    onChange={(e) => handleUpdate({ animation: { ...(block.animation || { duration: 0.5, delay: 0, easing: "ease" as AnimationEasing }), type: e.target.value as AnimationType } })}
+                    className="h-7 w-full text-xs rounded-md border border-border bg-background px-2"
+                  >
+                    <option value="none">Nenhuma</option>
+                    <option value="fadeIn">Fade In</option>
+                    <option value="fadeOut">Fade Out</option>
+                    <option value="slideLeft">Slide da Esquerda</option>
+                    <option value="slideRight">Slide da Direita</option>
+                    <option value="slideUp">Slide de Baixo</option>
+                    <option value="slideDown">Slide de Cima</option>
+                    <option value="zoomIn">Zoom In</option>
+                    <option value="zoomOut">Zoom Out</option>
+                    <option value="bounceIn">Bounce</option>
+                    <option value="rotateIn">Rotação</option>
+                    <option value="flipIn">Flip</option>
+                  </select>
+                </FieldRow>
+                <div className="grid grid-cols-2 gap-2">
+                  <FieldRow label="Duração (s)">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0.1"
+                      max="5"
+                      value={block.animation?.duration || 0.5}
+                      onChange={(e) => handleUpdate({ animation: { ...(block.animation || { type: "none" as const, delay: 0, easing: "ease" as const }), duration: Number(e.target.value) } })}
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+                  <FieldRow label="Delay (s)">
+                    <Input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="10"
+                      value={block.animation?.delay || 0}
+                      onChange={(e) => handleUpdate({ animation: { ...(block.animation || { type: "none" as const, duration: 0.5, easing: "ease" as const }), delay: Number(e.target.value) } })}
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+                </div>
+                <FieldRow label="Easing">
+                  <select
+                    value={block.animation?.easing || "ease"}
+                    onChange={(e) => handleUpdate({ animation: { ...(block.animation || { type: "none" as AnimationType, duration: 0.5, delay: 0 }), easing: e.target.value as AnimationEasing } })}
+                    className="h-7 w-full text-xs rounded-md border border-border bg-background px-2"
+                  >
+                    <option value="ease">Ease</option>
+                    <option value="ease-in">Ease In</option>
+                    <option value="ease-out">Ease Out</option>
+                    <option value="ease-in-out">Ease In-Out</option>
+                    <option value="linear">Linear</option>
+                  </select>
+                </FieldRow>
+              </div>
+            </Section>
+
+            {/* ─── ALIGNMENT ─── */}
+            <Section
+              title="Alinhar no Slide"
+              icon={<Maximize2 className="h-3 w-3 text-muted-foreground/60" />}
+              defaultOpen={false}
+            >
+              <div className="grid grid-cols-3 gap-1">
+                <button onClick={() => handleUpdate({ x: 0 })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Alinhar à Esquerda">← Esq</button>
+                <button onClick={() => handleUpdate({ x: Math.round((960 - block.width) / 2) })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Centralizar H">↔ Centro</button>
+                <button onClick={() => handleUpdate({ x: 960 - block.width })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Alinhar à Direita">Dir →</button>
+                <button onClick={() => handleUpdate({ y: 0 })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Alinhar Topo">↑ Topo</button>
+                <button onClick={() => handleUpdate({ y: Math.round((540 - block.height) / 2) })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Centralizar V">↕ Meio</button>
+                <button onClick={() => handleUpdate({ y: 540 - block.height })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Alinhar Base">↓ Base</button>
               </div>
             </Section>
 
@@ -2044,6 +2128,29 @@ export function PropertiesPanel() {
               <br />
               para editar suas propriedades
             </p>
+
+            {/* Slide Notes */}
+            {slide && (
+              <div className="w-full px-2 mb-4">
+                <div className="bg-amber-50/50 border border-amber-200/50 rounded-xl p-3">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <PenLine className="h-3 w-3 text-amber-600" />
+                    <span className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide">Notas do Narrador</span>
+                  </div>
+                  <textarea
+                    value={slide.notes || ""}
+                    onChange={(e) => {
+                      if (project) {
+                        updateSlideNotes(project.id, slide.id, e.target.value);
+                      }
+                    }}
+                    placeholder="Notas de instrução, roteiro de narração, observações..."
+                    className="w-full h-24 text-xs rounded-lg border border-amber-200 bg-white p-2 resize-none focus:outline-none focus:ring-1 focus:ring-amber-300 text-slate-700 placeholder:text-amber-300"
+                  />
+                  <p className="text-[9px] text-amber-400 mt-1">Visível apenas para o instrutor</p>
+                </div>
+              </div>
+            )}
 
             {/* AI Theme button — also visible when no block is selected */}
             <div className="w-full px-2">

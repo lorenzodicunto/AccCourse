@@ -728,6 +728,29 @@ export function DraggableBlock({
         </div>
       )}
 
+      {block.type === "interactiveVideo" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-purple-900 to-fuchsia-900 p-3 flex flex-col text-white">
+          <div className="text-[8px] font-bold uppercase tracking-wider mb-1 text-purple-200">🎬 Vídeo Interativo</div>
+          <div className="flex-1 flex items-center justify-center">
+            {(block as any).src ? (
+              <video src={(block as any).src} className="w-full h-full rounded-lg object-cover" />
+            ) : (
+              <div className="flex flex-col items-center gap-1.5">
+                <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center">
+                  <span className="text-lg">▶</span>
+                </div>
+                <span className="text-[9px] text-white/50">Adicione URL do vídeo</span>
+              </div>
+            )}
+          </div>
+          <div className="flex gap-2 mt-1.5">
+            <span className="text-[7px] bg-white/10 rounded px-1.5 py-0.5">📑 {((block as any).chapters || []).length} chapters</span>
+            <span className="text-[7px] bg-white/10 rounded px-1.5 py-0.5">❓ {((block as any).quizPoints || []).length} quiz</span>
+            <span className="text-[7px] bg-white/10 rounded px-1.5 py-0.5">🔖 {((block as any).bookmarks || []).length} marks</span>
+          </div>
+        </div>
+      )}
+
       {/* Dimension tooltip when selected */}
       {isSelected && !isDragging && (
         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-800 text-white text-[9px] rounded font-mono whitespace-nowrap z-40 shadow-lg">
