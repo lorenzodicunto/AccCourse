@@ -106,7 +106,80 @@ export interface AudioBlock extends BaseBlock {
   showControls: boolean;
 }
 
-export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock;
+// ─── Interactive Assessment Blocks ─────────────────────────────────────────
+
+export interface TrueFalseBlock extends BaseBlock {
+  type: "truefalse";
+  statement: string;
+  isTrue: boolean;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+  pointsValue: number;
+}
+
+export interface MatchingBlock extends BaseBlock {
+  type: "matching";
+  pairs: { id: string; left: string; right: string }[];
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+  pointsValue: number;
+  shuffleRight: boolean;
+}
+
+export interface FillBlankBlock extends BaseBlock {
+  type: "fillblank";
+  segments: (
+    | { type: "text"; content: string }
+    | { type: "blank"; id: string; correctAnswer: string; acceptedVariants: string[] }
+  )[];
+  caseSensitive: boolean;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+  pointsValue: number;
+}
+
+export interface SortingBlock extends BaseBlock {
+  type: "sorting";
+  items: { id: string; content: string }[];
+  correctOrder: string[];
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+  pointsValue: number;
+}
+
+export interface HotspotBlock extends BaseBlock {
+  type: "hotspot";
+  imageSrc: string;
+  spots: {
+    id: string;
+    x: number;
+    y: number;
+    radius: number;
+    label: string;
+    content: string;
+    isCorrect?: boolean;
+  }[];
+  mode: "explore" | "quiz";
+  pointsValue: number;
+}
+
+// ─── Content Presentation Blocks ───────────────────────────────────────────
+
+export interface AccordionBlock extends BaseBlock {
+  type: "accordion";
+  sections: { id: string; title: string; content: string }[];
+  allowMultipleOpen: boolean;
+  style: "minimal" | "boxed" | "bordered";
+}
+
+export interface TabsBlock extends BaseBlock {
+  type: "tabs";
+  tabs: { id: string; label: string; content: string; icon?: string }[];
+  orientation: "horizontal" | "vertical";
+  style: "underline" | "boxed" | "pills";
+}
+
+export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock;
 
 export type SlideTransition = "none" | "fade" | "slide" | "zoom";
 

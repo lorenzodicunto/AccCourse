@@ -35,6 +35,13 @@ import {
   ClipboardPaste,
   Hexagon,
   Music,
+  CheckCircle2,
+  Link2,
+  PenLine,
+  ArrowUpDown,
+  MousePointer,
+  ChevronDown,
+  PanelTop,
 } from "lucide-react";
 import { useState } from "react";
 import { exportScormPackage } from "@/lib/scorm/packager";
@@ -296,6 +303,117 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           autoplay: false,
           loop: false,
           showControls: true,
+        };
+        break;
+      case "truefalse":
+        newBlock = {
+          ...baseBlock,
+          type: "truefalse",
+          width: 600,
+          height: 200,
+          statement: "O céu é azul.",
+          isTrue: true,
+          feedbackCorrect: "Correto! ✅",
+          feedbackIncorrect: "Incorreto! ❌",
+          pointsValue: 10,
+        };
+        break;
+      case "matching":
+        newBlock = {
+          ...baseBlock,
+          type: "matching",
+          width: 700,
+          height: 350,
+          pairs: [
+            { id: crypto.randomUUID(), left: "Item A", right: "Definição 1" },
+            { id: crypto.randomUUID(), left: "Item B", right: "Definição 2" },
+            { id: crypto.randomUUID(), left: "Item C", right: "Definição 3" },
+          ],
+          feedbackCorrect: "Todas as conexões estão corretas! ✅",
+          feedbackIncorrect: "Algumas conexões estão incorretas. ❌",
+          pointsValue: 10,
+          shuffleRight: true,
+        };
+        break;
+      case "fillblank":
+        newBlock = {
+          ...baseBlock,
+          type: "fillblank",
+          width: 700,
+          height: 200,
+          segments: [
+            { type: "text", content: "O Brasil foi descoberto em " },
+            { type: "blank", id: crypto.randomUUID(), correctAnswer: "1500", acceptedVariants: ["1.500"] },
+            { type: "text", content: " por " },
+            { type: "blank", id: crypto.randomUUID(), correctAnswer: "Pedro Álvares Cabral", acceptedVariants: ["Cabral", "Pedro Cabral"] },
+            { type: "text", content: "." },
+          ],
+          caseSensitive: false,
+          feedbackCorrect: "Correto! ✅",
+          feedbackIncorrect: "Tente novamente! ❌",
+          pointsValue: 10,
+        };
+        break;
+      case "sorting":
+        newBlock = {
+          ...baseBlock,
+          type: "sorting",
+          width: 500,
+          height: 350,
+          items: [
+            { id: "s1", content: "Primeiro passo" },
+            { id: "s2", content: "Segundo passo" },
+            { id: "s3", content: "Terceiro passo" },
+          ],
+          correctOrder: ["s1", "s2", "s3"],
+          feedbackCorrect: "Ordem correta! ✅",
+          feedbackIncorrect: "Ordem incorreta. ❌",
+          pointsValue: 10,
+        };
+        break;
+      case "hotspot":
+        newBlock = {
+          ...baseBlock,
+          type: "hotspot",
+          width: 600,
+          height: 400,
+          imageSrc: "",
+          spots: [
+            { id: crypto.randomUUID(), x: 30, y: 40, radius: 8, label: "Ponto 1", content: "Descrição do ponto 1", isCorrect: true },
+            { id: crypto.randomUUID(), x: 70, y: 60, radius: 8, label: "Ponto 2", content: "Descrição do ponto 2", isCorrect: false },
+          ],
+          mode: "explore",
+          pointsValue: 10,
+        };
+        break;
+      case "accordion":
+        newBlock = {
+          ...baseBlock,
+          type: "accordion",
+          width: 600,
+          height: 350,
+          sections: [
+            { id: crypto.randomUUID(), title: "Seção 1", content: "Conteúdo da primeira seção." },
+            { id: crypto.randomUUID(), title: "Seção 2", content: "Conteúdo da segunda seção." },
+            { id: crypto.randomUUID(), title: "Seção 3", content: "Conteúdo da terceira seção." },
+          ],
+          allowMultipleOpen: false,
+          style: "boxed",
+        };
+        break;
+      case "tabs":
+        newBlock = {
+          ...baseBlock,
+          type: "tabs",
+          width: 700,
+          height: 350,
+          tabs: [
+            { id: crypto.randomUUID(), label: "Tab 1", content: "Conteúdo da primeira aba." },
+            { id: crypto.randomUUID(), label: "Tab 2", content: "Conteúdo da segunda aba." },
+            { id: crypto.randomUUID(), label: "Tab 3", content: "Conteúdo da terceira aba." },
+          ],
+          orientation: "horizontal",
+          style: "underline",
         };
         break;
     }
@@ -588,6 +706,54 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
                   label="Áudio"
                   variant="large"
                   onClick={() => handleAddBlock("audio")}
+                />
+              </RibbonGroup>
+
+              <RibbonGroup label="Avaliações">
+                <RibbonButton
+                  icon={<CheckCircle2 className="h-5 w-5" />}
+                  label="V ou F"
+                  variant="large"
+                  onClick={() => handleAddBlock("truefalse")}
+                />
+                <RibbonButton
+                  icon={<Link2 className="h-5 w-5" />}
+                  label="Liga Pontos"
+                  variant="large"
+                  onClick={() => handleAddBlock("matching")}
+                />
+                <RibbonButton
+                  icon={<PenLine className="h-5 w-5" />}
+                  label="Lacunas"
+                  variant="large"
+                  onClick={() => handleAddBlock("fillblank")}
+                />
+                <RibbonButton
+                  icon={<ArrowUpDown className="h-5 w-5" />}
+                  label="Ordenação"
+                  variant="large"
+                  onClick={() => handleAddBlock("sorting")}
+                />
+                <RibbonButton
+                  icon={<MousePointer className="h-5 w-5" />}
+                  label="Hotspot"
+                  variant="large"
+                  onClick={() => handleAddBlock("hotspot")}
+                />
+              </RibbonGroup>
+
+              <RibbonGroup label="Apresentação">
+                <RibbonButton
+                  icon={<ChevronDown className="h-5 w-5" />}
+                  label="Accordion"
+                  variant="large"
+                  onClick={() => handleAddBlock("accordion")}
+                />
+                <RibbonButton
+                  icon={<PanelTop className="h-5 w-5" />}
+                  label="Tabs"
+                  variant="large"
+                  onClick={() => handleAddBlock("tabs")}
                 />
               </RibbonGroup>
             </>

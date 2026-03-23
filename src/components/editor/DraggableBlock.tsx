@@ -536,6 +536,140 @@ export function DraggableBlock({
         </div>
       )}
 
+      {/* ─── TRUE/FALSE BLOCK ─── */}
+      {block.type === "truefalse" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/50 p-3 flex flex-col">
+          <div className="text-[9px] font-bold text-emerald-700 uppercase tracking-wider mb-1">Verdadeiro ou Falso</div>
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-xs text-slate-700 text-center px-2">{(block as any).statement || "Afirmação..."}</p>
+          </div>
+          <div className="flex gap-2 justify-center mt-1">
+            <div className="px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-700 text-[9px] font-medium border border-emerald-300/50">✓ Verdadeiro</div>
+            <div className="px-3 py-1 rounded-md bg-red-500/20 text-red-700 text-[9px] font-medium border border-red-300/50">✗ Falso</div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── MATCHING BLOCK ─── */}
+      {block.type === "matching" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 p-3 flex flex-col">
+          <div className="text-[9px] font-bold text-blue-700 uppercase tracking-wider mb-2">Liga Pontos</div>
+          <div className="flex-1 flex items-center justify-between px-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              {((block as any).pairs || []).map((pair: any, i: number) => (
+                <div key={i} className="px-2 py-1 rounded bg-blue-100 text-[9px] text-blue-800 border border-blue-200">{pair.left}</div>
+              ))}
+            </div>
+            <svg className="flex-1 h-full" viewBox="0 0 60 100" preserveAspectRatio="none">
+              <line x1="0" y1="20" x2="60" y2="80" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3,3" />
+              <line x1="0" y1="50" x2="60" y2="20" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3,3" />
+              <line x1="0" y1="80" x2="60" y2="50" stroke="#93c5fd" strokeWidth="1" strokeDasharray="3,3" />
+            </svg>
+            <div className="flex flex-col gap-1.5">
+              {((block as any).pairs || []).map((pair: any, i: number) => (
+                <div key={i} className="px-2 py-1 rounded bg-indigo-100 text-[9px] text-indigo-800 border border-indigo-200">{pair.right}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── FILL-IN-THE-BLANK BLOCK ─── */}
+      {block.type === "fillblank" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 p-3 flex flex-col">
+          <div className="text-[9px] font-bold text-amber-700 uppercase tracking-wider mb-2">Preencher Lacunas</div>
+          <div className="flex-1 flex items-center justify-center flex-wrap gap-0.5 px-2">
+            {((block as any).segments || []).map((seg: any, i: number) => (
+              seg.type === "text" ? (
+                <span key={i} className="text-xs text-slate-700">{seg.content}</span>
+              ) : (
+                <span key={i} className="inline-block px-2 py-0.5 mx-0.5 border-b-2 border-amber-400 bg-amber-100/50 text-[9px] text-amber-600 min-w-[40px] text-center rounded-sm">___</span>
+              )
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── SORTING BLOCK ─── */}
+      {block.type === "sorting" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-purple-50 to-fuchsia-50 border border-purple-200/50 p-3 flex flex-col">
+          <div className="text-[9px] font-bold text-purple-700 uppercase tracking-wider mb-2">Ordenação</div>
+          <div className="flex-1 flex flex-col gap-1 overflow-hidden">
+            {((block as any).items || []).map((item: any, i: number) => (
+              <div key={i} className="flex items-center gap-1.5 px-2 py-1 rounded bg-purple-100/70 border border-purple-200/50">
+                <span className="text-[9px] font-mono text-purple-400">≡</span>
+                <span className="text-[9px] text-purple-800">{i + 1}. {item.content}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── HOTSPOT BLOCK ─── */}
+      {block.type === "hotspot" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-cyan-50 to-sky-50 border border-cyan-200/50 relative">
+          {(block as any).imageSrc ? (
+            <img src={(block as any).imageSrc} alt="Hotspot" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
+              <span className="text-[9px] text-slate-400">Adicione imagem de fundo</span>
+            </div>
+          )}
+          {((block as any).spots || []).map((spot: any, i: number) => (
+            <div
+              key={i}
+              className="absolute w-4 h-4 rounded-full bg-cyan-500/60 border-2 border-white shadow-lg animate-pulse"
+              style={{ left: `${spot.x}%`, top: `${spot.y}%`, transform: "translate(-50%, -50%)" }}
+              title={spot.label}
+            />
+          ))}
+          <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded bg-black/50 text-white text-[8px]">
+            {(block as any).mode === "quiz" ? "🎯 Quiz" : "🔍 Explorar"} · {((block as any).spots || []).length} pontos
+          </div>
+        </div>
+      )}
+
+      {/* ─── ACCORDION BLOCK ─── */}
+      {block.type === "accordion" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-slate-50 to-gray-100 border border-slate-200/50 p-2 flex flex-col gap-1">
+          <div className="text-[9px] font-bold text-slate-600 uppercase tracking-wider mb-0.5">Accordion</div>
+          {((block as any).sections || []).map((section: any, i: number) => (
+            <div key={i} className={`rounded border ${i === 0 ? "border-indigo-300 bg-indigo-50" : "border-slate-200 bg-white"}`}>
+              <div className="px-2 py-1 flex items-center justify-between">
+                <span className="text-[9px] font-medium text-slate-700">{section.title}</span>
+                <span className="text-[8px] text-slate-400">{i === 0 ? "▼" : "▶"}</span>
+              </div>
+              {i === 0 && (
+                <div className="px-2 pb-1.5 text-[8px] text-slate-500 border-t border-indigo-200">{section.content}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ─── TABS BLOCK ─── */}
+      {block.type === "tabs" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-white border border-slate-200/50 flex flex-col">
+          <div className="flex border-b border-slate-200 bg-slate-50 px-1 pt-1">
+            {((block as any).tabs || []).map((tab: any, i: number) => (
+              <div
+                key={i}
+                className={`px-2 py-1 text-[9px] font-medium rounded-t ${
+                  i === 0
+                    ? "bg-white border border-b-0 border-slate-200 text-indigo-600"
+                    : "text-slate-500"
+                }`}
+              >
+                {tab.label}
+              </div>
+            ))}
+          </div>
+          <div className="flex-1 p-2">
+            <p className="text-[9px] text-slate-600">{((block as any).tabs || [])[0]?.content || ""}</p>
+          </div>
+        </div>
+      )}
+
       {/* Dimension tooltip when selected */}
       {isSelected && !isDragging && (
         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-800 text-white text-[9px] rounded font-mono whitespace-nowrap z-40 shadow-lg">

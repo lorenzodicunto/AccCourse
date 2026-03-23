@@ -35,6 +35,12 @@ import {
   Copy,
   Hexagon,
   Music,
+  CheckCircle2,
+  Link2,
+  PenLine,
+  ArrowUpDown,
+  MousePointer,
+  PanelTop,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -48,6 +54,13 @@ function BlockIcon({ type }: { type: Block["type"] }) {
     video: <Play className="h-4 w-4 text-orange-500" />,
     shape: <Hexagon className="h-4 w-4 text-indigo-500" />,
     audio: <Music className="h-4 w-4 text-violet-500" />,
+    truefalse: <CheckCircle2 className="h-4 w-4 text-emerald-500" />,
+    matching: <Link2 className="h-4 w-4 text-blue-500" />,
+    fillblank: <PenLine className="h-4 w-4 text-amber-500" />,
+    sorting: <ArrowUpDown className="h-4 w-4 text-purple-500" />,
+    hotspot: <MousePointer className="h-4 w-4 text-cyan-500" />,
+    accordion: <ChevronDown className="h-4 w-4 text-slate-500" />,
+    tabs: <PanelTop className="h-4 w-4 text-indigo-500" />,
   };
   return icons[type];
 }
@@ -60,6 +73,13 @@ const BLOCK_LABELS: Record<string, string> = {
   video: "Vídeo",
   shape: "Forma",
   audio: "Áudio",
+  truefalse: "Verdadeiro/Falso",
+  matching: "Liga Pontos",
+  fillblank: "Preencher Lacunas",
+  sorting: "Ordenação",
+  hotspot: "Hotspot",
+  accordion: "Accordion",
+  tabs: "Tabs",
 };
 
 // ─── Collapsible Section ───
