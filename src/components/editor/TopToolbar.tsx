@@ -193,9 +193,9 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
         newBlock = {
           ...baseBlock,
           type: "text",
-          width: 400,
-          height: 80,
-          content: "<p>Clique para editar o texto</p>",
+          width: 300,
+          height: 40,
+          content: "Digite seu texto...",
           fontSize: 18,
           fontWeight: "normal",
           fontStyle: "normal",

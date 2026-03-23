@@ -231,15 +231,24 @@ export function DraggableBlock({
     onSelect();
   };
 
+  // Determine if text block is "free" (no background box)
+  const isTransparentText = block.type === "text" &&
+    (!(block as any).backgroundColor || (block as any).backgroundColor === "transparent");
+
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        "absolute rounded-lg transition-shadow duration-150",
+        "absolute transition-shadow duration-150",
+        !isTransparentText && "rounded-lg",
         isDragging && "shadow-2xl opacity-90",
         isSelected && !isDragging
-          ? "ring-2 ring-primary shadow-lg"
-          : !isDragging && "hover:ring-1 hover:ring-primary/30"
+          ? isTransparentText
+            ? "border border-dashed border-primary/50"
+            : "ring-2 ring-primary shadow-lg"
+          : !isDragging && (isTransparentText
+            ? "hover:border hover:border-dashed hover:border-primary/20"
+            : "hover:ring-1 hover:ring-primary/30")
       )}
       style={style}
       {...(isEditing || isResizing ? {} : { ...attributes, ...listeners })}
@@ -279,9 +288,10 @@ export function DraggableBlock({
         <div
           ref={textRef}
           className={cn(
-            "w-full h-full p-3 overflow-hidden text-sm rounded-lg",
+            "w-full h-full overflow-hidden text-sm",
+            isTransparentText ? "" : "rounded-lg",
             isEditing
-              ? "outline-none ring-1 ring-primary/30 cursor-text"
+              ? "outline-none cursor-text"
               : ""
           )}
           style={{
@@ -297,6 +307,7 @@ export function DraggableBlock({
             backgroundColor: (block as any).backgroundColor || "transparent",
             borderRadius: `${(block as any).borderRadius ?? 0}px`,
             opacity: (block as any).opacity ?? 1,
+            padding: isTransparentText ? "4px 2px" : "12px",
           }}
           contentEditable={isEditing}
           suppressContentEditableWarning
