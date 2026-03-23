@@ -15,6 +15,7 @@ model Tenant {
   createdAt DateTime @default(now())
   users     User[]
   courses   Course[]
+  assets    Asset[]
 }
 
 model User {
@@ -26,6 +27,7 @@ model User {
   tenantId     String?
   tenant       Tenant?  @relation(fields: [tenantId], references: [id])
   courses      Course[]
+  assets       Asset[]    @relation("uploadedAssets")
   createdAt    DateTime @default(now())
 }
 
@@ -70,4 +72,19 @@ model Comment {
   createdAt      DateTime     @default(now())
   sharedCourse   SharedCourse @relation(fields: [sharedCourseId], references: [id], onDelete: Cascade)
   reviewer       Reviewer     @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+}
+
+// ─── Asset Library ────────────────────────────────────────────────────────────
+
+model Asset {
+  id         String   @id @default(cuid())
+  name       String
+  url        String
+  type       String   // "image", "video", "document", "audio"
+  size       Int      @default(0)
+  tenantId   String?
+  uploadedBy String
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
+  uploader   User     @relation("uploadedAssets", fields: [uploadedBy], references: [id])
+  createdAt  DateTime @default(now())
 }

@@ -41,6 +41,8 @@ import { shareCourse } from "@/actions/review";
 import { saveCourse } from "@/actions/courses";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog";
+import { AssetLibraryDialog } from "./AssetLibraryDialog";
 
 interface TopToolbarProps {
   courseId?: string;
@@ -396,6 +398,9 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
             )}
             Exportar SCORM
           </Button>
+
+          <AssetLibraryDialog />
+          <KeyboardShortcutsDialog />
         </div>
       </div>
 

@@ -89,18 +89,20 @@ export function Canvas() {
       const scaleX = 960 / rect.width;
       const scaleY = 540 / rect.height;
 
-      const newX = Math.max(
-        0,
-        Math.min(960 - block.width, block.x + delta.x * scaleX)
-      );
-      const newY = Math.max(
-        0,
-        Math.min(540 - block.height, block.y + delta.y * scaleY)
-      );
+      const rawX = block.x + delta.x * scaleX;
+      const rawY = block.y + delta.y * scaleY;
+
+      // Snap to grid (10px)
+      const GRID = 10;
+      const snappedX = Math.round(rawX / GRID) * GRID;
+      const snappedY = Math.round(rawY / GRID) * GRID;
+
+      const newX = Math.max(0, Math.min(960 - block.width, snappedX));
+      const newY = Math.max(0, Math.min(540 - block.height, snappedY));
 
       updateBlock(project.id, slide.id, block.id, {
-        x: Math.round(newX),
-        y: Math.round(newY),
+        x: newX,
+        y: newY,
       });
     },
     [project, slide, updateBlock]
