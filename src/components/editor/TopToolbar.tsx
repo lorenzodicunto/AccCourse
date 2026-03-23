@@ -58,6 +58,7 @@ import { SlideTemplatesDialog } from "./SlideTemplatesDialog";
 import { AIQuizDialog } from "./AIQuizDialog";
 import { AICourseDialog } from "./AICourseDialog";
 import { ContrastChecker } from "./ContrastChecker";
+import { ImportPPTXDialog } from "./ImportPPTXDialog";
 
 interface TopToolbarProps {
   courseId?: string;
@@ -621,6 +622,7 @@ export function TopToolbar({ courseId }: TopToolbarProps) {
           {project && <AICourseDialog projectId={project.id} />}
 
           <ContrastChecker />
+          <ImportPPTXDialog />
           <KeyboardShortcutsDialog />
         </div>
       </div>

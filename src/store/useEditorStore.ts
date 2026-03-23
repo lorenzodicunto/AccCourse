@@ -236,6 +236,20 @@ export interface QuizSettings {
   maxAttempts: number;
 }
 
+export interface GamificationSettings {
+  enableXP: boolean;
+  enableBadges: boolean;
+  enableStreak: boolean;
+  xpPerSlide: number;
+  xpPerCorrectAnswer: number;
+  badges: {
+    id: string;
+    name: string;
+    icon: string;
+    condition: "complete_course" | "perfect_score" | "fast_finish" | "all_slides";
+  }[];
+}
+
 export interface CourseProject {
   id: string;
   title: string;
@@ -244,6 +258,7 @@ export interface CourseProject {
   theme: ThemeConfig;
   slides: Slide[];
   quizSettings: QuizSettings;
+  gamification: GamificationSettings;
   createdAt: string;
   updatedAt: string;
 }
@@ -268,7 +283,7 @@ interface EditorActions {
   setCurrentProject: (id: string | null) => void;
 
   // Slide CRUD
-  addSlide: (projectId: string) => void;
+  addSlide: (projectId: string) => string;
   duplicateSlide: (projectId: string, slideId: string) => void;
   deleteSlide: (projectId: string, slideId: string) => void;
   reorderSlides: (projectId: string, slideIds: string[]) => void;
@@ -412,7 +427,7 @@ export const useEditorStore = create<EditorStore>()(
       addSlide: (projectId) => {
         const state = get();
         const project = state.projects.find((p) => p.id === projectId);
-        if (!project) return;
+        if (!project) return "";
 
         const newSlide: Slide = {
           id: generateId(),
@@ -437,6 +452,8 @@ export const useEditorStore = create<EditorStore>()(
           ),
           currentSlideId: newSlide.id,
         });
+
+        return newSlide.id;
       },
 
       duplicateSlide: (projectId, slideId) => {
@@ -873,6 +890,18 @@ export function createDefaultProject(
       showResults: true,
       allowRetry: true,
       maxAttempts: 3,
+    },
+    gamification: {
+      enableXP: false,
+      enableBadges: false,
+      enableStreak: false,
+      xpPerSlide: 5,
+      xpPerCorrectAnswer: 15,
+      badges: [
+        { id: "complete", name: "Concluído", icon: "🎓", condition: "complete_course" },
+        { id: "perfect", name: "Nota Máxima", icon: "⭐", condition: "perfect_score" },
+        { id: "explorer", name: "Explorador", icon: "🧭", condition: "all_slides" },
+      ],
     },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),

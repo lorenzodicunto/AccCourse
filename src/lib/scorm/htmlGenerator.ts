@@ -92,6 +92,31 @@ export function generateCourseHTML(project: CourseProject, assetMap?: Map<string
   </div>
   ` : ""}
 
+  ${project.gamification?.enableXP ? `
+  <!-- Gamification XP Bar -->
+  <div id="xp-bar" style="position:fixed;top:12px;right:12px;background:rgba(30,41,59,0.95);backdrop-filter:blur(12px);border-radius:16px;padding:8px 16px;display:flex;align-items:center;gap:10px;z-index:900;box-shadow:0 4px 20px rgba(0,0,0,0.3);font-family:inherit;">
+    <div style="font-size:20px;">⚡</div>
+    <div>
+      <div style="font-size:10px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">XP</div>
+      <div id="xp-value" style="font-size:18px;font-weight:800;color:#fbbf24;">0</div>
+    </div>
+    <div style="width:80px;height:6px;background:#334155;border-radius:3px;overflow:hidden;">
+      <div id="xp-fill" style="height:100%;background:linear-gradient(90deg,#f59e0b,#fbbf24);border-radius:3px;width:0%;transition:width 0.5s ease;"></div>
+    </div>
+  </div>
+  <!-- Badge Notification -->
+  <div id="badge-popup" style="position:fixed;top:60px;right:12px;background:linear-gradient(135deg,#fef3c7,#fffbeb);border:2px solid #f59e0b;border-radius:16px;padding:12px 20px;display:none;align-items:center;gap:10px;z-index:901;box-shadow:0 8px 30px rgba(245,158,11,0.3);animation:badgeSlide 0.5s ease;">
+    <div id="badge-icon" style="font-size:28px;"></div>
+    <div>
+      <div style="font-size:10px;color:#92400e;font-weight:700;text-transform:uppercase;">Badge Conquistado!</div>
+      <div id="badge-name" style="font-size:14px;font-weight:700;color:#78350f;"></div>
+    </div>
+  </div>
+  <style>
+    @keyframes badgeSlide { from { opacity:0; transform:translateX(50px); } to { opacity:1; transform:translateX(0); } }
+  </style>
+  ` : ""}
+
   <script>
     (function() {
       var currentIndex = 0;
