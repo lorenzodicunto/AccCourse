@@ -11,6 +11,16 @@ const MIME_TYPES: Record<string, string> = {
   ".svg": "image/svg+xml",
   ".ttf": "font/ttf",
   ".woff2": "font/woff2",
+  ".mp3": "audio/mpeg",
+  ".wav": "audio/wav",
+  ".ogg": "audio/ogg",
+  ".m4a": "audio/mp4",
+  ".flac": "audio/flac",
+  ".aac": "audio/aac",
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".mov": "video/quicktime",
+  ".avi": "video/x-msvideo",
 };
 
 export async function GET(
@@ -22,9 +32,19 @@ export async function GET(
 
     // Sanitize filename to prevent path traversal
     const sanitized = path.basename(filename);
-    const filePath = path.join("/app", "data", "uploads", sanitized);
 
-    const data = await readFile(filePath);
+    // Try to find file in primary uploads directory
+    let filePath = path.join("/app", "data", "uploads", sanitized);
+    let data;
+
+    try {
+      data = await readFile(filePath);
+    } catch {
+      // If not found, try the assets subdirectory
+      filePath = path.join("/app", "data", "uploads", "assets", sanitized);
+      data = await readFile(filePath);
+    }
+
     const ext = path.extname(sanitized).toLowerCase();
     const contentType = MIME_TYPES[ext] || "application/octet-stream";
 
@@ -35,6 +55,9 @@ export async function GET(
       },
     });
   } catch {
-    return NextResponse.json({ error: "File not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Arquivo não encontrado" },
+      { status: 404 }
+    );
   }
 }

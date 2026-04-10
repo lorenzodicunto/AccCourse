@@ -3,9 +3,10 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-// Maximum file size: 10MB
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+// Maximum file size: 100MB (for video support)
+const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function POST(request: NextRequest) {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json(
-        { error: "Unauthorized" },
+        { error: "Não autorizado" },
         { status: 401 }
       );
     }
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json(
-        { error: "No file provided" },
+        { error: "Nenhum arquivo fornecido" },
         { status: 400 }
       );
     }
@@ -36,27 +37,51 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type (images and fonts only — no octet-stream fallback)
+    // Validate file type (images, fonts, video, and audio)
     const allowedTypes = [
+      // Images
       "image/jpeg",
       "image/png",
       "image/gif",
       "image/webp",
       "image/svg+xml",
+      // Fonts
       "font/ttf",
       "font/woff2",
       "application/x-font-ttf",
       "application/font-woff2",
+      // Audio
+      "audio/mpeg",
+      "audio/wav",
+      "audio/ogg",
+      "audio/mp4",
+      "audio/flac",
+      "audio/aac",
+      // Video
+      "video/mp4",
+      "video/webm",
+      "video/quicktime",
+      "video/x-msvideo",
     ];
 
     const ext = path.extname(file.name).toLowerCase();
     const fontExtensions = [".ttf", ".woff2"];
     const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"];
-    const allowedExtensions = [...fontExtensions, ...imageExtensions];
+    const audioExtensions = [".mp3", ".wav", ".ogg", ".m4a", ".flac", ".aac"];
+    const videoExtensions = [".mp4", ".webm", ".mov", ".avi"];
+    const allowedExtensions = [
+      ...fontExtensions,
+      ...imageExtensions,
+      ...audioExtensions,
+      ...videoExtensions,
+    ];
 
     if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(ext)) {
       return NextResponse.json(
-        { error: "Tipo de arquivo não permitido. Aceitos: imagens (jpg, png, gif, webp, svg) e fontes (ttf, woff2)." },
+        {
+          error:
+            "Tipo de arquivo não permitido. Aceitos: imagens (jpg, png, gif, webp, svg), fontes (ttf, woff2), áudio (mp3, wav, ogg, m4a, flac, aac) e vídeo (mp4, webm, mov, avi).",
+        },
         { status: 400 }
       );
     }
@@ -82,11 +107,35 @@ export async function POST(request: NextRequest) {
       ? `/api/uploads/${fileName}`
       : `/uploads/${fileName}`;
 
+    // Determine asset type
+    let assetType = "document";
+    if (file.type.startsWith("image/")) assetType = "image";
+    else if (file.type.startsWith("video/")) assetType = "video";
+    else if (file.type.startsWith("audio/")) assetType = "audio";
+    else if (fontExtensions.includes(ext)) assetType = "font";
+
+    // Save to Asset DB (get user info)
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+    if (user && assetType !== "font") {
+      await prisma.asset.create({
+        data: {
+          name: file.name,
+          url,
+          type: assetType,
+          size: file.size,
+          tenantId: user.tenantId ?? undefined,
+          uploadedBy: user.id,
+        },
+      });
+    }
+
     return NextResponse.json({ url });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Upload failed" },
+      { error: "Falha ao fazer upload" },
       { status: 500 }
     );
   }

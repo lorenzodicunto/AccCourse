@@ -173,6 +173,17 @@ export function PropertiesPanel() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const hotspotImageInputRef = useRef<HTMLInputElement>(null);
+  const interactiveVideoInputRef = useRef<HTMLInputElement>(null);
+  const interactiveVideoPosterInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [isUploadingHotspotImage, setIsUploadingHotspotImage] = useState(false);
+  const [isUploadingInteractiveVideo, setIsUploadingInteractiveVideo] = useState(false);
+  const [isUploadingPoster, setIsUploadingPoster] = useState(false);
+
   // AI Theme state
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
@@ -252,6 +263,39 @@ export function PropertiesPanel() {
       console.error("Image upload failed:", err);
     } finally {
       setIsUploadingImage(false);
+    }
+  };
+
+  const handleMediaUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    acceptPrefix: string,
+    fieldName: string,
+    setLoading: (v: boolean) => void
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !project || !slide || !block) return;
+    if (acceptPrefix && !file.type.startsWith(acceptPrefix)) {
+      toast.error("Tipo de arquivo não suportado.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.url) {
+        handleUpdate({ [fieldName]: data.url } as any);
+        toast.success("Upload concluído!");
+      } else {
+        toast.error(data.error || "Erro no upload.");
+      }
+    } catch (err) {
+      console.error("Upload failed:", err);
+      toast.error("Falha no upload.");
+    } finally {
+      setLoading(false);
+      if (e.target) e.target.value = "";
     }
   };
 
@@ -1488,14 +1532,23 @@ export function PropertiesPanel() {
                   <svg className="h-3 w-3 text-muted-foreground/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z" /></svg>
                 }
               >
-                <FieldRow label="URL do Áudio">
-                  <Input
-                    value={(block as any).src || ""}
-                    onChange={(e) => handleUpdate({ src: e.target.value })}
-                    placeholder="https://... ou /api/uploads/..."
-                    className="h-7 text-xs"
-                  />
+                <input ref={audioInputRef} type="file" accept="audio/*" onChange={(e) => handleMediaUpload(e, "audio/", "src", setIsUploadingAudio)} className="hidden" />
+
+                <Button variant="outline" size="sm" className="w-full gap-2 rounded-lg text-xs h-8" onClick={() => audioInputRef.current?.click()} disabled={isUploadingAudio}>
+                  {isUploadingAudio ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                  {isUploadingAudio ? "Enviando..." : (block as any).src ? "Trocar Áudio" : "Upload de Áudio"}
+                </Button>
+
+                {(block as any).src && (
+                  <div className="rounded-lg overflow-hidden border border-slate-200 p-2 bg-slate-50">
+                    <audio src={(block as any).src} controls className="w-full h-8" />
+                  </div>
+                )}
+
+                <FieldRow label="Ou URL">
+                  <Input value={(block as any).src || ""} onChange={(e) => handleUpdate({ src: e.target.value })} placeholder="https://... ou /api/uploads/..." className="h-7 text-xs" />
                 </FieldRow>
+
                 <FieldRow label="Autoplay">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -1765,13 +1818,15 @@ export function PropertiesPanel() {
             {/* ─── HOTSPOT PROPERTIES ─── */}
             {block.type === "hotspot" && (
               <Section title="Hotspot" icon={<MousePointer className="h-3 w-3 text-cyan-500" />}>
-                <FieldRow label="Imagem de fundo">
-                  <Input
-                    value={(block as any).imageSrc || ""}
-                    onChange={(e) => handleUpdate({ imageSrc: e.target.value } as any)}
-                    placeholder="URL da imagem..."
-                    className="h-7 text-xs"
-                  />
+                <FieldRow label="Imagem">
+                  <div className="flex-1 space-y-1.5">
+                    <input ref={hotspotImageInputRef} type="file" accept="image/*" onChange={(e) => handleMediaUpload(e, "image/", "imageSrc", setIsUploadingHotspotImage)} className="hidden" />
+                    <Button variant="outline" size="sm" className="w-full gap-2 rounded-lg text-[10px] h-7" onClick={() => hotspotImageInputRef.current?.click()} disabled={isUploadingHotspotImage}>
+                      {isUploadingHotspotImage ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                      {isUploadingHotspotImage ? "Enviando..." : (block as any).imageSrc ? "Trocar" : "Upload"}
+                    </Button>
+                    <Input value={(block as any).imageSrc || ""} onChange={(e) => handleUpdate({ imageSrc: e.target.value } as any)} placeholder="Ou cole a URL..." className="h-6 text-[10px]" />
+                  </div>
                 </FieldRow>
                 <FieldRow label="Modo">
                   <select
@@ -2030,11 +2085,25 @@ export function PropertiesPanel() {
               <Section title="🎬 Vídeo Interativo" icon={<Play className="h-3 w-3 text-purple-500" />}>
                 <div className="space-y-3">
                   {/* Video Source */}
-                  <FieldRow label="URL Vídeo">
-                    <Input value={(block as any).src || ""} onChange={(e) => handleUpdate({ src: e.target.value } as any)} className="h-7 text-xs" placeholder="https://..." />
+                  <FieldRow label="Vídeo">
+                    <div className="flex-1 space-y-1.5">
+                      <input ref={interactiveVideoInputRef} type="file" accept="video/*" onChange={(e) => handleMediaUpload(e, "video/", "src", setIsUploadingInteractiveVideo)} className="hidden" />
+                      <Button variant="outline" size="sm" className="w-full gap-2 rounded-lg text-[10px] h-7" onClick={() => interactiveVideoInputRef.current?.click()} disabled={isUploadingInteractiveVideo}>
+                        {isUploadingInteractiveVideo ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
+                        {isUploadingInteractiveVideo ? "Enviando..." : (block as any).src ? "Trocar" : "Upload"}
+                      </Button>
+                      <Input value={(block as any).src || ""} onChange={(e) => handleUpdate({ src: e.target.value } as any)} className="h-6 text-[10px]" placeholder="Ou cole URL..." />
+                    </div>
                   </FieldRow>
                   <FieldRow label="Poster">
-                    <Input value={(block as any).poster || ""} onChange={(e) => handleUpdate({ poster: e.target.value } as any)} className="h-7 text-xs" placeholder="URL da thumbnail" />
+                    <div className="flex-1 space-y-1.5">
+                      <input ref={interactiveVideoPosterInputRef} type="file" accept="image/*" onChange={(e) => handleMediaUpload(e, "image/", "poster", setIsUploadingPoster)} className="hidden" />
+                      <Button variant="outline" size="sm" className="w-full gap-2 rounded-lg text-[10px] h-7" onClick={() => interactiveVideoPosterInputRef.current?.click()} disabled={isUploadingPoster}>
+                        {isUploadingPoster ? <Loader2 className="h-3 w-3 animate-spin" /> : <ImageUp className="h-3 w-3" />}
+                        {isUploadingPoster ? "Enviando..." : (block as any).poster ? "Trocar" : "Upload"}
+                      </Button>
+                      <Input value={(block as any).poster || ""} onChange={(e) => handleUpdate({ poster: e.target.value } as any)} className="h-6 text-[10px]" placeholder="Ou cole URL..." />
+                    </div>
                   </FieldRow>
                   <div className="flex gap-3">
                     <label className="flex items-center gap-1.5 text-[10px]">
@@ -2132,7 +2201,19 @@ export function PropertiesPanel() {
                     <Play className="h-3 w-3 text-muted-foreground/60" />
                   }
                 >
-                  <FieldRow label="URL">
+                  <input ref={videoInputRef} type="file" accept="video/*" onChange={(e) => handleMediaUpload(e, "video/", "url", setIsUploadingVideo)} className="hidden" />
+                  <Button variant="outline" size="sm" className="w-full gap-2 rounded-lg text-xs h-8" onClick={() => videoInputRef.current?.click()} disabled={isUploadingVideo}>
+                    {isUploadingVideo ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                    {isUploadingVideo ? "Enviando..." : block.url ? "Trocar Vídeo" : "Upload de Vídeo"}
+                  </Button>
+
+                  {block.url && !block.url.includes("youtube") && !block.url.includes("vimeo") && (
+                    <div className="rounded-lg overflow-hidden border border-slate-200">
+                      <video src={block.url} className="w-full h-20 object-cover" />
+                    </div>
+                  )}
+
+                  <FieldRow label="Ou URL">
                     <Input
                       value={block.url}
                       onChange={(e) =>
@@ -2141,9 +2222,11 @@ export function PropertiesPanel() {
                         } as Partial<Block>)
                       }
                       className="h-7 text-xs rounded-md"
-                      placeholder="https://youtube.com/..."
+                      placeholder="https://youtube.com/... ou upload"
                     />
                   </FieldRow>
+
+                  <p className="text-[9px] text-slate-400">YouTube, Vimeo ou arquivo direto (MP4, WebM)</p>
                 </Section>
 
                 <Section
