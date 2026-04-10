@@ -97,7 +97,7 @@ export default function ReviewPage() {
     if (!currentSlide) return;
     try {
       const data = await getSlideComments(courseId, currentSlide.id);
-      setComments(data.map(c => ({
+      setComments(data.map((c: { createdAt: string | Date; [key: string]: unknown }) => ({
         ...c,
         createdAt: new Date(c.createdAt),
       })));
