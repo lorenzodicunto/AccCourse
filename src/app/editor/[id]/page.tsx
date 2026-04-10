@@ -423,7 +423,9 @@ export default function EditorPage() {
       <TopToolbar courseId={courseId} onToggleComponentLib={() => setComponentLibOpen(!componentLibOpen)} />
       <div className="flex flex-1 overflow-hidden">
         <SlideNavigator />
-        <Canvas />
+        <div role="main" aria-label="Área de edição do curso">
+          <Canvas />
+        </div>
         <PropertiesPanel />
       </div>
       <StatusBar saveStatus={saveStatus} lastSavedAt={lastSavedAt} />

@@ -642,10 +642,13 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
       {/* Ribbon Tabs */}
       <div className="bg-white border-b border-slate-200 flex-shrink-0">
         {/* Tab Headers */}
-        <div className="flex items-center gap-0 px-3 border-b border-slate-200">
+        <div role="tablist" className="flex items-center gap-0 px-3 border-b border-slate-200">
           {RIBBON_TABS.map((tab) => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`tabpanel-${tab.id}`}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
                 "px-4 py-1.5 text-xs font-medium transition-all relative",
@@ -656,16 +659,16 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
             >
               {tab.label}
               {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-t-full" />
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-t-full" aria-hidden="true" />
               )}
             </button>
           ))}
         </div>
 
         {/* Tab Content */}
-        <div className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
-          {/* ─── HOME TAB ─── */}
-          {activeTab === "home" && (
+        {/* ─── HOME TAB PANEL ─── */}
+        {activeTab === "home" && (
+          <div role="tabpanel" id="tabpanel-home" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
             <>
               <RibbonGroup label="Área de Transferência">
                 <RibbonButton
@@ -759,10 +762,12 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                 </div>
               </RibbonGroup>
             </>
-          )}
+          </div>
+        )}
 
-          {/* ─── INSERT TAB ─── */}
-          {activeTab === "insert" && (
+        {/* ─── INSERT TAB PANEL ─── */}
+        {activeTab === "insert" && (
+          <div role="tabpanel" id="tabpanel-insert" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
             <>
               <RibbonGroup label="Biblioteca">
                 <RibbonButton
@@ -824,10 +829,12 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                 />
               </RibbonGroup>
             </>
-          )}
+          </div>
+        )}
 
-          {/* ─── INTERACTIONS TAB ─── */}
-          {activeTab === "interactions" && (
+        {/* ─── INTERACTIONS TAB PANEL ─── */}
+        {activeTab === "interactions" && (
+          <div role="tabpanel" id="tabpanel-interactions" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
             <>
               <RibbonGroup label="Avaliações">
                 <RibbonButton
@@ -915,10 +922,12 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                 />
               </RibbonGroup>
             </>
-          )}
+          </div>
+        )}
 
-          {/* ─── DESIGN TAB ─── */}
-          {activeTab === "design" && (
+        {/* ─── DESIGN TAB PANEL ─── */}
+        {activeTab === "design" && (
+          <div role="tabpanel" id="tabpanel-design" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
             <>
               <RibbonGroup label="Slides">
                 <SlideLayoutsDialog />
@@ -1031,10 +1040,12 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                 </div>
               </RibbonGroup>
             </>
-          )}
+          </div>
+        )}
 
-          {/* ─── EXPORT TAB ─── */}
-          {activeTab === "export" && (
+        {/* ─── EXPORT TAB PANEL ─── */}
+        {activeTab === "export" && (
+          <div role="tabpanel" id="tabpanel-export" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
             <>
               <RibbonGroup label="Publicar">
                 <RibbonButton
@@ -1073,10 +1084,12 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                 <ImportPPTXDialog />
               </RibbonGroup>
             </>
-          )}
+          </div>
+        )}
 
-          {/* ─── TOOLS TAB ─── */}
-          {activeTab === "tools" && (
+        {/* ─── TOOLS TAB PANEL ─── */}
+        {activeTab === "tools" && (
+          <div role="tabpanel" id="tabpanel-tools" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
             <>
               <RibbonGroup label="Inteligência Artificial">
                 <AIQuizDialog
@@ -1124,8 +1137,8 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                 <KeyboardShortcutsDialog />
               </RibbonGroup>
             </>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Share Dialog (Modal Overlay) */}

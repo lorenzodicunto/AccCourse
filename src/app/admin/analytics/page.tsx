@@ -1,162 +1,524 @@
 "use client";
 
-import { useEditorStore } from "@/store/useEditorStore";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  BarChart3,
-  FileText,
+  BookOpen,
   Layers,
-  CheckCircle,
+  Users,
+  TrendingUp,
+  BarChart3,
   Clock,
-  Blocks,
-  Target,
-  GraduationCap,
+  Activity,
+  ArrowLeft,
+  LogOut,
+  Shield,
+  ArrowUpRight,
+  ArrowDownRight,
 } from "lucide-react";
 
+// Mock data for courses
+const mockCourses = [
+  {
+    id: 1,
+    name: "Introdução ao Python",
+    author: "Carlos Silva",
+    slides: 24,
+    views: 1250,
+    completion: 82,
+    lastEdited: "2024-04-08",
+  },
+  {
+    id: 2,
+    name: "Fundamentos de UX Design",
+    author: "Maria Costa",
+    slides: 18,
+    views: 856,
+    completion: 71,
+    lastEdited: "2024-04-07",
+  },
+  {
+    id: 3,
+    name: "Gestão de Projetos com Agile",
+    author: "João Santos",
+    slides: 32,
+    views: 2103,
+    completion: 65,
+    lastEdited: "2024-04-09",
+  },
+  {
+    id: 4,
+    name: "Marketing Digital 2024",
+    author: "Ana Oliveira",
+    slides: 28,
+    views: 1890,
+    completion: 78,
+    lastEdited: "2024-04-06",
+  },
+  {
+    id: 5,
+    name: "Desenvolvimento Web Avançado",
+    author: "Pedro Almeida",
+    slides: 42,
+    views: 2456,
+    completion: 88,
+    lastEdited: "2024-04-09",
+  },
+  {
+    id: 6,
+    name: "Comunicação Empresarial",
+    author: "Laura Ferreira",
+    slides: 16,
+    views: 723,
+    completion: 60,
+    lastEdited: "2024-04-05",
+  },
+  {
+    id: 7,
+    name: "Data Science com R",
+    author: "Roberto Gomes",
+    slides: 38,
+    views: 1567,
+    completion: 74,
+    lastEdited: "2024-04-08",
+  },
+  {
+    id: 8,
+    name: "Segurança da Informação",
+    author: "Fernanda Costa",
+    slides: 26,
+    views: 945,
+    completion: 69,
+    lastEdited: "2024-04-07",
+  },
+];
+
+// Mock data for monthly course creation
+const monthlyData = [
+  { month: "Setembro", courses: 3 },
+  { month: "Outubro", courses: 5 },
+  { month: "Novembro", courses: 4 },
+  { month: "Dezembro", courses: 7 },
+  { month: "Janeiro", courses: 6 },
+  { month: "Fevereiro", courses: 8 },
+];
+
+// Mock data for top courses by views
+const topCoursesByViews = mockCourses
+  .sort((a, b) => b.views - a.views)
+  .slice(0, 5);
+
+// Mock activity feed
+const activityFeed = [
+  { id: 1, action: "Novo curso criado", course: "Desenvolvimento Web Avançado", time: "há 2 horas", user: "Pedro Almeida" },
+  { id: 2, action: "Slides adicionados", course: "Introdução ao Python", time: "há 4 horas", user: "Carlos Silva" },
+  { id: 3, action: "Curso finalizado", course: "Fundamentos de UX Design", time: "há 6 horas", user: "Maria Costa" },
+  { id: 4, action: "Novo curso criado", course: "Comunicação Empresarial", time: "há 1 dia", user: "Laura Ferreira" },
+  { id: 5, action: "Edição realizada", course: "Marketing Digital 2024", time: "há 1 dia", user: "Ana Oliveira" },
+];
+
 export default function AnalyticsDashboard() {
-  const projects = useEditorStore((s) => s.projects);
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<"analytics" | "performance" | "engagement">("analytics");
 
-  // Aggregate stats
-  const totalCourses = projects.length;
-  let totalSlides = 0;
-  let totalBlocks = 0;
-  const blockTypeCounts: Record<string, number> = {};
-  let totalQuizBlocks = 0;
-  let totalMaxPoints = 0;
-  let totalInteractions = 0;
+  // Calculate total stats
+  const totalCourses = mockCourses.length;
+  const totalSlides = mockCourses.reduce((sum, course) => sum + course.slides, 0);
+  const totalViews = mockCourses.reduce((sum, course) => sum + course.views, 0);
+  const avgCompletion = Math.round(
+    mockCourses.reduce((sum, course) => sum + course.completion, 0) / mockCourses.length
+  );
 
-  const assessmentTypes = ["quiz", "truefalse", "matching", "fillblank", "sorting", "hotspot", "branching", "dragdrop"];
+  // Calculate max views for chart scaling
+  const maxViews = Math.max(...topCoursesByViews.map((c) => c.views));
 
-  projects.forEach((p) => {
-    totalSlides += p.slides.length;
-    p.slides.forEach((slide) => {
-      totalBlocks += slide.blocks.length;
-      slide.blocks.forEach((block) => {
-        blockTypeCounts[block.type] = (blockTypeCounts[block.type] || 0) + 1;
-        if (assessmentTypes.includes(block.type)) {
-          totalInteractions++;
-          if ("pointsValue" in block) {
-            totalMaxPoints += (block as any).pointsValue || 10;
-          }
-        }
-        if (block.type === "quiz") totalQuizBlocks++;
-      });
-    });
-  });
-
-  const avgSlidesPerCourse = totalCourses > 0 ? (totalSlides / totalCourses).toFixed(1) : "0";
-  const avgBlocksPerSlide = totalSlides > 0 ? (totalBlocks / totalSlides).toFixed(1) : "0";
-
-  const blockTypeEntries = Object.entries(blockTypeCounts).sort((a, b) => b[1] - a[1]);
-
-  const cards = [
-    { icon: GraduationCap, label: "Total de Cursos", value: totalCourses, color: "text-blue-400 bg-blue-500/15" },
-    { icon: Layers, label: "Total de Slides", value: totalSlides, color: "text-indigo-400 bg-indigo-500/15" },
-    { icon: Blocks, label: "Total de Blocos", value: totalBlocks, color: "text-violet-400 bg-violet-500/15" },
-    { icon: Target, label: "Interações", value: totalInteractions, color: "text-emerald-400 bg-emerald-500/15" },
-    { icon: CheckCircle, label: "Pontos Máximos", value: totalMaxPoints, color: "text-amber-400 bg-amber-500/15" },
-    { icon: BarChart3, label: "Média Slides/Curso", value: avgSlidesPerCourse, color: "text-pink-400 bg-pink-500/15" },
-    { icon: FileText, label: "Média Blocos/Slide", value: avgBlocksPerSlide, color: "text-cyan-400 bg-cyan-500/15" },
-    { icon: Clock, label: "~Tempo Estimado", value: `${Math.ceil(totalSlides * 1.5)}min`, color: "text-slate-400 bg-slate-500/15" },
-  ];
+  // Calculate max monthly courses for chart scaling
+  const maxMonthly = Math.max(...monthlyData.map((d) => d.courses));
 
   return (
-    <div className="min-h-screen p-8" style={{ background: '#0F172A' }}>
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-            <BarChart3 className="h-8 w-8 text-purple-400" />
-            Analytics Dashboard
-          </h1>
-          <p className="text-slate-400 mt-1">Métricas e análises dos cursos criados na plataforma.</p>
+    <div className="min-h-screen flex bg-slate-50">
+      {/* Sidebar */}
+      <aside className="w-64 flex flex-col flex-shrink-0 bg-white border-r border-slate-200">
+        <div className="p-5 border-b border-slate-200">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-600 to-purple-700">
+              <Shield className="h-4.5 w-4.5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold tracking-tight text-slate-900">Admin Portal</h1>
+              <p className="text-[10px] text-slate-500">AccCourse 2.0</p>
+            </div>
+          </div>
         </div>
 
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          {cards.map((card) => (
-            <Card key={card.label} className="border-white/5 shadow-none hover:border-purple-500/20 transition-all" style={{ background: '#1E293B' }}>
+        <nav className="flex-1 p-3 space-y-1">
+          <button
+            onClick={() => router.push("/admin")}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          >
+            <BarChart3 className="h-4 w-4" />
+            Empresas
+          </button>
+          <button
+            onClick={() => router.push("/admin")}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          >
+            <Users className="h-4 w-4" />
+            Usuários
+          </button>
+          <button
+            onClick={() => setActiveTab("analytics")}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all bg-purple-100 text-purple-700"
+          >
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </button>
+        </nav>
+
+        <div className="p-4 border-t border-slate-200 space-y-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl"
+            onClick={() => router.push("/")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Voltar ao Editor
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl"
+            onClick={() => signOut({ callbackUrl: "/login" })}
+          >
+            <LogOut className="h-4 w-4" />
+            Sair
+          </Button>
+        </div>
+
+        <div className="px-4 pb-4">
+          <div className="bg-slate-100 rounded-xl p-3">
+            <p className="text-xs text-slate-600">{session?.user?.email}</p>
+            <p className="text-[10px] text-slate-500 mt-0.5">Super Admin</p>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
+              <BarChart3 className="h-8 w-8 text-purple-600" />
+              Analytics Dashboard
+            </h1>
+            <p className="text-slate-600 mt-2">Métricas e análises dos cursos criados na plataforma.</p>
+          </div>
+
+          {/* Overview Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {/* Total de Cursos */}
+            <Card className="border-slate-200 bg-white hover:border-purple-300 hover:shadow-lg transition-all">
               <CardContent className="p-5">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2.5 rounded-xl ${card.color}`}>
-                    <card.icon className="h-5 w-5" />
-                  </div>
+                <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-[11px] text-slate-500 font-medium uppercase tracking-wide">{card.label}</p>
-                    <p className="text-2xl font-bold text-white">{card.value}</p>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total de Cursos</p>
+                    <p className="text-3xl font-bold text-slate-900 mt-2">{totalCourses}</p>
+                    <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                      <ArrowUpRight className="h-3 w-3" />
+                      +2 este mês
+                    </p>
+                  </div>
+                  <div className="p-3 bg-purple-100 rounded-lg">
+                    <BookOpen className="h-6 w-6 text-purple-600" />
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        {/* Block Distribution */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="border-white/5 shadow-none" style={{ background: '#1E293B' }}>
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold text-slate-200">Distribuição por Tipo de Bloco</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {blockTypeEntries.length === 0 ? (
-                <p className="text-slate-400 text-sm">Nenhum bloco encontrado.</p>
-              ) : (
-                <div className="space-y-3">
-                  {blockTypeEntries.map(([type, count]) => {
-                    const pct = totalBlocks > 0 ? (count / totalBlocks) * 100 : 0;
-                    const isAssessment = assessmentTypes.includes(type);
-                    return (
-                      <div key={type}>
-                        <div className="flex justify-between items-center text-xs mb-1">
-                          <span className="font-medium text-slate-300 capitalize flex items-center gap-1.5">
-                            {isAssessment && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
-                            {type}
-                          </span>
-                          <span className="text-slate-400">{count} ({pct.toFixed(0)}%)</span>
-                        </div>
-                        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${isAssessment ? 'bg-emerald-400' : 'bg-blue-400'}`}
-                            style={{ width: `${pct}%` }}
-                          />
+            {/* Total de Slides */}
+            <Card className="border-slate-200 bg-white hover:border-purple-300 hover:shadow-lg transition-all">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total de Slides</p>
+                    <p className="text-3xl font-bold text-slate-900 mt-2">{totalSlides}</p>
+                    <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                      <ArrowUpRight className="h-3 w-3" />
+                      +18 esta semana
+                    </p>
+                  </div>
+                  <div className="p-3 bg-blue-100 rounded-lg">
+                    <Layers className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Usuários Ativos */}
+            <Card className="border-slate-200 bg-white hover:border-purple-300 hover:shadow-lg transition-all">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Usuários Ativos</p>
+                    <p className="text-3xl font-bold text-slate-900 mt-2">127</p>
+                    <p className="text-xs text-orange-600 mt-2 flex items-center gap-1">
+                      <ArrowDownRight className="h-3 w-3" />
+                      -3 desde ontem
+                    </p>
+                  </div>
+                  <div className="p-3 bg-indigo-100 rounded-lg">
+                    <Users className="h-6 w-6 text-indigo-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Taxa de Conclusão */}
+            <Card className="border-slate-200 bg-white hover:border-purple-300 hover:shadow-lg transition-all">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Taxa de Conclusão</p>
+                    <p className="text-3xl font-bold text-slate-900 mt-2">{avgCompletion}%</p>
+                    <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                      <ArrowUpRight className="h-3 w-3" />
+                      +4% vs mês passado
+                    </p>
+                  </div>
+                  <div className="p-3 bg-emerald-100 rounded-lg">
+                    <TrendingUp className="h-6 w-6 text-emerald-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* Vertical Bar Chart - Cursos por Mês */}
+            <Card className="border-slate-200 bg-white lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold text-slate-900">Cursos Criados por Mês</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-end justify-between h-64 gap-3 px-2">
+                  {monthlyData.map((data, idx) => (
+                    <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                      <div className="w-full bg-slate-200 rounded-t-lg overflow-hidden flex-1 relative group">
+                        <div
+                          className="w-full bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-lg transition-all hover:from-purple-700 hover:to-purple-500 cursor-pointer"
+                          style={{ height: `${(data.courses / maxMonthly) * 100}%` }}
+                        >
+                          <div className="absolute -top-8 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p className="text-xs font-bold text-slate-900 text-center">{data.courses}</p>
+                          </div>
                         </div>
                       </div>
-                    );
-                  })}
+                      <p className="text-xs font-medium text-slate-600 text-center">{data.month.slice(0, 3)}</p>
+                    </div>
+                  ))}
                 </div>
-              )}
-            </CardContent>
-          </Card>
+                <p className="text-xs text-slate-500 mt-4 text-center">Últimos 6 meses</p>
+              </CardContent>
+            </Card>
 
-          <Card className="border-white/5 shadow-none" style={{ background: '#1E293B' }}>
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold text-slate-200">Cursos Criados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {projects.length === 0 ? (
-                <p className="text-slate-400 text-sm">Nenhum curso encontrado.</p>
-              ) : (
+            {/* Activity Feed */}
+            <Card className="border-slate-200 bg-white">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-purple-600" />
+                  Atividades Recentes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-3">
-                  {projects.map((p) => {
-                    const interCount = p.slides.reduce((acc, s) => acc + s.blocks.filter(b => assessmentTypes.includes(b.type)).length, 0);
-                    return (
-                      <div key={p.id} className="flex items-center justify-between p-3 bg-white/3 rounded-lg hover:bg-white/5 transition-colors">
-                        <div>
-                          <p className="text-sm font-medium text-white">{p.title}</p>
-                          <p className="text-[10px] text-slate-400">{p.slides.length} slides · {p.slides.reduce((a, s) => a + s.blocks.length, 0)} blocos · {interCount} interações</p>
-                        </div>
-                        <a href={`/editor/${p.id}`} className="text-xs text-purple-400 hover:underline font-medium">
-                          Editar →
-                        </a>
+                  {activityFeed.map((activity) => (
+                    <div key={activity.id} className="border-l-2 border-purple-200 pl-3 pb-3 last:pb-0">
+                      <p className="text-xs font-semibold text-slate-900">{activity.action}</p>
+                      <p className="text-xs text-slate-600 mt-0.5">{activity.course}</p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-[10px] text-slate-500">{activity.user}</p>
+                        <p className="text-[10px] text-slate-400">{activity.time}</p>
                       </div>
-                    );
-                  })}
+                    </div>
+                  ))}
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Top Courses Chart */}
+          <div className="grid grid-cols-1 gap-6 mb-8">
+            <Card className="border-slate-200 bg-white">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold text-slate-900">Top 5 Cursos por Acessos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {topCoursesByViews.map((course, idx) => (
+                    <div key={course.id}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-purple-600 w-6">#{idx + 1}</span>
+                          <span className="text-sm font-medium text-slate-900">{course.name}</span>
+                        </div>
+                        <span className="text-sm font-semibold text-slate-900">{course.views}</span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="bg-gradient-to-r from-purple-600 to-purple-400 h-full rounded-full transition-all"
+                          style={{ width: `${(course.views / maxViews) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Course Performance Table */}
+          <div className="grid grid-cols-1 gap-6 mb-8">
+            <Card className="border-slate-200 bg-white">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold text-slate-900">Desempenho dos Cursos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Curso</th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Autor</th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Slides</th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Acessos</th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Conclusão</th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Última Edição</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mockCourses.map((course) => (
+                        <tr key={course.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                          <td className="py-3 px-4">
+                            <p className="font-medium text-slate-900">{course.name}</p>
+                          </td>
+                          <td className="py-3 px-4 text-slate-600">{course.author}</td>
+                          <td className="py-3 px-4 text-slate-600">{course.slides}</td>
+                          <td className="py-3 px-4">
+                            <span className="font-semibold text-slate-900">{course.views}</span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full rounded-full ${
+                                    course.completion >= 80
+                                      ? "bg-emerald-500"
+                                      : course.completion >= 60
+                                      ? "bg-yellow-500"
+                                      : "bg-orange-500"
+                                  }`}
+                                  style={{ width: `${course.completion}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-semibold text-slate-900">{course.completion}%</span>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-slate-500 text-sm">
+                            {new Date(course.lastEdited).toLocaleDateString("pt-BR")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Engagement Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Tempo Médio por Slide */}
+            <Card className="border-slate-200 bg-white">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-purple-600" />
+                  Tempo Médio
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">Por Slide</p>
+                    <p className="text-2xl font-bold text-slate-900">3m 24s</p>
+                  </div>
+                  <div className="pt-3 border-t border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Por Curso</p>
+                    <p className="text-2xl font-bold text-slate-900">54m</p>
+                  </div>
+                  <p className="text-xs text-slate-500 pt-2">Média dos últimos 30 dias</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Taxa de Abandono */}
+            <Card className="border-slate-200 bg-white">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-purple-600" />
+                  Taxa de Abandono
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-xs text-slate-600 mb-1">Cursos Iniciados</p>
+                    <p className="text-2xl font-bold text-slate-900">842</p>
+                  </div>
+                  <div className="pt-3 border-t border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Taxa de Conclusão</p>
+                    <p className="text-2xl font-bold text-slate-900">74%</p>
+                  </div>
+                  <p className="text-xs text-slate-500 pt-2">26% de abandono</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Slides Mais Revisitados */}
+            <Card className="border-slate-200 bg-white">
+              <CardHeader>
+                <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                  <Layers className="h-4 w-4 text-purple-600" />
+                  Top Slides
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                    <span className="text-xs font-medium text-slate-900">Slide 5 - Python</span>
+                    <span className="text-xs font-bold text-purple-600">456 visitas</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                    <span className="text-xs font-medium text-slate-900">Slide 3 - UX Design</span>
+                    <span className="text-xs font-bold text-purple-600">423 visitas</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                    <span className="text-xs font-medium text-slate-900">Slide 8 - Agile</span>
+                    <span className="text-xs font-bold text-purple-600">398 visitas</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

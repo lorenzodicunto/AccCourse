@@ -310,9 +310,12 @@ export default function DashboardPage() {
       {/* Main layout: Sidebar + Content */}
       <div className="flex">
         {/* Sidebar */}
-        <aside className={`${
-          sidebarOpen ? "w-64" : "w-0"
-        } transition-all duration-300 border-r border-slate-200 bg-white hidden lg:flex lg:w-64 flex-col`}>
+        <aside
+          aria-label="Navegação principal"
+          className={`${
+            sidebarOpen ? "w-64" : "w-0"
+          } transition-all duration-300 border-r border-slate-200 bg-white hidden lg:flex lg:w-64 flex-col`}
+        >
           <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
             <NavItem icon={BookOpen} label="Meus Cursos" active />
             <NavItem icon={Users} label="Compartilhados" />
@@ -323,12 +326,12 @@ export default function DashboardPage() {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 mx-auto max-w-7xl px-6 py-8 w-full">
+        <main id="main-content" role="main" className="flex-1 mx-auto max-w-7xl px-6 py-8 w-full">
           {/* Stats Cards — only show if there are courses */}
           {!loading && courses.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 animate-fade-in">
-              <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-purple-100">
+              <div role="status" className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-purple-100" aria-hidden="true">
                   <BookOpen className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
@@ -336,8 +339,8 @@ export default function DashboardPage() {
                   <p className="text-xs text-slate-600">Cursos Criados</p>
                 </div>
               </div>
-              <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-blue-100">
+              <div role="status" className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-blue-100" aria-hidden="true">
                   <Layers className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
@@ -345,8 +348,8 @@ export default function DashboardPage() {
                   <p className="text-xs text-slate-600">Total de Slides</p>
                 </div>
               </div>
-              <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-emerald-100">
+              <div role="status" className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-emerald-100" aria-hidden="true">
                   <CheckCircle2 className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
@@ -378,6 +381,7 @@ export default function DashboardPage() {
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   placeholder="Buscar cursos..."
+                  aria-label="Buscar cursos por título ou descrição"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
@@ -515,23 +519,23 @@ export default function DashboardPage() {
                       <button
                         onClick={() => router.push(`/editor/${course.id}`)}
                         className="p-1.5 rounded-lg shadow-sm hover:bg-slate-200 transition-colors cursor-pointer bg-white/90 border border-slate-200"
-                        title="Editar"
+                        aria-label={`Editar curso ${course.title}`}
                       >
-                        <Pencil className="h-3.5 w-3.5 text-slate-700" />
+                        <Pencil className="h-3.5 w-3.5 text-slate-700" aria-hidden="true" />
                       </button>
                       <button
                         onClick={() => handleDuplicate(course)}
                         className="p-1.5 rounded-lg shadow-sm hover:bg-slate-200 transition-colors cursor-pointer bg-white/90 border border-slate-200"
-                        title="Duplicar"
+                        aria-label={`Duplicar curso ${course.title}`}
                       >
-                        <Copy className="h-3.5 w-3.5 text-slate-700" />
+                        <Copy className="h-3.5 w-3.5 text-slate-700" aria-hidden="true" />
                       </button>
                       <button
                         onClick={() => handleDelete(course)}
                         className="p-1.5 rounded-lg shadow-sm hover:bg-red-100 transition-colors cursor-pointer bg-white/90 border border-slate-200"
-                        title="Excluir"
+                        aria-label={`Excluir curso ${course.title}`}
                       >
-                        <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                        <Trash2 className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />
                       </button>
                     </div>
 
@@ -682,13 +686,14 @@ export default function DashboardPage() {
 function NavItem({ icon: Icon, label, active = false }: { icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean }) {
   return (
     <button
+      aria-current={active ? "page" : undefined}
       className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer ${
         active
           ? "bg-purple-100 text-purple-700"
           : "text-slate-700 hover:bg-slate-100"
       }`}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-4 w-4" aria-hidden="true" />
       {label}
     </button>
   );
