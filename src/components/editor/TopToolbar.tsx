@@ -83,14 +83,20 @@ const RIBBON_TABS: { id: RibbonTabId; label: string }[] = [
 ];
 
 const THEME_PRESETS = [
-  { name: "Violet", primary: "#7c3aed", secondary: "#a78bfa" },
-  { name: "Indigo", primary: "#4f46e5", secondary: "#818cf8" },
-  { name: "Rose", primary: "#e11d48", secondary: "#fb7185" },
-  { name: "Emerald", primary: "#059669", secondary: "#6ee7b7" },
-  { name: "Amber", primary: "#d97706", secondary: "#fbbf24" },
-  { name: "Sky", primary: "#0284c7", secondary: "#7dd3fc" },
-  { name: "Pink", primary: "#db2777", secondary: "#f9a8d4" },
-  { name: "Teal", primary: "#0d9488", secondary: "#5eead4" },
+  { name: "Violet", primary: "#7c3aed", secondary: "#a78bfa", accent: "#ede9fe" },
+  { name: "Indigo", primary: "#4f46e5", secondary: "#818cf8", accent: "#e0e7ff" },
+  { name: "Blue", primary: "#2563eb", secondary: "#60a5fa", accent: "#dbeafe" },
+  { name: "Sky", primary: "#0284c7", secondary: "#7dd3fc", accent: "#e0f2fe" },
+  { name: "Teal", primary: "#0d9488", secondary: "#5eead4", accent: "#ccfbf1" },
+  { name: "Emerald", primary: "#059669", secondary: "#6ee7b7", accent: "#d1fae5" },
+  { name: "Amber", primary: "#d97706", secondary: "#fbbf24", accent: "#fef3c7" },
+  { name: "Orange", primary: "#ea580c", secondary: "#fb923c", accent: "#ffedd5" },
+  { name: "Rose", primary: "#e11d48", secondary: "#fb7185", accent: "#ffe4e6" },
+  { name: "Pink", primary: "#db2777", secondary: "#f9a8d4", accent: "#fce7f3" },
+  { name: "Slate", primary: "#475569", secondary: "#94a3b8", accent: "#f1f5f9" },
+  { name: "Zinc", primary: "#3f3f46", secondary: "#a1a1aa", accent: "#f4f4f5" },
+  { name: "Corporate Blue", primary: "#1e40af", secondary: "#3b82f6", accent: "#dbeafe" },
+  { name: "Forest", primary: "#166534", secondary: "#22c55e", accent: "#dcfce7" },
 ];
 
 const SLIDE_BG_PRESETS = [
@@ -106,6 +112,19 @@ const SLIDE_BG_PRESETS = [
   "#faf5ff",
   "#fdf4ff",
   "#fff7ed",
+];
+
+const FONT_OPTIONS = [
+  { name: "Inter", value: "Inter, sans-serif" },
+  { name: "Roboto", value: "Roboto, sans-serif" },
+  { name: "Open Sans", value: "Open Sans, sans-serif" },
+  { name: "Poppins", value: "Poppins, sans-serif" },
+  { name: "Montserrat", value: "Montserrat, sans-serif" },
+  { name: "Lato", value: "Lato, sans-serif" },
+  { name: "Nunito", value: "Nunito, sans-serif" },
+  { name: "Source Sans Pro", value: "Source Sans 3, sans-serif" },
+  { name: "Playfair Display", value: "Playfair Display, serif" },
+  { name: "Merriweather", value: "Merriweather, serif" },
 ];
 
 export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) {
@@ -548,13 +567,13 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
   return (
     <>
       {/* Title Bar — Above the Ribbon */}
-      <div className="h-10 border-b border-white/5 flex items-center justify-between px-3 flex-shrink-0" style={{ background: '#0F172A' }}>
+      <div className="h-10 bg-white border-b border-slate-200 flex items-center justify-between px-3 flex-shrink-0">
         {/* Left: Back + Logo + Title */}
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
-            className="rounded-lg h-7 w-7 p-0 text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
+            className="rounded-lg h-7 w-7 p-0 text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
             onClick={() => router.push("/")}
             title="Voltar ao Dashboard"
           >
@@ -571,13 +590,13 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                 onChange={(e) => setTitleValue(e.target.value)}
                 onBlur={handleTitleBlur}
                 onKeyDown={(e) => e.key === "Enter" && handleTitleBlur()}
-                className="text-sm font-semibold bg-transparent border-b-2 border-primary outline-none py-0.5 px-1 min-w-[200px] text-white"
+                className="text-sm font-semibold bg-transparent border-b-2 border-primary outline-none py-0.5 px-1 min-w-[200px] text-slate-900"
                 autoFocus
               />
             ) : (
               <button
                 onClick={handleTitleClick}
-                className="text-sm font-semibold text-white hover:text-purple-300 transition-colors cursor-pointer"
+                className="text-sm font-semibold text-slate-900 hover:text-purple-600 transition-colors cursor-pointer"
               >
                 {project?.title ?? "Sem título"}
               </button>
@@ -621,9 +640,9 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
       </div>
 
       {/* Ribbon Tabs */}
-      <div className="border-b border-white/5 flex-shrink-0" style={{ background: '#1E293B' }}>
+      <div className="bg-white border-b border-slate-200 flex-shrink-0">
         {/* Tab Headers */}
-        <div className="flex items-center gap-0 px-3 border-b border-white/5">
+        <div className="flex items-center gap-0 px-3 border-b border-slate-200">
           {RIBBON_TABS.map((tab) => (
             <button
               key={tab.id}
@@ -644,7 +663,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
         </div>
 
         {/* Tab Content */}
-        <div className="flex items-stretch px-2 py-1.5 min-h-[66px]">
+        <div className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
           {/* ─── HOME TAB ─── */}
           {activeTab === "home" && (
             <>
@@ -816,30 +835,35 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   label="V ou F"
                   variant="large"
                   onClick={() => handleAddBlock("truefalse")}
+                  title="Verdadeiro ou Falso — Avaliação binária simples"
                 />
                 <RibbonButton
                   icon={<Link2 className="h-5 w-5" />}
                   label="Liga Pontos"
                   variant="large"
                   onClick={() => handleAddBlock("matching")}
+                  title="Liga Pontos — Conecte itens correspondentes"
                 />
                 <RibbonButton
                   icon={<PenLine className="h-5 w-5" />}
                   label="Lacunas"
                   variant="large"
                   onClick={() => handleAddBlock("fillblank")}
+                  title="Preencher Lacunas — Complete o texto com palavras"
                 />
                 <RibbonButton
                   icon={<ArrowUpDown className="h-5 w-5" />}
                   label="Ordenação"
                   variant="large"
                   onClick={() => handleAddBlock("sorting")}
+                  title="Ordenação — Coloque os itens na sequência correta"
                 />
                 <RibbonButton
                   icon={<MousePointer className="h-5 w-5" />}
                   label="Hotspot"
                   variant="large"
                   onClick={() => handleAddBlock("hotspot")}
+                  title="Hotspot — Clique nas áreas sensíveis da imagem"
                 />
               </RibbonGroup>
 
@@ -849,12 +873,14 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   label="Accordion"
                   variant="large"
                   onClick={() => handleAddBlock("accordion")}
+                  title="Accordion — Seções expansíveis e contraíveis"
                 />
                 <RibbonButton
                   icon={<PanelTop className="h-5 w-5" />}
                   label="Tabs"
                   variant="large"
                   onClick={() => handleAddBlock("tabs")}
+                  title="Abas — Alterne entre diferentes conteúdos"
                 />
               </RibbonGroup>
 
@@ -864,24 +890,28 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   label="Branching"
                   variant="large"
                   onClick={() => handleAddBlock("branching")}
+                  title="Branching — Caminhos condicionais baseados em respostas"
                 />
                 <RibbonButton
                   icon={<Clock className="h-5 w-5" />}
                   label="Timeline"
                   variant="large"
                   onClick={() => handleAddBlock("timeline")}
+                  title="Timeline — Apresente eventos em sequência temporal"
                 />
                 <RibbonButton
                   icon={<GripVertical className="h-5 w-5" />}
                   label="Drag & Drop"
                   variant="large"
                   onClick={() => handleAddBlock("dragdrop")}
+                  title="Arrastar e Soltar — Coloque itens nos locais corretos"
                 />
                 <RibbonButton
                   icon={<Video className="h-5 w-5" />}
                   label="Vídeo Int."
                   variant="large"
                   onClick={() => handleAddBlock("interactiveVideo")}
+                  title="Vídeo Interativo — Vídeo com questões e pontos de ação"
                 />
               </RibbonGroup>
             </>
@@ -896,65 +926,74 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
               </RibbonGroup>
 
               <RibbonGroup label="Tema">
-                <div className="flex items-center gap-1">
-                  {THEME_PRESETS.slice(0, 8).map((preset) => (
-                    <button
-                      key={preset.name}
-                      onClick={() =>
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap gap-2">
+                    {THEME_PRESETS.map((preset) => (
+                      <div key={preset.name} className="flex flex-col items-center">
+                        <button
+                          onClick={() =>
+                            project &&
+                            setTheme(project.id, {
+                              primaryColor: preset.primary,
+                              secondaryColor: preset.secondary,
+                            })
+                          }
+                          className={cn(
+                            "w-8 h-8 rounded-full border-2 transition-all hover:scale-110 shadow-sm cursor-pointer",
+                            project?.theme.primaryColor === preset.primary
+                              ? "border-slate-900 scale-110 ring-2 ring-slate-600/30"
+                              : "border-slate-200"
+                          )}
+                          style={{ backgroundColor: preset.primary }}
+                          title={preset.name}
+                        />
+                        <span className="text-slate-600 text-[9px] mt-1 font-medium">
+                          {preset.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
+                    <Palette className="h-3.5 w-3.5 text-slate-600" />
+                    <span className="text-slate-600 text-[9px] uppercase tracking-wide font-semibold">
+                      Personalizado
+                    </span>
+                    <input
+                      type="color"
+                      value={project?.theme.primaryColor ?? "#7c3aed"}
+                      onChange={(e) =>
                         project &&
-                        setTheme(project.id, {
-                          primaryColor: preset.primary,
-                          secondaryColor: preset.secondary,
-                        })
+                        setTheme(project.id, { primaryColor: e.target.value })
                       }
-                      className={cn(
-                        "w-7 h-7 rounded-full border-2 transition-all hover:scale-110 shadow-sm cursor-pointer",
-                        project?.theme.primaryColor === preset.primary
-                          ? "border-foreground scale-110 ring-2 ring-primary/30"
-                          : "border-white"
-                      )}
-                      style={{ backgroundColor: preset.primary }}
-                      title={preset.name}
+                      className="w-6 h-6 rounded-md border border-slate-200 cursor-pointer"
+                      title="Cor personalizada"
                     />
-                  ))}
-                  <div className="flex flex-col items-center ml-1">
-                    <div className="flex items-center gap-1">
-                      <Palette className="h-3 w-3 text-muted-foreground" />
-                      <input
-                        type="color"
-                        value={project?.theme.primaryColor ?? "#7c3aed"}
-                        onChange={(e) =>
-                          project &&
-                          setTheme(project.id, { primaryColor: e.target.value })
-                        }
-                        className="w-6 h-6 rounded-md border border-border cursor-pointer"
-                        title="Cor personalizada"
-                      />
-                    </div>
                   </div>
                 </div>
               </RibbonGroup>
 
               <RibbonGroup label="Fundo do Slide">
-                <div className="flex items-center gap-1">
-                  {SLIDE_BG_PRESETS.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() =>
-                        project &&
-                        slide &&
-                        updateSlideBackground(project.id, slide.id, color)
-                      }
-                      className={cn(
-                        "w-5 h-5 rounded border transition-all hover:scale-125 cursor-pointer",
-                        slide?.background === color
-                          ? "border-primary ring-1 ring-primary/40 scale-110"
-                          : "border-border/60"
-                      )}
-                      style={{ backgroundColor: color }}
-                      title={color}
-                    />
-                  ))}
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap gap-2">
+                    {SLIDE_BG_PRESETS.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() =>
+                          project &&
+                          slide &&
+                          updateSlideBackground(project.id, slide.id, color)
+                        }
+                        className={cn(
+                          "w-6 h-6 rounded border-2 transition-all hover:scale-110 cursor-pointer shadow-sm",
+                          slide?.background === color
+                            ? "border-slate-900 ring-1 ring-slate-600/40 scale-105"
+                            : "border-slate-200"
+                        )}
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
                   <input
                     type="color"
                     value={slide?.background ?? "#ffffff"}
@@ -963,7 +1002,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                       slide &&
                       updateSlideBackground(project.id, slide.id, e.target.value)
                     }
-                    className="w-5 h-5 rounded border border-border cursor-pointer ml-1"
+                    className="w-6 h-6 rounded border-2 border-slate-200 cursor-pointer"
                     title="Cor personalizada"
                   />
                 </div>
@@ -971,22 +1010,24 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
 
               <RibbonGroup label="Tipografia">
                 <div className="flex items-center gap-2">
-                  <Paintbrush className="h-3.5 w-3.5 text-muted-foreground" />
-                  <input
-                    value={
-                      project?.theme.fontFamily?.replace(", sans-serif", "") ??
-                      "Inter"
-                    }
+                  <Paintbrush className="h-3.5 w-3.5 text-slate-600" />
+                  <select
+                    value={project?.theme.fontFamily ?? "Inter, sans-serif"}
                     onChange={(e) =>
                       project &&
                       setTheme(project.id, {
-                        fontFamily: `${e.target.value}, sans-serif`,
+                        fontFamily: e.target.value,
                         customFontUrl: null,
                       })
                     }
-                    className="h-7 w-28 text-xs rounded-md border border-border bg-background px-2"
-                    placeholder="Google Font..."
-                  />
+                    className="h-7 px-3 text-xs rounded-md border-2 border-slate-200 bg-white text-slate-900 font-medium hover:border-slate-300 focus:border-slate-600 focus:outline-none"
+                  >
+                    {FONT_OPTIONS.map((font) => (
+                      <option key={font.value} value={font.value}>
+                        {font.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </RibbonGroup>
             </>

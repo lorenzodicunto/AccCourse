@@ -68,8 +68,8 @@ function SortableSlide({
         "group relative rounded-lg transition-all duration-200 cursor-grab active:cursor-grabbing overflow-hidden outline-none",
         isDragging && "shadow-2xl scale-[1.03] ring-1 ring-primary/50 opacity-90",
         isSelected
-          ? "ring-2 ring-primary shadow-lg shadow-primary/20"
-          : "ring-1 ring-white/10 hover:ring-white/25"
+          ? "ring-2 ring-purple-500 shadow-lg shadow-purple-500/20"
+          : "ring-1 ring-slate-200 hover:ring-slate-300"
       )}
       onClick={(e) => {
         // Only select if not dragging
@@ -80,7 +80,7 @@ function SortableSlide({
     >
       {/* Active indicator bar */}
       {isSelected && (
-        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary z-20 rounded-l-lg" />
+        <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-purple-500 z-20 rounded-l-lg" />
       )}
 
       {/* Drag handle removido, pois o slide todo é o handle agora */}
@@ -91,8 +91,8 @@ function SortableSlide({
           className={cn(
             "text-[9px] font-bold px-1.5 py-0.5 rounded",
             isSelected
-              ? "bg-primary text-white"
-              : "bg-black/30 text-white/80"
+              ? "bg-purple-500 text-white"
+              : "bg-black/20 text-white/70"
           )}
         >
           {index + 1}
@@ -175,7 +175,7 @@ function SortableSlide({
                 );
               }
             }}
-            className="h-5 text-[8px] rounded bg-black/60 text-white/90 border-none px-1 cursor-pointer"
+            className="h-5 text-[8px] rounded bg-black/30 text-white border-none px-1 cursor-pointer"
             title="Transição de slide"
           >
             <option value="none">Sem transição</option>
@@ -238,16 +238,16 @@ export function SlideNavigator() {
   };
 
   return (
-    <div className="w-[200px] flex flex-col flex-shrink-0 overflow-hidden" style={{ background: '#1E293B', borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+    <div className="w-[200px] flex flex-col flex-shrink-0 overflow-hidden" style={{ background: '#FFFFFF', borderRight: '1px solid rgb(226,232,240)' }}>
       {/* Header */}
-      <div className="p-3 border-b border-white/10 flex items-center justify-between">
-        <h3 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+      <div className="p-3 border-b border-slate-200 flex items-center justify-between">
+        <h3 className="text-[10px] font-semibold text-slate-700 uppercase tracking-widest">
           Slides
         </h3>
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0 rounded text-slate-400 hover:text-white hover:bg-white/10"
+          className="h-6 w-6 p-0 rounded text-slate-600 hover:text-slate-900 hover:bg-slate-100"
           onClick={() => project && setIsTemplateDialogOpen(true)}
           title="Adicionar Slide"
         >
@@ -288,11 +288,11 @@ export function SlideNavigator() {
       </div>
 
       {/* Add Slide Button */}
-      <div className="p-2 border-t border-white/10">
+      <div className="p-2 border-t border-slate-200">
         <Button
           variant="ghost"
           size="sm"
-          className="w-full gap-1.5 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/10 border border-dashed border-white/15"
+          className="w-full gap-1.5 rounded-lg text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-dashed border-slate-300"
           onClick={() => project && setIsTemplateDialogOpen(true)}
         >
           <Plus className="h-3 w-3" />

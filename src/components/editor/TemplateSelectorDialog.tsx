@@ -49,7 +49,7 @@ export function TemplateSelectorDialog({ open, onOpenChange, onSelect }: Templat
             >
               <div className="h-24 w-full bg-slate-950 rounded-lg flex items-center justify-center mb-3 group-hover:bg-slate-900 transition-colors border border-slate-800">
                 <div className="text-slate-600 group-hover:text-primary transition-colors">
-                  {ICON_MAP[template.icon] || <LayoutTemplate className="h-8 w-8" />}
+                  {ICON_MAP[template.category === "abertura" ? "LayoutTemplate" : template.category === "conteudo" ? "Columns" : template.category === "dados" ? "ListOrdered" : template.category === "interativo" ? "GalleryHorizontal" : "Image"] || <LayoutTemplate className="h-8 w-8" />}
                 </div>
               </div>
               <h3 className="font-semibold text-sm w-full text-slate-200">{template.name}</h3>

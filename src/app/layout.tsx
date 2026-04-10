@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: "AccCourse — Plataforma de Criação de Cursos E-Learning",
   description:
     "Crie cursos interativos e-learning com exportação SCORM 1.2 — sem código, totalmente visual.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -22,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans">
+    <html lang="pt-BR" className={`${inter.variable} h-full antialiased light`}>
+      <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
         <AuthProvider>{children}</AuthProvider>
         <Toaster />
       </body>

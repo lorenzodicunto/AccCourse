@@ -105,18 +105,18 @@ function Section({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="border-b border-white/5 last:border-b-0">
+    <div className="border-b border-slate-200 last:border-b-0">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-white/5 transition-colors text-left cursor-pointer"
+        className="w-full flex items-center gap-2 px-4 py-2.5 hover:bg-slate-50 transition-colors text-left cursor-pointer"
       >
         {icon}
-        <span className="text-[11px] font-semibold text-slate-300 uppercase tracking-wider flex-1">
+        <span className="text-[11px] font-semibold text-slate-700 uppercase tracking-wider flex-1">
           {title}
         </span>
         <ChevronDown
           className={cn(
-            "h-3.5 w-3.5 text-muted-foreground/50 transition-transform",
+            "h-3.5 w-3.5 text-slate-400 transition-transform",
             !open && "-rotate-90"
           )}
         />
@@ -136,7 +136,7 @@ function FieldRow({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <label className="text-[10px] text-muted-foreground w-14 flex-shrink-0">
+      <label className="text-[10px] text-slate-600 w-14 flex-shrink-0">
         {label}
       </label>
       <div className="flex-1">{children}</div>
@@ -396,13 +396,13 @@ export function PropertiesPanel() {
   };
 
   return (
-    <div className="w-[280px] border-l border-white/5 flex flex-col flex-shrink-0" style={{ background: '#1E293B' }}>
+    <div className="w-[280px] border-l border-slate-200 flex flex-col flex-shrink-0" style={{ background: '#FFFFFF' }}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
         {/* Modern Tab Header */}
-        <div className="px-3 py-2 border-b border-border/40 bg-[#1E293B]">
-          <TabsList className="w-full grid grid-cols-2 bg-slate-900/50 border border-white/5 h-9">
-            <TabsTrigger value="insert" className="text-[11px] data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm">Inserir</TabsTrigger>
-            <TabsTrigger value="design" className="text-[11px] data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm">Design</TabsTrigger>
+        <div className="px-3 py-2 border-b border-slate-200 bg-white">
+          <TabsList className="w-full grid grid-cols-2 bg-slate-100 border border-slate-300 h-9">
+            <TabsTrigger value="insert" className="text-[11px] data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-sm">Inserir</TabsTrigger>
+            <TabsTrigger value="design" className="text-[11px] data-[state=active]:bg-purple-500 data-[state=active]:text-white data-[state=active]:shadow-sm">Design</TabsTrigger>
           </TabsList>
         </div>
 
@@ -412,37 +412,37 @@ export function PropertiesPanel() {
             <div className="p-4 space-y-6">
               
               <div>
-                <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Básico</h4>
+                <h4 className="text-[10px] font-semibold text-slate-700 uppercase tracking-widest mb-3">Básico</h4>
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => handleAddBlock("text")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
-                    <Type className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
-                    <span className="text-[10px] text-slate-300 font-medium">Texto</span>
+                  <button onClick={() => handleAddBlock("text")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 border border-slate-300 rounded-xl hover:bg-slate-100 hover:border-purple-400 hover:shadow-sm transition-all group cursor-pointer">
+                    <Type className="h-5 w-5 text-slate-600 group-hover:text-purple-500 transition-colors" />
+                    <span className="text-[10px] text-slate-700 font-medium">Texto</span>
                   </button>
-                  <button onClick={() => handleAddBlock("image")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
-                    <Image className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
-                    <span className="text-[10px] text-slate-300 font-medium">Imagem</span>
+                  <button onClick={() => handleAddBlock("image")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 border border-slate-300 rounded-xl hover:bg-slate-100 hover:border-purple-400 hover:shadow-sm transition-all group cursor-pointer">
+                    <Image className="h-5 w-5 text-slate-600 group-hover:text-blue-500 transition-colors" />
+                    <span className="text-[10px] text-slate-700 font-medium">Imagem</span>
                   </button>
-                  <button onClick={() => handleAddBlock("video")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
-                    <Play className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
-                    <span className="text-[10px] text-slate-300 font-medium">Vídeo</span>
+                  <button onClick={() => handleAddBlock("video")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 border border-slate-300 rounded-xl hover:bg-slate-100 hover:border-purple-400 hover:shadow-sm transition-all group cursor-pointer">
+                    <Play className="h-5 w-5 text-slate-600 group-hover:text-orange-500 transition-colors" />
+                    <span className="text-[10px] text-slate-700 font-medium">Vídeo</span>
                   </button>
-                  <button onClick={() => handleAddBlock("shape")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
-                    <Hexagon className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
-                    <span className="text-[10px] text-slate-300 font-medium">Formas</span>
+                  <button onClick={() => handleAddBlock("shape")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 border border-slate-300 rounded-xl hover:bg-slate-100 hover:border-purple-400 hover:shadow-sm transition-all group cursor-pointer">
+                    <Hexagon className="h-5 w-5 text-slate-600 group-hover:text-indigo-500 transition-colors" />
+                    <span className="text-[10px] text-slate-700 font-medium">Formas</span>
                   </button>
                 </div>
               </div>
 
               <div>
-                <h4 className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3">Interativo</h4>
+                <h4 className="text-[10px] font-semibold text-slate-700 uppercase tracking-widest mb-3">Interativo</h4>
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => handleAddBlock("flashcard")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
-                    <CreditCard className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
-                    <span className="text-[10px] text-slate-300 font-medium">Flashcard</span>
+                  <button onClick={() => handleAddBlock("flashcard")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 border border-slate-300 rounded-xl hover:bg-slate-100 hover:border-purple-400 hover:shadow-sm transition-all group cursor-pointer">
+                    <CreditCard className="h-5 w-5 text-slate-600 group-hover:text-emerald-500 transition-colors" />
+                    <span className="text-[10px] text-slate-700 font-medium">Flashcard</span>
                   </button>
-                  <button onClick={() => handleAddBlock("quiz")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-800/50 border border-slate-700/50 rounded-xl hover:bg-slate-800 hover:border-primary/50 hover:shadow-sm transition-all group cursor-pointer">
-                    <HelpCircle className="h-5 w-5 text-slate-400 group-hover:text-primary transition-colors" />
-                    <span className="text-[10px] text-slate-300 font-medium">Quiz</span>
+                  <button onClick={() => handleAddBlock("quiz")} className="flex flex-col items-center justify-center gap-2 p-3 bg-slate-50 border border-slate-300 rounded-xl hover:bg-slate-100 hover:border-purple-400 hover:shadow-sm transition-all group cursor-pointer">
+                    <HelpCircle className="h-5 w-5 text-slate-600 group-hover:text-rose-500 transition-colors" />
+                    <span className="text-[10px] text-slate-700 font-medium">Quiz</span>
                   </button>
                 </div>
               </div>

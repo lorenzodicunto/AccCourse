@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useEditorStore, Block } from "@/store/useEditorStore";
+import { SLIDE_TEMPLATES } from "@/lib/templates/slideLayouts";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { LayoutTemplate, Check, Search } from "lucide-react";
+import { LayoutTemplate, Check, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
@@ -19,231 +20,216 @@ import { Input } from "@/components/ui/input";
 interface SlideTemplate {
   id: string;
   name: string;
-  category: string;
+  category: "abertura" | "conteudo" | "dados" | "interativo" | "encerramento";
   preview: string;
   background: string;
+  thumbnail: string;
   blocks: Omit<Block, "id">[];
 }
 
 const CATEGORIES = [
-  { id: "all", label: "Todos" },
-  { id: "welcome", label: "Abertura" },
-  { id: "content", label: "Conteúdo" },
-  { id: "interactive", label: "Interação" },
-  { id: "closing", label: "Encerramento" },
+  { id: "all", label: "Todos", icon: "📋" },
+  { id: "abertura", label: "Abertura", icon: "📌" },
+  { id: "conteudo", label: "Conteúdo", icon: "📝" },
+  { id: "dados", label: "Dados", icon: "📊" },
+  { id: "interativo", label: "Interativo", icon: "🎯" },
+  { id: "encerramento", label: "Encerramento", icon: "🏁" },
 ];
 
 const TEMPLATES: SlideTemplate[] = [
+  // Abertura
   {
-    id: "blank",
-    name: "Em Branco",
-    category: "content",
+    id: "title_slide",
+    name: "Slide de Título",
+    category: "abertura",
+    thumbnail: "📌",
+    preview: "linear-gradient(135deg, #f8f9ff, #e0e7ff)",
+    background: "#f8f9ff",
+    blocks: [],
+  },
+  {
+    id: "title_subtitle",
+    name: "Título + Subtítulo",
+    category: "abertura",
+    thumbnail: "✨",
+    preview: "linear-gradient(135deg, #ffffff, #f1f5f9)",
+    background: "#ffffff",
+    blocks: [],
+  },
+  {
+    id: "welcome_slide",
+    name: "Slide de Boas-vindas",
+    category: "abertura",
+    thumbnail: "🎉",
+    preview: "linear-gradient(135deg, #faf5f0, #fde68a)",
+    background: "rgba(255, 255, 255, 0.85)",
+    blocks: [],
+  },
+  // Conteúdo
+  {
+    id: "one_column",
+    name: "Uma Coluna",
+    category: "conteudo",
+    thumbnail: "📝",
+    preview: "linear-gradient(135deg, #ffffff, #f8fafc)",
+    background: "#ffffff",
+    blocks: [],
+  },
+  {
+    id: "two_columns",
+    name: "Duas Colunas",
+    category: "conteudo",
+    thumbnail: "⬌",
+    preview: "linear-gradient(135deg, #f1f5f9, #e2e8f0)",
+    background: "#ffffff",
+    blocks: [],
+  },
+  {
+    id: "three_columns",
+    name: "Três Colunas",
+    category: "conteudo",
+    thumbnail: "≡",
+    preview: "linear-gradient(135deg, #f8fafc, #eef2ff)",
+    background: "#ffffff",
+    blocks: [],
+  },
+  {
+    id: "text_image_left",
+    name: "Imagem à Esquerda",
+    category: "conteudo",
+    thumbnail: "🖼️",
+    preview: "linear-gradient(90deg, #dbeafe 50%, #ffffff 50%)",
+    background: "#ffffff",
+    blocks: [],
+  },
+  {
+    id: "text_image_right",
+    name: "Imagem à Direita",
+    category: "conteudo",
+    thumbnail: "📸",
+    preview: "linear-gradient(90deg, #ffffff 50%, #dbeafe 50%)",
+    background: "#ffffff",
+    blocks: [],
+  },
+  {
+    id: "full_image",
+    name: "Imagem Full Screen",
+    category: "conteudo",
+    thumbnail: "🌅",
+    preview: "linear-gradient(135deg, #93c5fd, #60a5fa)",
+    background: "#60a5fa",
+    blocks: [],
+  },
+  {
+    id: "quote_citation",
+    name: "Citação/Quote",
+    category: "conteudo",
+    thumbnail: "💬",
+    preview: "linear-gradient(135deg, #f0f4ff, #e8eef7)",
+    background: "#f0f4ff",
+    blocks: [],
+  },
+  // Dados
+  {
+    id: "statistics_big",
+    name: "Estatísticas em Destaque",
+    category: "dados",
+    thumbnail: "📊",
+    preview: "linear-gradient(135deg, #fafafa, #f5f5f5)",
+    background: "#ffffff",
+    blocks: [],
+  },
+  {
+    id: "comparison_two",
+    name: "Comparação Dupla",
+    category: "dados",
+    thumbnail: "⚖️",
+    preview: "linear-gradient(90deg, #eff6ff 50%, #fef3c7 50%)",
+    background: "#ffffff",
+    blocks: [],
+  },
+  {
+    id: "comparison_three",
+    name: "Comparação Tripla",
+    category: "dados",
+    thumbnail: "🔀",
+    preview: "linear-gradient(135deg, #dbeafe, #fde047)",
+    background: "#ffffff",
+    blocks: [],
+  },
+  {
+    id: "process_steps",
+    name: "Passos do Processo",
+    category: "dados",
+    thumbnail: "📋",
+    preview: "linear-gradient(135deg, #f8fafc, #e5e7eb)",
+    background: "#ffffff",
+    blocks: [],
+  },
+  // Interativo
+  {
+    id: "quiz_intro",
+    name: "Introdução Quiz",
+    category: "interativo",
+    thumbnail: "❓",
+    preview: "linear-gradient(135deg, #fef3c7, #fde68a)",
+    background: "#fef3c7",
+    blocks: [],
+  },
+  {
+    id: "knowledge_check",
+    name: "Verificação de Conhecimento",
+    category: "interativo",
+    thumbnail: "✅",
+    preview: "linear-gradient(135deg, #dbeafe, #c7d2fe)",
+    background: "#f0fdf4",
+    blocks: [],
+  },
+  {
+    id: "activity_description",
+    name: "Descrição de Atividade",
+    category: "interativo",
+    thumbnail: "🎬",
+    preview: "linear-gradient(135deg, #dbeafe, #bfdbfe)",
+    background: "#dbeafe",
+    blocks: [],
+  },
+  // Encerramento
+  {
+    id: "thank_you",
+    name: "Obrigado",
+    category: "encerramento",
+    thumbnail: "🙏",
+    preview: "linear-gradient(135deg, #0f172a, #1e293b)",
+    background: "#0f172a",
+    blocks: [],
+  },
+  {
+    id: "summary",
+    name: "Resumo",
+    category: "encerramento",
+    thumbnail: "📌",
     preview: "linear-gradient(135deg, #f8fafc, #e2e8f0)",
     background: "#ffffff",
     blocks: [],
   },
   {
-    id: "title",
-    name: "Título Central",
-    category: "welcome",
-    preview: "linear-gradient(135deg, #1e293b, #334155)",
-    background: "#1e293b",
-    blocks: [
-      {
-        type: "text", x: 130, y: 180, width: 700, height: 60, zIndex: 0,
-        content: "Título da Apresentação",
-        fontSize: 44, fontWeight: "700", fontStyle: "normal",
-        textDecorationLine: "none", color: "#ffffff", textAlign: "center",
-        lineHeight: 1.2, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-      {
-        type: "text", x: 230, y: 260, width: 500, height: 30, zIndex: 1,
-        content: "Subtítulo ou descrição breve",
-        fontSize: 18, fontWeight: "400", fontStyle: "normal",
-        textDecorationLine: "none", color: "#94a3b8", textAlign: "center",
-        lineHeight: 1.5, letterSpacing: 1, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-    ],
-  },
-  {
-    id: "title-content",
-    name: "Título + Conteúdo",
-    category: "content",
-    preview: "linear-gradient(135deg, #ffffff, #f1f5f9)",
-    background: "#ffffff",
-    blocks: [
-      {
-        type: "text", x: 40, y: 30, width: 880, height: 50, zIndex: 0,
-        content: "Título do Slide",
-        fontSize: 36, fontWeight: "700", fontStyle: "normal",
-        textDecorationLine: "none", color: "#1e293b", textAlign: "left",
-        lineHeight: 1.2, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-      {
-        type: "shape", x: 40, y: 90, width: 100, height: 4, zIndex: 1,
-        shapeType: "rectangle", fillColor: "#6366f1", strokeColor: "transparent",
-        strokeWidth: 0, opacity: 1, rotation: 0,
-      } as Omit<Block, "id">,
-      {
-        type: "text", x: 40, y: 120, width: 880, height: 380, zIndex: 2,
-        content: "Adicione seu conteúdo aqui. Use pontos-chave para organizar as informações de forma clara e objetiva.",
-        fontSize: 18, fontWeight: "400", fontStyle: "normal",
-        textDecorationLine: "none", color: "#475569", textAlign: "left",
-        lineHeight: 1.6, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-    ],
-  },
-  {
-    id: "two-columns",
-    name: "2 Colunas",
-    category: "content",
-    preview: "linear-gradient(135deg, #fafafa, #e2e8f0)",
-    background: "#ffffff",
-    blocks: [
-      {
-        type: "text", x: 40, y: 30, width: 880, height: 50, zIndex: 0,
-        content: "Comparação / Dois Tópicos",
-        fontSize: 32, fontWeight: "700", fontStyle: "normal",
-        textDecorationLine: "none", color: "#1e293b", textAlign: "center",
-        lineHeight: 1.2, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-      {
-        type: "text", x: 40, y: 110, width: 420, height: 380, zIndex: 1,
-        content: "<strong>Coluna 1</strong><br><br>Conteúdo da primeira coluna. Descreva o primeiro tópico aqui.",
-        fontSize: 16, fontWeight: "400", fontStyle: "normal",
-        textDecorationLine: "none", color: "#475569", textAlign: "left",
-        lineHeight: 1.6, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "#f1f5f9", borderRadius: 12, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-      {
-        type: "text", x: 500, y: 110, width: 420, height: 380, zIndex: 2,
-        content: "<strong>Coluna 2</strong><br><br>Conteúdo da segunda coluna. Descreva o segundo tópico aqui.",
-        fontSize: 16, fontWeight: "400", fontStyle: "normal",
-        textDecorationLine: "none", color: "#475569", textAlign: "left",
-        lineHeight: 1.6, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "#f1f5f9", borderRadius: 12, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-    ],
-  },
-  {
-    id: "image-left",
-    name: "Imagem + Texto",
-    category: "content",
-    preview: "linear-gradient(90deg, #dbeafe 50%, #ffffff 50%)",
-    background: "#ffffff",
-    blocks: [
-      {
-        type: "image", x: 0, y: 0, width: 460, height: 540, zIndex: 0,
-        src: "", alt: "Imagem", objectFit: "cover",
-        opacity: 1, borderRadius: 0, borderWidth: 0, borderColor: "#000",
-        boxShadow: "none",
-      } as Omit<Block, "id">,
-      {
-        type: "text", x: 500, y: 100, width: 420, height: 50, zIndex: 1,
-        content: "Título do Conteúdo",
-        fontSize: 30, fontWeight: "700", fontStyle: "normal",
-        textDecorationLine: "none", color: "#1e293b", textAlign: "left",
-        lineHeight: 1.2, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-      {
-        type: "text", x: 500, y: 170, width: 420, height: 280, zIndex: 2,
-        content: "Adicione uma descrição detalhada ao lado da imagem. Este layout é perfeito para explicações visuais.",
-        fontSize: 16, fontWeight: "400", fontStyle: "normal",
-        textDecorationLine: "none", color: "#64748b", textAlign: "left",
-        lineHeight: 1.6, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-    ],
-  },
-  {
-    id: "section",
-    name: "Divisória de Seção",
-    category: "welcome",
+    id: "call_to_action",
+    name: "Call to Action",
+    category: "encerramento",
+    thumbnail: "🚀",
     preview: "linear-gradient(135deg, #6366f1, #8b5cf6)",
     background: "linear-gradient(135deg, #6366f1, #8b5cf6)",
-    blocks: [
-      {
-        type: "text", x: 80, y: 190, width: 800, height: 60, zIndex: 0,
-        content: "Seção 01",
-        fontSize: 52, fontWeight: "800", fontStyle: "normal",
-        textDecorationLine: "none", color: "#ffffff", textAlign: "center",
-        lineHeight: 1.1, letterSpacing: 2, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-      {
-        type: "text", x: 180, y: 270, width: 600, height: 30, zIndex: 1,
-        content: "Subtítulo descritivo da seção",
-        fontSize: 18, fontWeight: "400", fontStyle: "normal",
-        textDecorationLine: "none", color: "#e0e7ff", textAlign: "center",
-        lineHeight: 1.5, letterSpacing: 1, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 0.8, listType: "none",
-      } as Omit<Block, "id">,
-    ],
+    blocks: [],
   },
   {
-    id: "quiz-template",
-    name: "Quiz",
-    category: "interactive",
-    preview: "linear-gradient(135deg, #fef3c7, #fde68a)",
-    background: "#fffbeb",
-    blocks: [
-      {
-        type: "text", x: 40, y: 30, width: 880, height: 40, zIndex: 0,
-        content: "📝 Verificação de Conhecimento",
-        fontSize: 24, fontWeight: "700", fontStyle: "normal",
-        textDecorationLine: "none", color: "#92400e", textAlign: "left",
-        lineHeight: 1.3, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-      {
-        type: "quiz", x: 80, y: 100, width: 800, height: 380, zIndex: 1,
-        question: "Qual é a resposta correta?",
-        options: [
-          { id: crypto.randomUUID(), text: "Opção A", isCorrect: false },
-          { id: crypto.randomUUID(), text: "Opção B", isCorrect: true },
-          { id: crypto.randomUUID(), text: "Opção C", isCorrect: false },
-          { id: crypto.randomUUID(), text: "Opção D", isCorrect: false },
-        ],
-        feedback: { correct: "Correto! 🎉", incorrect: "Incorreto. Tente novamente." },
-        pointsValue: 10,
-      } as Omit<Block, "id">,
-    ],
-  },
-  {
-    id: "thank-you",
-    name: "Slide Final",
-    category: "closing",
-    preview: "linear-gradient(135deg, #0f172a, #1e293b)",
-    background: "#0f172a",
-    blocks: [
-      {
-        type: "text", x: 130, y: 160, width: 700, height: 70, zIndex: 0,
-        content: "Obrigado!",
-        fontSize: 56, fontWeight: "800", fontStyle: "normal",
-        textDecorationLine: "none", color: "#ffffff", textAlign: "center",
-        lineHeight: 1.1, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 1, listType: "none",
-      } as Omit<Block, "id">,
-      {
-        type: "text", x: 230, y: 250, width: 500, height: 30, zIndex: 1,
-        content: "Alguma dúvida? Entre em contato.",
-        fontSize: 18, fontWeight: "400", fontStyle: "normal",
-        textDecorationLine: "none", color: "#94a3b8", textAlign: "center",
-        lineHeight: 1.5, letterSpacing: 0, textShadow: "none",
-        backgroundColor: "transparent", borderRadius: 0, opacity: 0.8, listType: "none",
-      } as Omit<Block, "id">,
-      {
-        type: "shape", x: 420, y: 310, width: 120, height: 3, zIndex: 2,
-        shapeType: "rectangle", fillColor: "#6366f1", strokeColor: "transparent",
-        strokeWidth: 0, opacity: 0.6, rotation: 0,
-      } as Omit<Block, "id">,
-    ],
+    id: "contact_info",
+    name: "Informações de Contato",
+    category: "encerramento",
+    thumbnail: "📧",
+    preview: "linear-gradient(135deg, #f8fafc, #f1f5f9)",
+    background: "#f8fafc",
+    blocks: [],
   },
 ];
 
@@ -259,9 +245,13 @@ export function SlideTemplatesDialog() {
   const addBlock = useEditorStore((s) => s.addBlock);
 
   const handleApply = () => {
-    const template = TEMPLATES.find((t) => t.id === selectedTemplate);
+    // Find template in SLIDE_TEMPLATES
+    const slideTemplate = SLIDE_TEMPLATES.find((t) => t.id === selectedTemplate);
+    // Find template in local TEMPLATES for background
+    const displayTemplate = TEMPLATES.find((t) => t.id === selectedTemplate);
+
     const project = getCurrentProject();
-    if (!template || !project) return;
+    if (!slideTemplate || !displayTemplate || !project) return;
 
     // Create new slide
     addSlide(project.id);
@@ -272,15 +262,12 @@ export function SlideTemplatesDialog() {
     const newSlide = updatedProject.slides[updatedProject.slides.length - 1];
 
     // Set background
-    updateSlideBackground(project.id, newSlide.id, template.background);
+    updateSlideBackground(project.id, newSlide.id, displayTemplate.background);
 
-    // Add blocks
-    for (const blockData of template.blocks) {
-      const block = {
-        ...blockData,
-        id: crypto.randomUUID(),
-      } as Block;
-      addBlock(project.id, newSlide.id, block);
+    // Generate and add blocks from the template
+    const blocks = slideTemplate.generateBlocks();
+    for (const blockData of blocks) {
+      addBlock(project.id, newSlide.id, blockData);
     }
 
     // Navigate to new slide
@@ -288,7 +275,7 @@ export function SlideTemplatesDialog() {
 
     setOpen(false);
     setSelectedTemplate(null);
-    toast.success(`Template "${template.name}" aplicado!`);
+    toast.success(`Template "${slideTemplate.name}" aplicado!`);
   };
 
   return (
@@ -304,45 +291,55 @@ export function SlideTemplatesDialog() {
           Templates
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.06)' }}>
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <LayoutTemplate className="h-4 w-4" />
-            Templates de Slide
+      <DialogContent className="sm:max-w-4xl" style={{ background: '#ffffff', border: '1px solid #e2e8f0' }}>
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-slate-200">
+          <DialogTitle className="flex items-center gap-2 text-slate-900">
+            <LayoutTemplate className="h-5 w-5 text-purple-600" />
+            Galeria de Templates
           </DialogTitle>
+          <button
+            onClick={() => setOpen(false)}
+            className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+          >
+            <X className="h-4 w-4 text-slate-500" />
+          </button>
         </DialogHeader>
 
-        {/* Search + Categories */}
-        <div className="space-y-2 mb-3">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
+        {/* Search Bar */}
+        <div className="flex gap-3 items-center pt-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Buscar templates..."
+              placeholder="Buscar templates por nome..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 h-8 text-xs rounded-lg bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/30"
+              className="pl-10 h-9 text-sm rounded-lg bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-purple-500 focus:ring-purple-500"
             />
-          </div>
-          <div className="flex items-center gap-1">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={cn(
-                  "px-2.5 py-1 rounded-lg text-[10px] font-medium transition-all cursor-pointer",
-                  activeCategory === cat.id
-                    ? "bg-purple-500/20 text-purple-300"
-                    : "text-slate-400 hover:bg-white/5 hover:text-slate-300"
-                )}
-              >
-                {cat.label}
-              </button>
-            ))}
           </div>
         </div>
 
-        <ScrollArea className="h-[400px]">
-          <div className="grid grid-cols-3 gap-3 p-1">
+        {/* Category Tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-2 pt-3 border-b border-slate-200">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap flex items-center gap-2",
+                activeCategory === cat.id
+                  ? "bg-purple-100 text-purple-700 border border-purple-300"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-transparent"
+              )}
+            >
+              <span className="text-base">{cat.icon}</span>
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Templates Grid */}
+        <ScrollArea className="h-[450px] rounded-lg border border-slate-200">
+          <div className="grid grid-cols-4 gap-3 p-4">
             {TEMPLATES
               .filter((t) => {
                 const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase());
@@ -352,22 +349,27 @@ export function SlideTemplatesDialog() {
               .map((template) => (
               <div
                 key={template.id}
-                className={cn(
-                  "group relative rounded-lg border overflow-hidden cursor-pointer transition-all",
-                  selectedTemplate === template.id
-                    ? "ring-2 ring-purple-500 border-purple-500/50 scale-[1.02]"
-                    : "border-white/10 hover:border-purple-500/30 hover:scale-[1.01]"
-                )}
                 onClick={() => setSelectedTemplate(template.id)}
+                className={cn(
+                  "group relative rounded-lg border-2 overflow-hidden cursor-pointer transition-all hover:shadow-md",
+                  selectedTemplate === template.id
+                    ? "ring-2 ring-purple-500 border-purple-500 scale-[1.02] shadow-lg"
+                    : "border-slate-200 hover:border-purple-300"
+                )}
               >
-                {/* Preview */}
+                {/* Preview Background */}
                 <div
-                  className="aspect-video w-full"
+                  className="aspect-video w-full flex items-center justify-center relative"
                   style={{ background: template.preview }}
                 >
-                  {/* Mini block indicators */}
-                  <div className="relative w-full h-full overflow-hidden">
-                    {template.blocks.map((block, i) => (
+                  {/* Thumbnail Icon */}
+                  <div className="text-4xl opacity-60 group-hover:opacity-100 transition-opacity">
+                    {template.thumbnail}
+                  </div>
+
+                  {/* Mini block indicators (subtle) */}
+                  <div className="absolute inset-0 pointer-events-none">
+                    {template.blocks.slice(0, 3).map((block, i) => (
                       <div
                         key={i}
                         className="absolute rounded-[1px]"
@@ -377,52 +379,75 @@ export function SlideTemplatesDialog() {
                           width: `${(block.width / 960) * 100}%`,
                           height: `${(block.height / 540) * 100}%`,
                           backgroundColor:
-                            block.type === "text" ? "rgba(255,255,255,0.15)" :
-                            block.type === "image" ? "rgba(59,130,246,0.3)" :
-                            block.type === "quiz" ? "rgba(239,68,68,0.2)" :
-                            block.type === "shape" ? "rgba(99,102,241,0.4)" :
-                            "rgba(255,255,255,0.1)",
+                            block.type === "text" ? "rgba(99,102,241,0.1)" :
+                            block.type === "image" ? "rgba(59,130,246,0.15)" :
+                            block.type === "shape" ? "rgba(99,102,241,0.2)" :
+                            "rgba(0,0,0,0.05)",
                         }}
                       />
                     ))}
                   </div>
                 </div>
 
-                {/* Name */}
-                <div className="px-2 py-1.5" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                  <p className="text-xs font-medium text-center text-slate-300">{template.name}</p>
+                {/* Info Section */}
+                <div className="px-3 py-2.5 bg-white border-t border-slate-200">
+                  <p className="text-xs font-semibold text-slate-900 truncate">{template.name}</p>
+                  <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                    {template.category}
+                  </p>
                 </div>
 
-                {/* Selected indicator */}
+                {/* Selected Checkmark */}
                 {selectedTemplate === template.id && (
-                  <div className="absolute top-1 right-1 bg-purple-500 text-white rounded-full p-0.5">
-                    <Check className="h-3 w-3" />
+                  <div className="absolute top-2 right-2 bg-purple-600 text-white rounded-full p-1.5 shadow-lg">
+                    <Check className="h-3.5 w-3.5" />
                   </div>
                 )}
+
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-lg" />
               </div>
             ))}
           </div>
         </ScrollArea>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/5">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={() => setOpen(false)}
-          >
-            Cancelar
-          </Button>
-          <Button
-            size="sm"
-            className="h-7 text-xs"
-            onClick={handleApply}
-            disabled={!selectedTemplate}
-          >
-            <Check className="h-3 w-3 mr-1" />
-            Criar Slide com Template
-          </Button>
+        <div className="flex items-center justify-between pt-4 border-t border-slate-200">
+          <p className="text-xs text-slate-500">
+            {TEMPLATES.filter((t) => {
+              const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase());
+              const matchesCategory = activeCategory === "all" || t.category === activeCategory;
+              return matchesSearch && matchesCategory;
+            }).length}{" "}
+            template{TEMPLATES.filter((t) => {
+              const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase());
+              const matchesCategory = activeCategory === "all" || t.category === activeCategory;
+              return matchesSearch && matchesCategory;
+            }).length !== 1 ? "s" : ""} disponível{TEMPLATES.filter((t) => {
+              const matchesSearch = t.name.toLowerCase().includes(search.toLowerCase());
+              const matchesCategory = activeCategory === "all" || t.category === activeCategory;
+              return matchesSearch && matchesCategory;
+            }).length !== 1 ? "s" : ""}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 text-sm border-slate-300 text-slate-700 hover:bg-slate-50"
+              onClick={() => setOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              className="h-8 text-sm bg-purple-600 hover:bg-purple-700 text-white"
+              onClick={handleApply}
+              disabled={!selectedTemplate}
+            >
+              <Check className="h-4 w-4 mr-1.5" />
+              Criar Slide
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

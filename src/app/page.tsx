@@ -37,6 +37,13 @@ import {
   BookOpen,
   Clock,
   CheckCircle2,
+  Menu,
+  X,
+  Users,
+  Layout,
+  FolderOpen,
+  Zap,
+  Lightbulb,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -101,6 +108,20 @@ function MiniBlockIcon({ type }: { type: string }) {
   }
 }
 
+// Relative date helper
+function getRelativeDate(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - new Date(date).getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "hoje";
+  if (diffDays === 1) return "ontem";
+  if (diffDays < 7) return `${diffDays} dias atrás`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} semanas atrás`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)} meses atrás`;
+  return `${Math.floor(diffDays / 365)} anos atrás`;
+}
+
 export default function DashboardPage() {
   const { data: session } = useSession();
   const router = useRouter();
@@ -108,6 +129,8 @@ export default function DashboardPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<"todos" | "rascunho" | "publicados">("todos");
 
   useEffect(() => {
     loadCourses();
@@ -188,41 +211,36 @@ export default function DashboardPage() {
   }, 0);
 
   return (
-    <div className="min-h-screen" style={{ background: '#0F172A' }}>
-      {/* Ambient background glow */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-8 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(124, 58, 237, 0.12) 0%, transparent 70%)' }}
-        />
-        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full opacity-8 blur-3xl"
-          style={{ background: 'radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%)' }}
-        />
-      </div>
-
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-white/5"
-        style={{ background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(16px)' }}
-      >
-        <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center h-10 w-10 rounded-xl shadow-lg"
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)', boxShadow: '0 4px 20px rgba(124, 58, 237, 0.3)' }}
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-full px-6 py-3 flex items-center justify-between">
+          {/* Left: Sidebar toggle + Logo */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-600 cursor-pointer lg:hidden"
             >
-              <GraduationCap className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                AccCourse
-                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md text-purple-300"
-                  style={{ background: 'rgba(124, 58, 237, 0.2)' }}
-                >
-                  2.0
-                </span>
-              </h1>
-              <p className="text-[11px] text-slate-500 leading-none -mt-0.5">
-                Plataforma Enterprise E-Learning
-              </p>
+              {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center h-10 w-10 rounded-xl shadow-sm"
+                style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)' }}
+              >
+                <GraduationCap className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
+                  AccCourse
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md text-purple-700 bg-purple-100">
+                    2.0
+                  </span>
+                </h1>
+                <p className="text-[11px] text-slate-500 leading-none -mt-0.5">
+                  Plataforma Enterprise E-Learning
+                </p>
+              </div>
             </div>
           </div>
 
@@ -232,7 +250,7 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-2 rounded-xl border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300 bg-transparent cursor-pointer"
+                className="gap-2 rounded-xl border-red-200 text-red-600 hover:bg-red-50 bg-transparent cursor-pointer hidden sm:flex"
                 onClick={() => router.push("/admin")}
               >
                 <Shield className="h-4 w-4" />
@@ -241,12 +259,12 @@ export default function DashboardPage() {
             )}
 
             {/* Notifications */}
-            <button className="relative p-2 rounded-xl hover:bg-white/5 transition-colors text-slate-400 hover:text-white cursor-pointer">
+            <button className="relative p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-600 cursor-pointer">
               <Bell className="h-5 w-5" />
             </button>
 
             <Button
-              className="gap-2 rounded-xl text-white shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 transition-all cursor-pointer"
+              className="gap-2 rounded-xl text-white shadow-sm hover:shadow-md transition-all cursor-pointer hidden sm:flex"
               size="sm"
               onClick={handleCreateCourse}
               disabled={creating}
@@ -261,14 +279,14 @@ export default function DashboardPage() {
             </Button>
 
             {/* User info + Logout */}
-            <div className="flex items-center gap-2 ml-1 pl-3 border-l border-white/10">
+            <div className="flex items-center gap-2 ml-1 pl-3 border-l border-slate-200">
               <div className="flex items-center justify-center h-8 w-8 rounded-full text-xs font-semibold text-white"
                 style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)' }}
               >
                 {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-medium text-white">
+                <p className="text-xs font-medium text-slate-900">
                   {session?.user?.name}
                 </p>
                 <p className="text-[10px] text-slate-500">
@@ -278,7 +296,7 @@ export default function DashboardPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 cursor-pointer"
+                className="h-8 w-8 p-0 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 title="Sair"
               >
@@ -289,304 +307,440 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="relative mx-auto max-w-7xl px-6 py-8">
-        {/* Stats Cards — only show if there are courses */}
-        {!loading && courses.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 animate-fade-in">
-            <div className="glass-card rounded-xl p-4 flex items-center gap-3">
-              <div className="flex items-center justify-center h-10 w-10 rounded-lg" style={{ background: 'rgba(124, 58, 237, 0.15)' }}>
-                <BookOpen className="h-5 w-5 text-purple-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-white">{totalCourses}</p>
-                <p className="text-xs text-slate-400">Cursos Criados</p>
-              </div>
-            </div>
-            <div className="glass-card rounded-xl p-4 flex items-center gap-3">
-              <div className="flex items-center justify-center h-10 w-10 rounded-lg" style={{ background: 'rgba(59, 130, 246, 0.15)' }}>
-                <Layers className="h-5 w-5 text-blue-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-white">{totalSlides}</p>
-                <p className="text-xs text-slate-400">Total de Slides</p>
-              </div>
-            </div>
-            <div className="glass-card rounded-xl p-4 flex items-center gap-3">
-              <div className="flex items-center justify-center h-10 w-10 rounded-lg" style={{ background: 'rgba(16, 185, 129, 0.15)' }}>
-                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-white">{totalCourses}</p>
-                <p className="text-xs text-slate-400">Publicados</p>
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Main layout: Sidebar + Content */}
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className={`${
+          sidebarOpen ? "w-64" : "w-0"
+        } transition-all duration-300 border-r border-slate-200 bg-white hidden lg:flex lg:w-64 flex-col`}>
+          <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
+            <NavItem icon={BookOpen} label="Meus Cursos" active />
+            <NavItem icon={Users} label="Compartilhados" />
+            <NavItem icon={Layout} label="Templates" />
+            <NavItem icon={FolderOpen} label="Biblioteca" />
+            <NavItem icon={Trash2} label="Lixeira" />
+          </nav>
+        </aside>
 
-        {/* Section Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-2xl font-bold text-white">
-              Meus Cursos
-            </h2>
-            <p className="text-sm text-slate-400 mt-1">
-              {loading
-                ? "Carregando..."
-                : courses.length === 0
-                  ? "Comece criando seu primeiro curso"
-                  : `${courses.length} curso${courses.length !== 1 ? "s" : ""}`}
-            </p>
+        {/* Main Content */}
+        <main className="flex-1 mx-auto max-w-7xl px-6 py-8 w-full">
+          {/* Stats Cards — only show if there are courses */}
+          {!loading && courses.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 animate-fade-in">
+              <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-purple-100">
+                  <BookOpen className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">{totalCourses}</p>
+                  <p className="text-xs text-slate-600">Cursos Criados</p>
+                </div>
+              </div>
+              <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-blue-100">
+                  <Layers className="h-5 w-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">{totalSlides}</p>
+                  <p className="text-xs text-slate-600">Total de Slides</p>
+                </div>
+              </div>
+              <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-emerald-100">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-slate-900">0</p>
+                  <p className="text-xs text-slate-600">Publicados</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Section Header with Search */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900">
+                Meus Cursos
+              </h2>
+              <p className="text-sm text-slate-600 mt-1">
+                {loading
+                  ? "Carregando..."
+                  : courses.length === 0
+                    ? "Comece criando seu primeiro curso"
+                    : `${courses.length} curso${courses.length !== 1 ? "s" : ""}`}
+              </p>
+            </div>
+
+            {/* Search */}
+            {courses.length > 0 && (
+              <div className="relative w-full sm:w-72">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Buscar cursos..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="pl-9 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                />
+              </div>
+            )}
           </div>
 
-          {/* Search */}
+          {/* Filter chips */}
           {courses.length > 0 && (
-            <div className="relative w-72">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-              <Input
-                placeholder="Buscar cursos..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 rounded-xl bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/30 focus:bg-white/8"
+            <div className="flex gap-2 mb-6 flex-wrap">
+              <FilterChip
+                label="Todos"
+                active={activeFilter === "todos"}
+                onClick={() => setActiveFilter("todos")}
+              />
+              <FilterChip
+                label="Rascunho"
+                badge="Amber"
+                active={activeFilter === "rascunho"}
+                onClick={() => setActiveFilter("rascunho")}
+              />
+              <FilterChip
+                label="Publicados"
+                badge="Green"
+                active={activeFilter === "publicados"}
+                onClick={() => setActiveFilter("publicados")}
               />
             </div>
           )}
-        </div>
 
-        {/* Projects Grid */}
-        {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
-          </div>
-        ) : filteredCourses.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filteredCourses.map((course) => {
-              const slidePreview = getFirstSlidePreview(course.courseData);
-              return (
-                <div
-                  key={course.id}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 transition-all duration-300 hover:border-purple-500/30 cursor-pointer animate-fade-in"
-                  style={{ background: '#1E293B' }}
-                >
-                  {/* Hover glow */}
-                  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{ boxShadow: '0 0 40px rgba(124, 58, 237, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)' }}
-                  />
-
-                  {/* Thumbnail / Slide Preview */}
-                  <button
-                    onClick={() => router.push(`/editor/${course.id}`)}
-                    className="relative h-40 w-full overflow-hidden cursor-pointer"
+          {/* Projects Grid */}
+          {loading ? (
+            <div className="flex items-center justify-center py-24">
+              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+            </div>
+          ) : filteredCourses.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {filteredCourses.map((course) => {
+                const slidePreview = getFirstSlidePreview(course.courseData);
+                return (
+                  <div
+                    key={course.id}
+                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 transition-all duration-300 hover:border-slate-300 hover:shadow-md cursor-pointer animate-fade-in bg-card"
                   >
-                    {slidePreview ? (
-                      /* Mini slide preview */
-                      <div
-                        className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
-                        style={{ backgroundColor: slidePreview.background }}
-                      >
-                        {/* Render mini blocks */}
-                        {slidePreview.blocks.map((block, i) => (
-                          <div
-                            key={i}
-                            className="absolute flex items-center justify-center"
-                            style={{
-                              left: `${(block.x / 960) * 100}%`,
-                              top: `${(block.y / 540) * 100}%`,
-                              width: `${(block.width / 960) * 100}%`,
-                              height: `${(block.height / 540) * 100}%`,
-                            }}
-                          >
-                            {block.type === "text" && block.content ? (
-                              <div
-                                className="w-full h-full overflow-hidden px-1"
-                                style={{
-                                  fontSize: `${Math.max(((block.fontSize || 16) / 540) * 160, 5)}px`,
-                                  color: block.color || "#000",
-                                  lineHeight: 1.3,
-                                }}
-                                dangerouslySetInnerHTML={{
-                                  __html: block.content.replace(/<[^>]*>/g, (tag) =>
-                                    tag.replace(/font-size:[^;"]+;?/g, "")
-                                  ),
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full rounded-sm bg-slate-200/30 flex items-center justify-center">
-                                <div className="h-3 w-3 text-slate-400/40">
-                                  <MiniBlockIcon type={block.type} />
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-
-                        {/* Empty slide indicator */}
-                        {slidePreview.blocks.length === 0 && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-xs text-slate-400/30 font-medium">
-                              Slide vazio
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      /* Fallback gradient */
-                      <div
-                        className="absolute inset-0 transition-transform duration-500 group-hover:scale-110"
-                        style={{
-                          background:
-                            course.thumbnail ||
-                            "linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)",
-                        }}
-                      />
-                    )}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-
-                    {/* Slide count badge */}
-                    <div className="absolute bottom-2 left-2">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm"
-                        style={{ background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)', color: '#E2E8F0', border: '1px solid rgba(255,255,255,0.1)' }}
-                      >
-                        <Layers className="h-3 w-3" />
-                        {slidePreview?.slideCount ?? 1} slide
-                        {(slidePreview?.slideCount ?? 1) !== 1 ? "s" : ""}
-                      </span>
-                    </div>
-                  </button>
-
-                  {/* Floating action buttons on hover */}
-                  <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {/* Thumbnail / Slide Preview */}
                     <button
                       onClick={() => router.push(`/editor/${course.id}`)}
-                      className="p-1.5 rounded-lg shadow-sm hover:bg-white/20 transition-colors cursor-pointer"
-                      title="Editar"
-                      style={{ background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}
+                      className="relative h-40 w-full overflow-hidden cursor-pointer bg-slate-100"
                     >
-                      <Pencil className="h-3.5 w-3.5 text-white" />
-                    </button>
-                    <button
-                      onClick={() => handleDuplicate(course)}
-                      className="p-1.5 rounded-lg shadow-sm hover:bg-white/20 transition-colors cursor-pointer"
-                      title="Duplicar"
-                      style={{ background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}
-                    >
-                      <Copy className="h-3.5 w-3.5 text-white" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(course)}
-                      className="p-1.5 rounded-lg shadow-sm hover:bg-red-500/20 transition-colors cursor-pointer"
-                      title="Excluir"
-                      style={{ background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 text-red-400" />
-                    </button>
-                  </div>
+                      {slidePreview ? (
+                        /* Mini slide preview */
+                        <div
+                          className="absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                          style={{ backgroundColor: slidePreview.background }}
+                        >
+                          {/* Render mini blocks */}
+                          {slidePreview.blocks.map((block, i) => (
+                            <div
+                              key={i}
+                              className="absolute flex items-center justify-center"
+                              style={{
+                                left: `${(block.x / 960) * 100}%`,
+                                top: `${(block.y / 540) * 100}%`,
+                                width: `${(block.width / 960) * 100}%`,
+                                height: `${(block.height / 540) * 100}%`,
+                              }}
+                            >
+                              {block.type === "text" && block.content ? (
+                                <div
+                                  className="w-full h-full overflow-hidden px-1"
+                                  style={{
+                                    fontSize: `${Math.max(((block.fontSize || 16) / 540) * 160, 5)}px`,
+                                    color: block.color || "#000",
+                                    lineHeight: 1.3,
+                                  }}
+                                  dangerouslySetInnerHTML={{
+                                    __html: block.content.replace(/<[^>]*>/g, (tag) =>
+                                      tag.replace(/font-size:[^;"]+;?/g, "")
+                                    ),
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-full h-full rounded-sm bg-slate-300/30 flex items-center justify-center">
+                                  <div className="h-3 w-3 text-slate-400">
+                                    <MiniBlockIcon type={block.type} />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
 
-                  {/* Content */}
-                  <div className="flex flex-col flex-1 p-4">
-                    <div className="flex items-start justify-between gap-2">
+                          {/* Empty slide indicator */}
+                          {slidePreview.blocks.length === 0 && (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="text-xs text-slate-400 font-medium">
+                                Slide vazio
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        /* Fallback gradient */
+                        <div
+                          className="absolute inset-0 transition-transform duration-500 group-hover:scale-110"
+                          style={{
+                            background:
+                              course.thumbnail ||
+                              "linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)",
+                          }}
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+
+                      {/* Status badge */}
+                      <div className="absolute top-2 left-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-amber-100 text-amber-700 shadow-sm">
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
+                          Rascunho
+                        </span>
+                      </div>
+
+                      {/* Slide count badge */}
+                      <div className="absolute bottom-2 left-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm bg-white/90 text-slate-700 border border-slate-200">
+                          <Layers className="h-3 w-3" />
+                          {slidePreview?.slideCount ?? 1} slide
+                          {(slidePreview?.slideCount ?? 1) !== 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    </button>
+
+                    {/* Floating action buttons on hover */}
+                    <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <button
                         onClick={() => router.push(`/editor/${course.id}`)}
-                        className="text-left flex-1 cursor-pointer"
+                        className="p-1.5 rounded-lg shadow-sm hover:bg-slate-200 transition-colors cursor-pointer bg-white/90 border border-slate-200"
+                        title="Editar"
                       >
-                        <h3 className="font-semibold text-sm text-white leading-tight line-clamp-1 group-hover:text-purple-300 transition-colors">
-                          {course.title}
-                        </h3>
+                        <Pencil className="h-3.5 w-3.5 text-slate-700" />
                       </button>
-
-                      {/* Dropdown */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          render={
-                            <button className="p-1.5 rounded-lg hover:bg-white/5 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" />
-                          }
-                        >
-                          <MoreVertical className="h-4 w-4 text-slate-400" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 rounded-xl bg-slate-800 border-white/10">
-                          <DropdownMenuItem
-                            onClick={() => router.push(`/editor/${course.id}`)}
-                            className="gap-2 cursor-pointer text-slate-300 hover:text-white focus:text-white focus:bg-white/5"
-                          >
-                            <Pencil className="h-4 w-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleDuplicate(course)}
-                            className="gap-2 cursor-pointer text-slate-300 hover:text-white focus:text-white focus:bg-white/5"
-                          >
-                            <Copy className="h-4 w-4" />
-                            Duplicar
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator className="bg-white/5" />
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(course)}
-                            className="gap-2 text-red-400 focus:text-red-300 focus:bg-red-500/10 cursor-pointer"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <button
+                        onClick={() => handleDuplicate(course)}
+                        className="p-1.5 rounded-lg shadow-sm hover:bg-slate-200 transition-colors cursor-pointer bg-white/90 border border-slate-200"
+                        title="Duplicar"
+                      >
+                        <Copy className="h-3.5 w-3.5 text-slate-700" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(course)}
+                        className="p-1.5 rounded-lg shadow-sm hover:bg-red-100 transition-colors cursor-pointer bg-white/90 border border-slate-200"
+                        title="Excluir"
+                      >
+                        <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                      </button>
                     </div>
 
-                    {/* Date */}
-                    <div className="flex items-center gap-1.5 mt-2">
-                      <Clock className="h-3 w-3 text-slate-500" />
-                      <p className="text-xs text-slate-500">
-                        {new Date(course.updatedAt).toLocaleDateString("pt-BR", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </p>
+                    {/* Content */}
+                    <div className="flex flex-col flex-1 p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <button
+                          onClick={() => router.push(`/editor/${course.id}`)}
+                          className="text-left flex-1 cursor-pointer"
+                        >
+                          <h3 className="font-semibold text-sm text-slate-900 leading-tight line-clamp-1 group-hover:text-purple-600 transition-colors">
+                            {course.title}
+                          </h3>
+                        </button>
+
+                        {/* Dropdown */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            render={
+                              <button className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" />
+                            }
+                          >
+                            <MoreVertical className="h-4 w-4 text-slate-500" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48 rounded-xl bg-white border border-slate-200 shadow-md">
+                            <DropdownMenuItem
+                              onClick={() => router.push(`/editor/${course.id}`)}
+                              className="gap-2 cursor-pointer text-slate-700 hover:text-slate-900 focus:text-slate-900 focus:bg-slate-100"
+                            >
+                              <Pencil className="h-4 w-4" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDuplicate(course)}
+                              className="gap-2 cursor-pointer text-slate-700 hover:text-slate-900 focus:text-slate-900 focus:bg-slate-100"
+                            >
+                              <Copy className="h-4 w-4" />
+                              Duplicar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-slate-200" />
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(course)}
+                              className="gap-2 text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+
+                      {/* Last edited date */}
+                      <div className="flex items-center gap-1.5 mt-2">
+                        <Clock className="h-3 w-3 text-slate-500" />
+                        <p className="text-xs text-slate-600">
+                          Última edição: {getRelativeDate(course.updatedAt)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        ) : courses.length === 0 ? (
-          /* Empty State */
-          <div className="flex flex-col items-center justify-center py-24 animate-fade-in">
-            <div className="flex items-center justify-center h-24 w-24 rounded-3xl mb-6"
-              style={{ background: 'rgba(124, 58, 237, 0.1)', border: '1px solid rgba(124, 58, 237, 0.2)' }}
-            >
-              <LayoutGrid className="h-12 w-12 text-purple-400" />
+                );
+              })}
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">
-              Nenhum curso criado ainda
-            </h3>
-            <p className="text-slate-400 text-center max-w-md mb-8">
-              Crie seu primeiro curso interativo e-learning com nosso editor
-              visual drag-and-drop. Exporte para SCORM 1.2 com um clique.
-            </p>
-            <Button
-              className="gap-2 rounded-xl text-white shadow-lg shadow-purple-500/25 cursor-pointer"
-              onClick={handleCreateCourse}
-              disabled={creating}
-              style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)' }}
-            >
-              <Plus className="h-4 w-4" />
-              Criar Primeiro Curso
-            </Button>
-          </div>
-        ) : (
-          /* No results */
-          <div className="flex flex-col items-center justify-center py-24">
-            <Search className="h-12 w-12 text-slate-600 mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-1">
-              Nenhum resultado encontrado
-            </h3>
-            <p className="text-slate-400 text-sm">
-              Tente buscar com outros termos
-            </p>
-          </div>
-        )}
-      </main>
+          ) : courses.length === 0 ? (
+            /* Rich Empty State with Onboarding */
+            <div className="flex flex-col items-center justify-center py-16 animate-fade-in">
+              {/* Illustration area with creative icons */}
+              <div className="flex items-center justify-center h-32 w-32 rounded-3xl mb-8 bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-100">
+                <div className="relative">
+                  <LayoutGrid className="h-16 w-16 text-purple-400 absolute" />
+                  <Plus className="h-6 w-6 text-blue-500 absolute top-0 right-0" />
+                </div>
+              </div>
+
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                Bem-vindo ao AccCourse!
+              </h3>
+              <p className="text-slate-600 text-center max-w-md mb-10">
+                Crie cursos interativos de e-learning profissionais com nosso editor visual drag-and-drop. Exporte para SCORM 1.2 com um clique.
+              </p>
+
+              {/* Three suggestion cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 max-w-2xl w-full">
+                <OnboardingCard
+                  icon={Plus}
+                  title="Criar do Zero"
+                  description="Inicie um novo curso em branco"
+                  onClick={handleCreateCourse}
+                  primary
+                />
+                <OnboardingCard
+                  icon={Layout}
+                  title="Usar Template"
+                  description="Escolha um modelo pronto"
+                  onClick={handleCreateCourse}
+                />
+                <OnboardingCard
+                  icon={Zap}
+                  title="Gerar com IA"
+                  description="Deixe a IA criar seu curso"
+                  onClick={handleCreateCourse}
+                />
+              </div>
+
+              {/* Tips section */}
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 max-w-md w-full">
+                <div className="flex gap-3">
+                  <Lightbulb className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-blue-900">Dica:</p>
+                    <p className="text-xs text-blue-800 mt-1">
+                      Experimente arrastar e soltar blocos de conteúdo, adicione quizzes interativas e customize cores e fontes para criar experiências de aprendizado memoráveis.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* No results */
+            <div className="flex flex-col items-center justify-center py-24">
+              <Search className="h-12 w-12 text-slate-400 mb-4" />
+              <h3 className="text-lg font-semibold text-slate-900 mb-1">
+                Nenhum resultado encontrado
+              </h3>
+              <p className="text-slate-600 text-sm">
+                Tente buscar com outros termos
+              </p>
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Footer */}
+      <footer className="border-t border-slate-200 bg-white mt-12">
+        <div className="mx-auto max-w-7xl px-6 py-6 flex items-center justify-between text-xs text-slate-600">
+          <p>© 2026 Accuracy. Todos os direitos reservados.</p>
+          <p>AccCourse v2.0</p>
+        </div>
+      </footer>
 
       {/* Cookie Consent Banner (LGPD) */}
       <CookieConsent />
     </div>
+  );
+}
+
+// Helper component for sidebar navigation
+function NavItem({ icon: Icon, label, active = false }: { icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean }) {
+  return (
+    <button
+      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer ${
+        active
+          ? "bg-purple-100 text-purple-700"
+          : "text-slate-700 hover:bg-slate-100"
+      }`}
+    >
+      <Icon className="h-4 w-4" />
+      {label}
+    </button>
+  );
+}
+
+// Helper component for filter chips
+function FilterChip({ label, badge, active, onClick }: { label: string; badge?: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer flex items-center gap-2 ${
+        active
+          ? "bg-purple-600 text-white"
+          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+      }`}
+    >
+      {label}
+      {badge && (
+        <span className={`h-2 w-2 rounded-full ${
+          badge === "Amber" ? "bg-amber-500" : badge === "Green" ? "bg-emerald-500" : "bg-slate-400"
+        }`} />
+      )}
+    </button>
+  );
+}
+
+// Helper component for onboarding cards
+function OnboardingCard({ icon: Icon, title, description, onClick, primary = false }: { icon: React.ComponentType<{ className?: string }>; title: string; description: string; onClick: () => void; primary?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`p-4 rounded-xl border transition-all text-left cursor-pointer flex flex-col items-start gap-2 ${
+        primary
+          ? "bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200 hover:border-purple-300 hover:shadow-md"
+          : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
+      }`}
+    >
+      <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+        primary
+          ? "bg-purple-200 text-purple-700"
+          : "bg-slate-100 text-slate-600"
+      }`}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="w-full">
+        <p className={`text-sm font-semibold ${primary ? "text-slate-900" : "text-slate-800"}`}>
+          {title}
+        </p>
+        <p className={`text-xs ${primary ? "text-slate-600" : "text-slate-600"}`}>
+          {description}
+        </p>
+      </div>
+    </button>
   );
 }

@@ -9,6 +9,14 @@ datasource db {
 
 // ─── Multi-Tenant RBAC Models ─────────────────────────────────────────────────
 
+enum UserRole {
+  SUPER_ADMIN // Full platform access
+  ADMIN       // Tenant-level admin (manages users and settings within their tenant)
+  EDITOR      // Can create and edit courses
+  REVIEWER    // Can only view and comment on shared courses
+  VIEWER      // Read-only access to published courses
+}
+
 model Tenant {
   id        String   @id @default(cuid())
   name      String
@@ -23,7 +31,7 @@ model User {
   email        String   @unique
   passwordHash String
   name         String
-  role         String   @default("AUTHOR")
+  role         UserRole @default(EDITOR)
   tenantId     String?
   tenant       Tenant?  @relation(fields: [tenantId], references: [id])
   courses      Course[]

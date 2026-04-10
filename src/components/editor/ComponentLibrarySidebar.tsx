@@ -44,27 +44,27 @@ interface ComponentItem {
 
 const CATEGORIES = [
   { id: "all", label: "Todos", icon: <Layers className="h-3.5 w-3.5" /> },
-  { id: "basico", label: "Básico", icon: <Type className="h-3.5 w-3.5" /> },
-  { id: "media", label: "Mídia", icon: <Image className="h-3.5 w-3.5" /> },
-  { id: "interacao", label: "Interações", icon: <Sparkles className="h-3.5 w-3.5" /> },
-  { id: "avancado", label: "Avançado", icon: <GitBranch className="h-3.5 w-3.5" /> },
+  { id: "texto", label: "Texto & Mídia", icon: <Type className="h-3.5 w-3.5" /> },
+  { id: "avaliacoes", label: "Avaliações", icon: <HelpCircle className="h-3.5 w-3.5" /> },
+  { id: "apresentacao", label: "Apresentação", icon: <PanelTop className="h-3.5 w-3.5" /> },
+  { id: "avancado", label: "Avançado", icon: <Sparkles className="h-3.5 w-3.5" /> },
 ];
 
 const COMPONENTS: ComponentItem[] = [
-  { type: "text", label: "Texto", description: "Bloco de texto editável", icon: <Type className="h-5 w-5" />, color: "#7C3AED", category: "basico" },
-  { type: "image", label: "Imagem", description: "Upload ou URL de imagem", icon: <Image className="h-5 w-5" />, color: "#3B82F6", category: "media" },
-  { type: "video", label: "Vídeo", description: "Player de vídeo embed", icon: <Play className="h-5 w-5" />, color: "#F97316", category: "media" },
-  { type: "shape", label: "Forma", description: "Retângulo, círculo, linha", icon: <Hexagon className="h-5 w-5" />, color: "#6366F1", category: "basico" },
-  { type: "audio", label: "Áudio", description: "Player de áudio", icon: <Music className="h-5 w-5" />, color: "#8B5CF6", category: "media" },
-  { type: "quiz", label: "Quiz", description: "Múltipla escolha", icon: <HelpCircle className="h-5 w-5" />, color: "#EF4444", category: "interacao" },
-  { type: "flashcard", label: "Flashcard", description: "Frente e verso interativo", icon: <CreditCard className="h-5 w-5" />, color: "#10B981", category: "interacao" },
-  { type: "truefalse", label: "V ou F", description: "Verdadeiro ou Falso", icon: <CheckCircle2 className="h-5 w-5" />, color: "#059669", category: "interacao" },
-  { type: "matching", label: "Associação", description: "Conectar pares", icon: <Link2 className="h-5 w-5" />, color: "#3B82F6", category: "interacao" },
-  { type: "fillblank", label: "Preencher", description: "Complete a lacuna", icon: <PenLine className="h-5 w-5" />, color: "#D97706", category: "interacao" },
-  { type: "sorting", label: "Ordenação", description: "Ordenar itens", icon: <ArrowUpDown className="h-5 w-5" />, color: "#7C3AED", category: "interacao" },
-  { type: "hotspot", label: "Hotspot", description: "Pontos clicáveis em imagem", icon: <MousePointer className="h-5 w-5" />, color: "#06B6D4", category: "interacao" },
-  { type: "accordion", label: "Acordeão", description: "Seções expansíveis", icon: <ChevronDown className="h-5 w-5" />, color: "#64748B", category: "avancado" },
-  { type: "tabs", label: "Abas", description: "Conteúdo em abas", icon: <PanelTop className="h-5 w-5" />, color: "#6366F1", category: "avancado" },
+  { type: "text", label: "Texto", description: "Bloco de texto editável", icon: <Type className="h-5 w-5" />, color: "#7C3AED", category: "texto" },
+  { type: "image", label: "Imagem", description: "Upload ou URL de imagem", icon: <Image className="h-5 w-5" />, color: "#3B82F6", category: "texto" },
+  { type: "video", label: "Vídeo", description: "Player de vídeo embed", icon: <Play className="h-5 w-5" />, color: "#F97316", category: "texto" },
+  { type: "shape", label: "Forma", description: "Retângulo, círculo, linha", icon: <Hexagon className="h-5 w-5" />, color: "#6366F1", category: "apresentacao" },
+  { type: "audio", label: "Áudio", description: "Player de áudio", icon: <Music className="h-5 w-5" />, color: "#8B5CF6", category: "texto" },
+  { type: "quiz", label: "Quiz", description: "Múltipla escolha", icon: <HelpCircle className="h-5 w-5" />, color: "#EF4444", category: "avaliacoes" },
+  { type: "flashcard", label: "Flashcard", description: "Frente e verso interativo", icon: <CreditCard className="h-5 w-5" />, color: "#10B981", category: "avaliacoes" },
+  { type: "truefalse", label: "V ou F", description: "Verdadeiro ou Falso", icon: <CheckCircle2 className="h-5 w-5" />, color: "#059669", category: "avaliacoes" },
+  { type: "matching", label: "Associação", description: "Conectar pares", icon: <Link2 className="h-5 w-5" />, color: "#3B82F6", category: "avaliacoes" },
+  { type: "fillblank", label: "Preencher", description: "Complete a lacuna", icon: <PenLine className="h-5 w-5" />, color: "#D97706", category: "avaliacoes" },
+  { type: "sorting", label: "Ordenação", description: "Ordenar itens", icon: <ArrowUpDown className="h-5 w-5" />, color: "#7C3AED", category: "avaliacoes" },
+  { type: "hotspot", label: "Hotspot", description: "Pontos clicáveis em imagem", icon: <MousePointer className="h-5 w-5" />, color: "#06B6D4", category: "apresentacao" },
+  { type: "accordion", label: "Acordeão", description: "Seções expansíveis", icon: <ChevronDown className="h-5 w-5" />, color: "#64748B", category: "apresentacao" },
+  { type: "tabs", label: "Abas", description: "Conteúdo em abas", icon: <PanelTop className="h-5 w-5" />, color: "#6366F1", category: "apresentacao" },
   { type: "branching", label: "Cenário", description: "Cenário ramificado", icon: <GitBranch className="h-5 w-5" />, color: "#EF4444", category: "avancado" },
   { type: "timeline", label: "Linha do Tempo", description: "Eventos cronológicos", icon: <Clock className="h-5 w-5" />, color: "#0EA5E9", category: "avancado" },
   { type: "dragdrop", label: "Drag & Drop", description: "Arrastar para categorias", icon: <GripVertical className="h-5 w-5" />, color: "#14B8A6", category: "avancado" },
@@ -93,6 +93,24 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
     const matchesCategory = activeCategory === "all" || comp.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
+
+  // Group components by category for better visual hierarchy
+  const groupedComponents = filteredComponents.reduce((acc, comp) => {
+    if (!acc[comp.category]) {
+      acc[comp.category] = [];
+    }
+    acc[comp.category].push(comp);
+    return acc;
+  }, {} as Record<string, ComponentItem[]>);
+
+  // Define category order and names
+  const categoryOrder = ["texto", "avaliacoes", "apresentacao", "avancado"];
+  const categoryLabels: Record<string, string> = {
+    texto: "Texto & Mídia",
+    avaliacoes: "Avaliações",
+    apresentacao: "Apresentação",
+    avancado: "Avançado",
+  };
 
   const handleAddComponent = (comp: ComponentItem) => {
     if (!project || !slide) {
@@ -190,26 +208,26 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
           open ? "translate-x-0" : "-translate-x-full"
         )}
         style={{
-          background: '#1E293B',
-          borderRight: '1px solid rgba(255,255,255,0.06)',
-          boxShadow: open ? '16px 0 48px rgba(0,0,0,0.4)' : 'none',
+          background: '#ffffff',
+          borderRight: '1px solid #e2e8f0',
+          boxShadow: open ? '16px 0 48px rgba(0,0,0,0.08)' : 'none',
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(124, 58, 237, 0.15)' }}>
-              <Layers className="h-4 w-4 text-purple-400" />
+            <div className="h-8 w-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(124, 58, 237, 0.1)' }}>
+              <Layers className="h-4 w-4 text-purple-600" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">Componentes</h3>
+              <h3 className="text-sm font-semibold text-slate-900">Biblioteca</h3>
               <p className="text-[10px] text-slate-500">{COMPONENTS.length} disponíveis</p>
             </div>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 w-7 p-0 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
+            className="h-7 w-7 p-0 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
             onClick={onClose}
           >
             <X className="h-4 w-4" />
@@ -219,12 +237,12 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
         {/* Search */}
         <div className="px-3 py-2">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-600" />
             <Input
               placeholder="Buscar componentes..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 h-8 text-xs rounded-lg bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/30"
+              className="pl-8 h-8 text-xs rounded-lg bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-500 focus:border-purple-400 focus:ring-2 focus:ring-purple-100"
             />
           </div>
         </div>
@@ -238,8 +256,8 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
               className={cn(
                 "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-medium whitespace-nowrap transition-all cursor-pointer",
                 activeCategory === cat.id
-                  ? "bg-purple-500/20 text-purple-300"
-                  : "text-slate-400 hover:bg-white/5 hover:text-slate-300"
+                  ? "bg-purple-100 text-purple-700"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-700"
               )}
             >
               {cat.icon}
@@ -250,42 +268,60 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
 
         {/* Components List */}
         <ScrollArea className="flex-1">
-          <div className="px-3 pb-3 space-y-1">
-            {filteredComponents.map((comp) => (
-              <button
-                key={comp.type}
-                onClick={() => handleAddComponent(comp)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all hover:bg-white/5 group cursor-pointer text-left"
-              >
-                <div
-                  className="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-110"
-                  style={{ background: `${comp.color}15`, color: comp.color }}
-                >
-                  {comp.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-white group-hover:text-purple-300 transition-colors">
-                    {comp.label}
-                  </p>
-                  <p className="text-[10px] text-slate-500 truncate">
-                    {comp.description}
-                  </p>
-                </div>
-                <ChevronRight className="h-3 w-3 text-slate-600 group-hover:text-slate-400 transition-colors" />
-              </button>
-            ))}
-
-            {filteredComponents.length === 0 && (
+          <div className="pb-3">
+            {filteredComponents.length === 0 ? (
               <div className="text-center py-8">
-                <Search className="h-8 w-8 mx-auto text-slate-600 mb-2" />
+                <Search className="h-8 w-8 mx-auto text-slate-400 mb-2" />
                 <p className="text-xs text-slate-500">Nenhum componente encontrado</p>
               </div>
+            ) : (
+              categoryOrder.map((categoryId) => {
+                const components = groupedComponents[categoryId];
+                if (!components || components.length === 0) return null;
+
+                return (
+                  <div key={categoryId}>
+                    {/* Category Header */}
+                    <div className="px-3 pt-3 pb-1.5 border-t border-slate-200 first:border-t-0 first:pt-0">
+                      <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        {categoryLabels[categoryId]}
+                      </h4>
+                    </div>
+                    {/* Components in Category */}
+                    <div className="px-3 space-y-1 pb-2">
+                      {components.map((comp) => (
+                        <button
+                          key={comp.type}
+                          onClick={() => handleAddComponent(comp)}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 group cursor-pointer text-left"
+                        >
+                          <div
+                            className="h-9 w-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-all group-hover:scale-110"
+                            style={{ background: `${comp.color}15`, color: comp.color }}
+                          >
+                            {comp.icon}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-slate-900 group-hover:text-purple-700 transition-colors">
+                              {comp.label}
+                            </p>
+                            <p className="text-[10px] text-slate-600 truncate">
+                              {comp.description}
+                            </p>
+                          </div>
+                          <ChevronRight className="h-3 w-3 text-slate-600 group-hover:text-purple-600 transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
         </ScrollArea>
 
         {/* Footer tip */}
-        <div className="px-4 py-2.5 border-t border-white/5">
+        <div className="px-4 py-2.5 border-t border-slate-200">
           <p className="text-[10px] text-slate-500 text-center">
             Clique em um componente para adicioná-lo ao slide
           </p>

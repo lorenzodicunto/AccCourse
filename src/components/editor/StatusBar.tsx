@@ -94,7 +94,7 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
   };
 
   return (
-    <div className="h-7 flex items-center justify-between px-3 flex-shrink-0 text-slate-400 select-none" style={{ background: '#0F172A', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+    <div className="h-7 flex items-center justify-between px-3 flex-shrink-0 text-slate-600 select-none" style={{ background: '#FFFFFF', borderTop: '1px solid rgb(226,232,240)' }}>
       {/* Left: Breadcrumb */}
       <div className="flex items-center gap-1.5">
         <span className="text-[10px] font-mono">
@@ -102,13 +102,13 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
         </span>
         {block && (
           <>
-            <span className="text-[10px] text-slate-600">›</span>
-            <span className="text-[10px] text-slate-300 capitalize">
+            <span className="text-[10px] text-slate-400">›</span>
+            <span className="text-[10px] text-slate-700 capitalize">
               {block.type}
             </span>
           </>
         )}
-        <div className="w-px h-3.5 bg-slate-600 mx-1" />
+        <div className="w-px h-3.5 bg-slate-300 mx-1" />
         <span className="text-[10px]">
           {previewMode === "desktop" ? "16:9" : "Mobile"}
         </span>
@@ -119,7 +119,7 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
         <div className="flex items-center gap-1 mr-2">
           {saveIndicator()}
         </div>
-        <div className="w-px h-3.5 bg-slate-600 mr-1" />
+        <div className="w-px h-3.5 bg-slate-300 mr-1" />
         <div className="flex items-center gap-0.5">
           {slides.map((s, i) => (
             <button
@@ -129,7 +129,7 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
                 "h-3 rounded-[2px] transition-all cursor-pointer",
                 currentSlideIndex === i
                   ? "bg-purple-500 w-5 shadow-sm shadow-purple-500/40"
-                  : "bg-slate-600 w-3 hover:bg-slate-500"
+                  : "bg-slate-300 w-3 hover:bg-slate-400"
               )}
               title={`Slide ${i + 1}`}
             />
@@ -147,49 +147,49 @@ export function StatusBar({ saveStatus = "saved", lastSavedAt }: StatusBarProps)
             setLocaleGlobal(newLocale);
             setLocaleLoc(newLocale);
           }}
-          className="h-4 text-[9px] bg-transparent border border-slate-600 rounded px-1 text-slate-300 cursor-pointer appearance-none"
+          className="h-4 text-[9px] bg-white border border-slate-300 rounded px-1 text-slate-700 cursor-pointer appearance-none"
           title="Idioma"
         >
-          <option value="pt-BR" className="bg-slate-800">🇧🇷 PT</option>
-          <option value="en" className="bg-slate-800">🇺🇸 EN</option>
+          <option value="pt-BR" className="bg-white text-slate-700">🇧🇷 PT</option>
+          <option value="en" className="bg-white text-slate-700">🇺🇸 EN</option>
         </select>
 
-        <div className="w-px h-3.5 bg-slate-600" />
+        <div className="w-px h-3.5 bg-slate-300" />
 
         <button
           onClick={() => setShowGrid(!showGrid)}
           className={cn(
             "p-0.5 rounded transition-colors",
             showGrid
-              ? "bg-white/10 text-white"
-              : "hover:bg-white/5 text-slate-500"
+              ? "bg-slate-100 text-slate-700"
+              : "hover:bg-slate-50 text-slate-600"
           )}
           title="Toggle Grid"
         >
           <Grid3x3 className="h-3 w-3" />
         </button>
 
-        <div className="w-px h-3.5 bg-slate-600" />
+        <div className="w-px h-3.5 bg-slate-300" />
 
         <div className="flex items-center gap-1">
           <button
             onClick={handleZoomOut}
-            className="p-0.5 rounded hover:bg-white/10 transition-colors"
+            className="p-0.5 rounded hover:bg-slate-100 transition-colors"
             title="Zoom Out"
           >
-            <ZoomOut className="h-3 w-3" />
+            <ZoomOut className="h-3 w-3 text-slate-600" />
           </button>
 
-          <span className="text-[10px] font-mono w-8 text-center">
+          <span className="text-[10px] font-mono w-8 text-center text-slate-600">
             {zoom}%
           </span>
 
           <button
             onClick={handleZoomIn}
-            className="p-0.5 rounded hover:bg-white/10 transition-colors"
+            className="p-0.5 rounded hover:bg-slate-100 transition-colors"
             title="Zoom In"
           >
-            <ZoomIn className="h-3 w-3" />
+            <ZoomIn className="h-3 w-3 text-slate-600" />
           </button>
         </div>
       </div>

@@ -394,7 +394,7 @@ export default function EditorPage() {
 
   if (error) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#0F172A' }}>
+      <div className="h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#F8FAFC' }}>
         <p className="text-sm text-red-500 font-medium">{error}</p>
         <button
           onClick={() => router.push("/")}
@@ -408,7 +408,7 @@ export default function EditorPage() {
 
   if (loading) {
     return (
-      <div className="h-screen flex flex-col items-center justify-center" style={{ background: '#0F172A' }}>
+      <div className="h-screen flex flex-col items-center justify-center" style={{ background: '#F8FAFC' }}>
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
         <p className="text-sm text-muted-foreground">Carregando curso...</p>
       </div>
@@ -419,7 +419,7 @@ export default function EditorPage() {
   if (!project) return null;
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ background: '#0F172A' }}>
+    <div className="h-screen flex flex-col overflow-hidden" style={{ background: '#F8FAFC' }}>
       <TopToolbar courseId={courseId} onToggleComponentLib={() => setComponentLibOpen(!componentLibOpen)} />
       <div className="flex flex-1 overflow-hidden">
         <SlideNavigator />

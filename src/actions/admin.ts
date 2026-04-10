@@ -32,6 +32,7 @@ export async function provisionClient(data: {
   userName: string;
   userEmail: string;
   userPassword: string;
+  userRole?: string;
 }) {
   const session = await auth();
   if (session?.user?.role !== "SUPER_ADMIN") throw new Error("Unauthorized");
@@ -47,12 +48,15 @@ export async function provisionClient(data: {
 
   const passwordHash = await bcrypt.hash(data.userPassword, 12);
 
+  const validRoles = ["SUPER_ADMIN", "ADMIN", "EDITOR", "REVIEWER", "VIEWER"];
+  const role = validRoles.includes(data.userRole || "") ? data.userRole : "EDITOR";
+
   const user = await prisma.user.create({
     data: {
       email: data.userEmail,
       passwordHash,
       name: data.userName,
-      role: "AUTHOR",
+      role,
       tenantId: tenant.id,
     },
   });
