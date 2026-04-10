@@ -47,6 +47,25 @@ import {
   GripVertical,
   Video,
   Layers,
+  Strikethrough,
+  List,
+  ListOrdered,
+  Minus,
+  MessageSquare,
+  Code,
+  FileText,
+  SlidersHorizontal,
+  Zap,
+  Eye,
+  Grid3X3,
+  Ruler,
+  StickyNote,
+  Globe,
+  LayoutGrid,
+  AlignJustify,
+  ChevronRight,
+  Sparkles,
+  FileDown,
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { exportScormPackage } from "@/lib/scorm/packager";
@@ -127,6 +146,36 @@ const FONT_OPTIONS = [
   { name: "Merriweather", value: "Merriweather, serif" },
 ];
 
+const FONT_WEIGHT_OPTIONS = [
+  { name: "Normal", value: "normal" },
+  { name: "Medium", value: "500" },
+  { name: "Semibold", value: "600" },
+  { name: "Bold", value: "bold" },
+];
+
+const LINE_HEIGHT_OPTIONS = [
+  { label: "1.0", value: "1.0" },
+  { label: "1.25", value: "1.25" },
+  { label: "1.5", value: "1.5" },
+  { label: "1.75", value: "1.75" },
+  { label: "2.0", value: "2.0" },
+];
+
+const TRANSITION_OPTIONS = [
+  { label: "Nenhuma", value: "none" },
+  { label: "Fade", value: "fade" },
+  { label: "Slide", value: "slide" },
+  { label: "Zoom", value: "zoom" },
+  { label: "Flip", value: "flip" },
+  { label: "Push", value: "push" },
+];
+
+const SLIDE_SIZE_PRESETS = [
+  { name: "16:9", width: 960, height: 540 },
+  { name: "4:3", width: 800, height: 600 },
+  { name: "Quadrado", width: 600, height: 600 },
+];
+
 export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) {
   const router = useRouter();
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
@@ -151,6 +200,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
   const slide = getCurrentSlide();
   const block = getSelectedBlock();
 
+  // State for title editing
   const [activeTab, setActiveTab] = useState<RibbonTabId>("home");
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleValue, setTitleValue] = useState("");
@@ -161,6 +211,18 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
   const [shareLink, setShareLink] = useState("");
   const [copied, setCopied] = useState(false);
 
+  // New state for expanded toolbar features
+  const [fontSizeValue, setFontSizeValue] = useState(block?.type === "text" ? block.fontSize : 18);
+  const [fontColorValue, setFontColorValue] = useState(block?.type === "text" ? block.color : "#1a1a2e");
+  const [slideTransition, setSlideTransition] = useState("none");
+  const [slideWidth, setSlideWidth] = useState(960);
+  const [slideHeight, setSlideHeight] = useState(540);
+  const [zoom, setZoom] = useState(100);
+  const [showHighContrast, setShowHighContrast] = useState(false);
+  const [showRuler, setShowRuler] = useState(false);
+  const [showGrid, setShowGrid] = useState(false);
+
+  // Update font size and color when block selection changes
   const handleTitleClick = () => {
     if (project) {
       setTitleValue(project.title);
@@ -184,6 +246,45 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
       error: "Erro ao exportar o pacote SCORM.",
     });
     setTimeout(() => setExporting(false), 1500);
+  };
+
+  const handleExportHTML5 = () => {
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => resolve(true), 500);
+      }),
+      {
+        loading: "Preparando exportação HTML5...",
+        success: "Exportação HTML5 em breve — recursos de desenvolvimento em progresso.",
+        error: "Erro ao preparar exportação.",
+      }
+    );
+  };
+
+  const handleExportXAPI = () => {
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => resolve(true), 500);
+      }),
+      {
+        loading: "Preparando exportação xAPI...",
+        success: "Exportação xAPI em breve — recursos de desenvolvimento em progresso.",
+        error: "Erro ao preparar exportação.",
+      }
+    );
+  };
+
+  const handlePublicLink = () => {
+    toast.promise(
+      new Promise((resolve) => {
+        setTimeout(() => resolve(true), 500);
+      }),
+      {
+        loading: "Gerando link público...",
+        success: "Link público em breve — recursos de desenvolvimento em progresso.",
+        error: "Erro ao gerar link.",
+      }
+    );
   };
 
   const handleShare = async () => {
@@ -522,13 +623,138 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
           loop: false,
         };
         break;
+      default:
+        return;
     }
 
     addBlock(project.id, slide.id, newBlock);
+    setSelectedBlock(newBlock.id);
+    toast.success(`${type} adicionado com sucesso!`);
+  };
+
+  // Helper to create special blocks using existing text/shape blocks
+  const handleAddSpecialBlock = (specialType: "titulo" | "legenda" | "divisor" | "callout" | "embed") => {
+    if (!project || !slide) return;
+    const baseBlock = {
+      id: crypto.randomUUID(),
+      x: 80 + Math.random() * 200,
+      y: 60 + Math.random() * 100,
+      zIndex: 0,
+    };
+
+    let newBlock: Block;
+    switch (specialType) {
+      case "titulo":
+        newBlock = {
+          ...baseBlock,
+          type: "text",
+          width: 500,
+          height: 60,
+          content: "Título do Slide",
+          fontSize: 32,
+          fontWeight: "bold",
+          fontStyle: "normal",
+          textDecorationLine: "none",
+          color: "#1a1a2e",
+          textAlign: "left",
+          lineHeight: 1.2,
+          letterSpacing: 0,
+          textShadow: "none",
+          backgroundColor: "transparent",
+          borderRadius: 0,
+          opacity: 1,
+          listType: "none",
+        };
+        break;
+      case "legenda":
+        newBlock = {
+          ...baseBlock,
+          type: "text",
+          width: 400,
+          height: 30,
+          content: "Legenda explicativa",
+          fontSize: 13,
+          fontWeight: "normal",
+          fontStyle: "normal",
+          textDecorationLine: "none",
+          color: "#6b7280",
+          textAlign: "left",
+          lineHeight: 1.4,
+          letterSpacing: 0,
+          textShadow: "none",
+          backgroundColor: "transparent",
+          borderRadius: 0,
+          opacity: 1,
+          listType: "none",
+        };
+        break;
+      case "divisor":
+        newBlock = {
+          ...baseBlock,
+          type: "shape",
+          width: 600,
+          height: 4,
+          shapeType: "line",
+          fillColor: "#e2e8f0",
+          strokeColor: "#cbd5e1",
+          strokeWidth: 2,
+          opacity: 1,
+          rotation: 0,
+        };
+        break;
+      case "callout":
+        newBlock = {
+          ...baseBlock,
+          type: "text",
+          width: 500,
+          height: 100,
+          content: "💡 Nota importante...",
+          fontSize: 14,
+          fontWeight: "normal",
+          fontStyle: "normal",
+          textDecorationLine: "none",
+          color: "#1e40af",
+          textAlign: "left",
+          lineHeight: 1.5,
+          letterSpacing: 0,
+          textShadow: "none",
+          backgroundColor: "#EFF6FF",
+          borderRadius: 8,
+          opacity: 1,
+          listType: "none",
+        };
+        break;
+      case "embed":
+        newBlock = {
+          ...baseBlock,
+          type: "text",
+          width: 600,
+          height: 400,
+          content: "[Embed] Cole a URL aqui",
+          fontSize: 14,
+          fontWeight: "normal",
+          fontStyle: "normal",
+          textDecorationLine: "none",
+          color: "#475569",
+          textAlign: "center",
+          lineHeight: 1.5,
+          letterSpacing: 0,
+          textShadow: "none",
+          backgroundColor: "#f8fafc",
+          borderRadius: 12,
+          opacity: 1,
+          listType: "none",
+        };
+        break;
+    }
+
+    addBlock(project.id, slide.id, newBlock);
+    setSelectedBlock(newBlock.id);
+    toast.success(`${specialType} adicionado com sucesso!`);
   };
 
   // Text formatting helpers (when a text block is selected)
-  const handleTextFormat = (prop: string, value: string) => {
+  const handleTextFormat = (prop: string, value: string | number) => {
     if (!project || !slide || !block || block.type !== "text") return;
     updateBlock(project.id, slide.id, block.id, {
       [prop]: value,
@@ -668,7 +894,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
         {/* Tab Content */}
         {/* ─── HOME TAB PANEL ─── */}
         {activeTab === "home" && (
-          <div role="tabpanel" id="tabpanel-home" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
+          <div role="tabpanel" id="tabpanel-home" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200 overflow-x-auto">
             <>
               <RibbonGroup label="Área de Transferência">
                 <RibbonButton
@@ -718,6 +944,13 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                       disabled={!block || block.type !== "text"}
                       title="Sublinhado"
                     />
+                    <RibbonButton
+                      icon={<Strikethrough className="h-3.5 w-3.5" />}
+                      onClick={() => handleTextFormat("textDecorationLine", block?.type === "text" && block.textDecorationLine === "line-through" ? "none" : "line-through")}
+                      active={block?.type === "text" && block.textDecorationLine === "line-through"}
+                      disabled={!block || block.type !== "text"}
+                      title="Tachado"
+                    />
                   </div>
                   <div className="flex items-center gap-0.5">
                     <RibbonButton
@@ -742,23 +975,91 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                       title="Alinhar à Direita"
                     />
                   </div>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min="8"
+                      max="120"
+                      value={block?.type === "text" ? block.fontSize : 18}
+                      onChange={(e) => handleTextFormat("fontSize", parseInt(e.target.value) || 18)}
+                      disabled={!block || block.type !== "text"}
+                      className="h-6 w-12 px-2 text-xs rounded border border-slate-200 bg-white text-slate-900 font-medium"
+                      title="Tamanho da Fonte"
+                    />
+                    <input
+                      type="color"
+                      value={block?.type === "text" ? block.color : "#1a1a2e"}
+                      onChange={(e) => handleTextFormat("color", e.target.value)}
+                      disabled={!block || block.type !== "text"}
+                      className="w-6 h-6 rounded border border-slate-200 cursor-pointer"
+                      title="Cor do Texto"
+                    />
+                  </div>
+                </div>
+              </RibbonGroup>
+
+              <RibbonGroup label="Parágrafo">
+                <div className="flex flex-col gap-1">
+                  <select
+                    value={block?.type === "text" ? block.lineHeight : "1.5"}
+                    onChange={(e) => handleTextFormat("lineHeight", parseFloat(e.target.value))}
+                    disabled={!block || block.type !== "text"}
+                    className="h-6 px-2 text-xs rounded border border-slate-200 bg-white text-slate-900 font-medium"
+                    title="Espaçamento Entre Linhas"
+                  >
+                    {LINE_HEIGHT_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        Espaço: {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="flex items-center gap-0.5">
+                    <RibbonButton
+                      icon={<List className="h-3.5 w-3.5" />}
+                      onClick={() => handleTextFormat("listType", block?.type === "text" && block.listType === "ul" ? "none" : "ul")}
+                      active={block?.type === "text" && block.listType === "ul"}
+                      disabled={!block || block.type !== "text"}
+                      title="Marcadores"
+                    />
+                    <RibbonButton
+                      icon={<ListOrdered className="h-3.5 w-3.5" />}
+                      onClick={() => handleTextFormat("listType", block?.type === "text" && block.listType === "ol" ? "none" : "ol")}
+                      active={block?.type === "text" && block.listType === "ol"}
+                      disabled={!block || block.type !== "text"}
+                      title="Numeração"
+                    />
+                  </div>
                 </div>
               </RibbonGroup>
 
               <RibbonGroup label="Visualização">
-                <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
-                  <RibbonButton
-                    icon={<Monitor className="h-3.5 w-3.5" />}
-                    onClick={() => setPreviewMode("desktop")}
-                    active={previewMode === "desktop"}
-                    title="Desktop"
-                  />
-                  <RibbonButton
-                    icon={<Smartphone className="h-3.5 w-3.5" />}
-                    onClick={() => setPreviewMode("mobile")}
-                    active={previewMode === "mobile"}
-                    title="Mobile"
-                  />
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
+                    <RibbonButton
+                      icon={<Monitor className="h-3.5 w-3.5" />}
+                      onClick={() => setPreviewMode("desktop")}
+                      active={previewMode === "desktop"}
+                      title="Desktop"
+                    />
+                    <RibbonButton
+                      icon={<Smartphone className="h-3.5 w-3.5" />}
+                      onClick={() => setPreviewMode("mobile")}
+                      active={previewMode === "mobile"}
+                      title="Mobile"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1 px-2">
+                    <input
+                      type="range"
+                      min="50"
+                      max="200"
+                      value={zoom}
+                      onChange={(e) => setZoom(parseInt(e.target.value))}
+                      className="h-2 w-20 rounded-lg appearance-none bg-slate-200 cursor-pointer"
+                      title="Zoom"
+                    />
+                    <span className="text-xs font-medium text-slate-600 w-10">{zoom}%</span>
+                  </div>
                 </div>
               </RibbonGroup>
             </>
@@ -767,7 +1068,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
 
         {/* ─── INSERT TAB PANEL ─── */}
         {activeTab === "insert" && (
-          <div role="tabpanel" id="tabpanel-insert" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
+          <div role="tabpanel" id="tabpanel-insert" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200 overflow-x-auto">
             <>
               <RibbonGroup label="Biblioteca">
                 <RibbonButton
@@ -784,6 +1085,20 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   label="Texto"
                   variant="large"
                   onClick={() => handleAddBlock("text")}
+                />
+                <RibbonButton
+                  icon={<FileText className="h-5 w-5" />}
+                  label="Título"
+                  variant="large"
+                  onClick={() => handleAddSpecialBlock("titulo")}
+                  title="Texto grande e em negrito"
+                />
+                <RibbonButton
+                  icon={<Type className="h-4 w-4" />}
+                  label="Legenda"
+                  variant="large"
+                  onClick={() => handleAddSpecialBlock("legenda")}
+                  title="Texto pequeno e cinzento"
                 />
               </RibbonGroup>
 
@@ -827,6 +1142,27 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   variant="large"
                   onClick={() => handleAddBlock("shape")}
                 />
+                <RibbonButton
+                  icon={<Minus className="h-5 w-5" />}
+                  label="Divisor"
+                  variant="large"
+                  onClick={() => handleAddSpecialBlock("divisor")}
+                  title="Linha horizontal"
+                />
+                <RibbonButton
+                  icon={<MessageSquare className="h-5 w-5" />}
+                  label="Callout"
+                  variant="large"
+                  onClick={() => handleAddSpecialBlock("callout")}
+                  title="Caixa de nota destacada"
+                />
+                <RibbonButton
+                  icon={<Code className="h-5 w-5" />}
+                  label="Embed"
+                  variant="large"
+                  onClick={() => handleAddSpecialBlock("embed")}
+                  title="Incorporar conteúdo externo"
+                />
               </RibbonGroup>
             </>
           </div>
@@ -834,7 +1170,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
 
         {/* ─── INTERACTIONS TAB PANEL ─── */}
         {activeTab === "interactions" && (
-          <div role="tabpanel" id="tabpanel-interactions" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
+          <div role="tabpanel" id="tabpanel-interactions" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200 overflow-x-auto">
             <>
               <RibbonGroup label="Avaliações">
                 <RibbonButton
@@ -891,7 +1227,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                 />
               </RibbonGroup>
 
-              <RibbonGroup label="Avançado">
+              <RibbonGroup label="Cenários & Gamificação">
                 <RibbonButton
                   icon={<GitBranch className="h-5 w-5" />}
                   label="Branching"
@@ -927,11 +1263,26 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
 
         {/* ─── DESIGN TAB PANEL ─── */}
         {activeTab === "design" && (
-          <div role="tabpanel" id="tabpanel-design" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
+          <div role="tabpanel" id="tabpanel-design" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200 overflow-x-auto">
             <>
               <RibbonGroup label="Slides">
                 <SlideLayoutsDialog />
                 <SlideTemplatesDialog />
+              </RibbonGroup>
+
+              <RibbonGroup label="Transições">
+                <select
+                  value={slideTransition}
+                  onChange={(e) => setSlideTransition(e.target.value)}
+                  className="h-7 px-3 text-xs rounded-md border-2 border-slate-200 bg-white text-slate-900 font-medium hover:border-slate-300 focus:border-slate-600 focus:outline-none"
+                  title="Transição do Slide"
+                >
+                  {TRANSITION_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
               </RibbonGroup>
 
               <RibbonGroup label="Tema">
@@ -1018,25 +1369,59 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
               </RibbonGroup>
 
               <RibbonGroup label="Tipografia">
-                <div className="flex items-center gap-2">
-                  <Paintbrush className="h-3.5 w-3.5 text-slate-600" />
-                  <select
-                    value={project?.theme.fontFamily ?? "Inter, sans-serif"}
-                    onChange={(e) =>
-                      project &&
-                      setTheme(project.id, {
-                        fontFamily: e.target.value,
-                        customFontUrl: null,
-                      })
-                    }
-                    className="h-7 px-3 text-xs rounded-md border-2 border-slate-200 bg-white text-slate-900 font-medium hover:border-slate-300 focus:border-slate-600 focus:outline-none"
-                  >
-                    {FONT_OPTIONS.map((font) => (
-                      <option key={font.value} value={font.value}>
-                        {font.name}
-                      </option>
-                    ))}
-                  </select>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <Paintbrush className="h-3.5 w-3.5 text-slate-600" />
+                    <select
+                      value={project?.theme.fontFamily ?? "Inter, sans-serif"}
+                      onChange={(e) =>
+                        project &&
+                        setTheme(project.id, {
+                          fontFamily: e.target.value,
+                          customFontUrl: null,
+                        })
+                      }
+                      className="h-7 px-3 text-xs rounded-md border-2 border-slate-200 bg-white text-slate-900 font-medium hover:border-slate-300 focus:border-slate-600 focus:outline-none"
+                    >
+                      {FONT_OPTIONS.map((font) => (
+                        <option key={font.value} value={font.value}>
+                          {font.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <select
+                      defaultValue="normal"
+                      className="h-7 px-3 text-xs rounded-md border-2 border-slate-200 bg-white text-slate-900 font-medium hover:border-slate-300 focus:border-slate-600 focus:outline-none"
+                      title="Peso da Fonte"
+                    >
+                      {FONT_WEIGHT_OPTIONS.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </RibbonGroup>
+
+              <RibbonGroup label="Tamanho do Slide">
+                <div className="flex items-center gap-1">
+                  {SLIDE_SIZE_PRESETS.map((preset) => (
+                    <RibbonButton
+                      key={preset.name}
+                      icon={<LayoutGrid className="h-3.5 w-3.5" />}
+                      label={preset.name}
+                      onClick={() => {
+                        setSlideWidth(preset.width);
+                        setSlideHeight(preset.height);
+                        toast.success(`Tamanho alterado para ${preset.name}`);
+                      }}
+                      active={slideWidth === preset.width && slideHeight === preset.height}
+                      title={`${preset.width}x${preset.height}`}
+                    />
+                  ))}
                 </div>
               </RibbonGroup>
             </>
@@ -1045,7 +1430,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
 
         {/* ─── EXPORT TAB PANEL ─── */}
         {activeTab === "export" && (
-          <div role="tabpanel" id="tabpanel-export" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
+          <div role="tabpanel" id="tabpanel-export" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200 overflow-x-auto">
             <>
               <RibbonGroup label="Publicar">
                 <RibbonButton
@@ -1064,9 +1449,25 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                     try {
                       exportAsPDF(project);
                       toast.success("PDF gerado — use Ctrl+P para salvar");
-                    } catch { toast.error("Erro ao gerar PDF"); }
+                    } catch {
+                      toast.error("Erro ao gerar PDF");
+                    }
                   }}
                   disabled={!project}
+                />
+                <RibbonButton
+                  icon={<Code className="h-5 w-5" />}
+                  label="HTML5"
+                  variant="large"
+                  onClick={handleExportHTML5}
+                  title="Exportar como HTML5 autossuficiente"
+                />
+                <RibbonButton
+                  icon={<Zap className="h-5 w-5" />}
+                  label="xAPI"
+                  variant="large"
+                  onClick={handleExportXAPI}
+                  title="Exportar com rastreamento xAPI"
                 />
               </RibbonGroup>
 
@@ -1077,6 +1478,13 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   variant="large"
                   onClick={handleShare}
                   disabled={sharing || !project}
+                />
+                <RibbonButton
+                  icon={<Globe className="h-5 w-5" />}
+                  label="Link Público"
+                  variant="large"
+                  onClick={handlePublicLink}
+                  title="Gerar link público de acesso"
                 />
               </RibbonGroup>
 
@@ -1089,9 +1497,9 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
 
         {/* ─── TOOLS TAB PANEL ─── */}
         {activeTab === "tools" && (
-          <div role="tabpanel" id="tabpanel-tools" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200">
+          <div role="tabpanel" id="tabpanel-tools" className="flex items-stretch px-2 py-1.5 min-h-[66px] bg-slate-50 border-b border-slate-200 overflow-x-auto">
             <>
-              <RibbonGroup label="Inteligência Artificial">
+              <RibbonGroup label="IA">
                 <AIQuizDialog
                   onInsertQuiz={(data) => {
                     if (!project || !slide) return;
@@ -1125,6 +1533,16 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
 
               <RibbonGroup label="Acessibilidade">
                 <ContrastChecker />
+                <RibbonButton
+                  icon={<Eye className="h-5 w-5" />}
+                  label="Alto Contraste"
+                  onClick={() => {
+                    setShowHighContrast(!showHighContrast);
+                    toast.success(showHighContrast ? "Alto contraste desativado" : "Alto contraste ativado");
+                  }}
+                  active={showHighContrast}
+                  title="Modo de alto contraste para acessibilidade"
+                />
               </RibbonGroup>
 
               <RibbonGroup label="Recursos">
@@ -1132,6 +1550,32 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
               </RibbonGroup>
 
               <RibbonGroup label="Geral">
+                <RibbonButton
+                  icon={<StickyNote className="h-5 w-5" />}
+                  label="Notas"
+                  onClick={() => toast.info("Notas do apresentador visíveis no painel lateral")}
+                  title="Exibir notas do apresentador"
+                />
+                <RibbonButton
+                  icon={<Ruler className="h-5 w-5" />}
+                  label="Régua"
+                  onClick={() => {
+                    setShowRuler(!showRuler);
+                    toast.success(showRuler ? "Régua desativada" : "Régua habilitada");
+                  }}
+                  active={showRuler}
+                  title="Mostrar régua de medida"
+                />
+                <RibbonButton
+                  icon={<Grid3X3 className="h-5 w-5" />}
+                  label="Grade"
+                  onClick={() => {
+                    setShowGrid(!showGrid);
+                    toast.success(showGrid ? "Grade desativada" : "Grade habilitada");
+                  }}
+                  active={showGrid}
+                  title="Mostrar grade de alinhamento"
+                />
                 <PreviewDialog />
                 <CourseSettingsDialog />
                 <KeyboardShortcutsDialog />
@@ -1148,8 +1592,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
           onClick={() => setShareDialogOpen(false)}
         >
           <div
-            className="rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200"
-            style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.06)' }}
+            className="rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200 bg-white border border-slate-200"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 mb-4">
@@ -1157,21 +1600,21 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                 <Share2 className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-white">
+                <h3 className="text-base font-semibold text-slate-900">
                   Compartilhar para Revisão
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500">
                   Envie o link para que revisores deixem comentários
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 p-3 bg-white/5 rounded-xl border border-white/10">
-              <Link className="h-4 w-4 text-slate-400 flex-shrink-0" />
+            <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+              <Link className="h-4 w-4 text-slate-500 flex-shrink-0" />
               <input
                 readOnly
                 value={shareLink}
-                className="flex-1 bg-transparent text-sm text-white outline-none font-mono truncate"
+                className="flex-1 bg-transparent text-sm text-slate-900 outline-none font-mono truncate"
               />
               <Button
                 size="sm"
@@ -1193,7 +1636,7 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
               <Button
                 variant="ghost"
                 size="sm"
-                className="rounded-xl text-slate-300 hover:text-white hover:bg-white/10 cursor-pointer"
+                className="rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
                 onClick={() => setShareDialogOpen(false)}
               >
                 Fechar
