@@ -15,6 +15,7 @@
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@libsql/client": "^0.14.0",
     "@prisma/client": "^6.19.2",
     "ai": "^6.0.134",
     "bcryptjs": "^3.0.3",

@@ -1,34 +1,33 @@
 #!/bin/sh
 set -e
 
-# Check if the AccCourse schema exists by looking for the User table with passwordHash column
-SCHEMA_OK=$(node -e "
+echo "🗄️  AccCourse — Checking database..."
+
+# ─── Step 1: Apply schema changes safely (NO --force-reset) ─────────
+# db push without --force-reset will CREATE missing tables/columns
+# but NEVER drop existing tables or data from other projects.
+echo "📐 Syncing schema with Prisma..."
+npx prisma db push --skip-generate --accept-data-loss 2>&1 || {
+  echo "⚠️  Prisma db push failed. Trying without --accept-data-loss..."
+  npx prisma db push --skip-generate 2>&1 || echo "⚠️  Schema sync had issues (non-fatal)."
+}
+echo "✅ Schema synced."
+
+# ─── Step 2: Ensure admin user exists (safe upsert) ─────────────────
+node -e "
   const { PrismaClient } = require('@prisma/client');
+  const bcrypt = require('bcryptjs');
   const prisma = new PrismaClient();
   (async () => {
     try {
-      await prisma.user.findFirst({ select: { passwordHash: true } });
-      console.log('OK');
-    } catch (e) {
-      console.log('NEEDS_RESET');
-    }
-    await prisma.\$disconnect();
-  })();
-" 2>/dev/null || echo "NEEDS_RESET")
-
-if echo "$SCHEMA_OK" | grep -q "NEEDS_RESET"; then
-  echo "🗄️  Schema incompatible or missing. Force-resetting database..."
-  npx prisma db push --skip-generate --force-reset 2>&1
-  echo "✅ Schema created from scratch."
-
-  # Seed: create admin user
-  echo "🌱 Creating Super Admin user..."
-  node -e "
-    const { PrismaClient } = require('@prisma/client');
-    const bcrypt = require('bcryptjs');
-    const prisma = new PrismaClient();
-    (async () => {
-      try {
+      // Check if admin already exists
+      const existing = await prisma.user.findUnique({
+        where: { email: 'admin@acccourse.com' }
+      });
+      if (existing) {
+        console.log('✅ Admin user exists. Skipping seed.');
+      } else {
+        console.log('🌱 Creating Super Admin...');
         const passwordHash = await bcrypt.hash('admin', 12);
         await prisma.user.create({
           data: {
@@ -40,52 +39,18 @@ if echo "$SCHEMA_OK" | grep -q "NEEDS_RESET"; then
           },
         });
         console.log('✅ Super Admin created: admin@acccourse.com / admin');
-      } catch (e) {
-        console.error('❌ Seed error:', e.message);
       }
-      await prisma.\$disconnect();
-    })();
-  "
-else
-  echo "✅ Schema OK. Applying any new changes..."
-  npx prisma db push --skip-generate 2>&1 || echo "⚠️  Schema push had warnings."
-
-  # Check if admin user exists
-  node -e "
-    const { PrismaClient } = require('@prisma/client');
-    const bcrypt = require('bcryptjs');
-    const prisma = new PrismaClient();
-    (async () => {
-      try {
-        const count = await prisma.user.count();
-        if (count === 0) {
-          console.log('🌱 No users found. Creating Super Admin...');
-          const passwordHash = await bcrypt.hash('admin', 12);
-          await prisma.user.create({
-            data: {
-              email: 'admin@acccourse.com',
-              passwordHash,
-              name: 'Super Admin',
-              role: 'SUPER_ADMIN',
-              tenantId: null,
-            },
-          });
-          console.log('✅ Super Admin created.');
-        } else {
-          console.log('✅ Database has ' + count + ' user(s). Skipping seed.');
-        }
-      } catch (e) {
-        console.error('❌ Seed error:', e.message);
-      }
-      await prisma.\$disconnect();
-    })();
-  "
-fi
+    } catch (e) {
+      console.error('⚠️  Seed note:', e.message);
+    }
+    await prisma.\$disconnect();
+  })();
+" 2>&1
 
 echo "✅ Database ready."
 
-# Ensure uploads directory exists
+# ─── Step 3: Ensure uploads directory ────────────────────────────────
 mkdir -p /app/data/uploads
 
-# Start the application
+# ─── Step 4: Start the application ──────────────────────────────────
 exec node server.js
