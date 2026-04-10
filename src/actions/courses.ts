@@ -44,7 +44,14 @@ export async function getUserCourses() {
     });
   }
 
-  if (!user.tenantId) return [];
+  // Users without tenant see only their own courses
+  if (!user.tenantId) {
+    return prisma.course.findMany({
+      where: { authorId: user.id },
+      select: selectFields,
+      orderBy: { updatedAt: "desc" },
+    });
+  }
 
   return prisma.course.findMany({
     where: { tenantId: user.tenantId },
@@ -69,11 +76,7 @@ export async function getCourse(id: string) {
 export async function createCourse(title: string, description: string, thumbnail: string, courseData: string) {
   const user = await getAuthenticatedUser();
 
-  // Regular users must have a tenant
-  if (user.role !== "SUPER_ADMIN" && !user.tenantId) {
-    throw new Error("User has no tenant");
-  }
-
+  // Create course (tenantId is optional — SUPER_ADMIN and unassigned users can create without tenant)
   const course = await prisma.course.create({
     data: {
       title,

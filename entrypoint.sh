@@ -25,7 +25,16 @@ node -e "
         where: { email: 'admin@acccourse.com' }
       });
       if (existing) {
-        console.log('✅ Admin user exists. Skipping seed.');
+        // Ensure admin always has SUPER_ADMIN role (in case of schema migration)
+        if (existing.role !== 'SUPER_ADMIN') {
+          await prisma.user.update({
+            where: { email: 'admin@acccourse.com' },
+            data: { role: 'SUPER_ADMIN' },
+          });
+          console.log('✅ Admin user role updated to SUPER_ADMIN.');
+        } else {
+          console.log('✅ Admin user exists. Skipping seed.');
+        }
       } else {
         console.log('🌱 Creating Super Admin...');
         const passwordHash = await bcrypt.hash('admin', 12);
