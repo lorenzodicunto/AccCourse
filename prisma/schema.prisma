@@ -8,6 +8,8 @@ datasource db {
 }
 
 // ─── Multi-Tenant RBAC Models ─────────────────────────────────────────────────
+// All tables use "acc_" prefix via @@map to avoid conflicts with other projects
+// sharing the same PostgreSQL database.
 
 model Tenant {
   id        String   @id @default(cuid())
@@ -16,6 +18,8 @@ model Tenant {
   users     User[]
   courses   Course[]
   assets    Asset[]
+
+  @@map("acc_tenants")
 }
 
 model User {
@@ -31,6 +35,7 @@ model User {
   createdAt    DateTime @default(now())
 
   @@index([tenantId])
+  @@map("acc_users")
 }
 
 model Course {
@@ -48,6 +53,7 @@ model Course {
 
   @@index([tenantId])
   @@index([authorId])
+  @@map("acc_courses")
 }
 
 // ─── Review Portal Models ─────────────────────────────────────────────────────
@@ -58,6 +64,8 @@ model SharedCourse {
   courseData  Json
   createdAt  DateTime  @default(now())
   comments   Comment[]
+
+  @@map("acc_shared_courses")
 }
 
 model Reviewer {
@@ -66,6 +74,8 @@ model Reviewer {
   email     String
   createdAt DateTime  @default(now())
   comments  Comment[]
+
+  @@map("acc_reviewers")
 }
 
 model Comment {
@@ -80,6 +90,7 @@ model Comment {
 
   @@index([sharedCourseId])
   @@index([reviewerId])
+  @@map("acc_comments")
 }
 
 // ─── Asset Library ────────────────────────────────────────────────────────────
@@ -98,4 +109,5 @@ model Asset {
 
   @@index([tenantId])
   @@index([uploadedBy])
+  @@map("acc_assets")
 }

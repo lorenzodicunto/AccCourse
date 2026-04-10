@@ -9,7 +9,8 @@
  * of the codebase doesn't need to care which adapter is active.
  */
 
-const isPostgres = (process.env.DATABASE_URL || "").startsWith("postgresql");
+const dbUrl = process.env.DATABASE_URL || "";
+const isPostgres = dbUrl.startsWith("postgresql") || dbUrl.startsWith("postgres://");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PRISMA MODE  (Production — PostgreSQL via @prisma/client)
