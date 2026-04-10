@@ -1,5 +1,12 @@
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 import { NextResponse } from "next/server";
+
+/**
+ * Edge middleware — uses the lightweight auth config (no DB/prisma imports).
+ * Only reads JWT tokens to check authentication status.
+ */
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
