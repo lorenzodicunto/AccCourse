@@ -86,7 +86,7 @@ export function ContrastChecker() {
           Contraste
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <Eye className="h-5 w-5 text-emerald-500" />

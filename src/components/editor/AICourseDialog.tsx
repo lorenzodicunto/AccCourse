@@ -140,7 +140,7 @@ export function AICourseDialog({ projectId }: AICourseDialogProps) {
           AI Curso
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Wand2 className="h-5 w-5 text-violet-500" />

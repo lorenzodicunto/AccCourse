@@ -124,7 +124,7 @@ export function ImportPPTXDialog() {
           Importar PPTX
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <FileSpreadsheet className="h-5 w-5 text-orange-500" />

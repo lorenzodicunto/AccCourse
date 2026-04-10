@@ -48,7 +48,7 @@ export function CourseSettingsDialog() {
           Configurações
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold">⚙️ Configurações do Curso</DialogTitle>
         </DialogHeader>

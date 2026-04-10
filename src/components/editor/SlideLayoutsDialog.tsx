@@ -172,10 +172,10 @@ export function SlideLayoutsDialog() {
           Layouts
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <DialogContent className="sm:max-w-lg" style={{ background: '#ffffff', border: '1px solid #e2e8f0' }}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <LayoutGrid className="h-5 w-5 text-violet-500" />
+          <DialogTitle className="flex items-center gap-2 text-base text-slate-900">
+            <LayoutGrid className="h-5 w-5 text-purple-600" />
             Slide Layouts
           </DialogTitle>
         </DialogHeader>
@@ -184,13 +184,13 @@ export function SlideLayoutsDialog() {
             <button
               key={layout.id}
               onClick={() => handleApplyLayout(layout)}
-              className="p-4 rounded-xl border border-white/10 hover:border-purple-500/30 hover:bg-white/5 transition-all text-left group cursor-pointer"
+              className="p-4 rounded-xl border border-slate-200 hover:border-purple-400 hover:bg-purple-50 transition-all text-left group cursor-pointer"
             >
               <div className="flex items-center gap-2 mb-2">
-                <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 transition-colors">
+                <div className="p-1.5 rounded-lg bg-purple-100 text-purple-600 group-hover:bg-purple-200 transition-colors">
                   {layout.icon}
                 </div>
-                <span className="text-sm font-medium text-slate-200">{layout.name}</span>
+                <span className="text-sm font-medium text-slate-800">{layout.name}</span>
               </div>
               <p className="text-[10px] text-slate-500 leading-relaxed">{layout.description}</p>
             </button>
