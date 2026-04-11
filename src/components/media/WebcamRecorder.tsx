@@ -63,11 +63,11 @@ export function WebcamRecorder({
         setIsLoadingDevices(true);
         const devices = await navigator.mediaDevices.enumerateDevices();
 
-        const videoDevices = devices.filter((d) => d.kind === "videoinput");
-        const audioDevices = devices.filter((d) => d.kind === "audioinput");
+        const videoDevices = devices.filter((d) => d.kind === "videoinput") as MediaDeviceInfo[];
+        const audioDevices = devices.filter((d) => d.kind === "audioinput") as MediaDeviceInfo[];
 
-        setCameras(videoDevices);
-        setMicrophones(audioDevices);
+        setCameras(videoDevices as unknown as MediaDevice[]);
+        setMicrophones(audioDevices as unknown as MediaDevice[]);
 
         if (videoDevices.length > 0) {
           setSelectedCamera(videoDevices[0].deviceId);

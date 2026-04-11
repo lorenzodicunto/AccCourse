@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
 
 // Rate limit: 2 translation requests per minute per IP
@@ -64,8 +65,13 @@ function setNestedValue(obj: any, path: string[], value: string) {
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
-    const { success } = translateLimiter.check(ip);
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    const rateLimitKey = session.user.id ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
+    const { success } = translateLimiter.check(rateLimitKey);
     if (!success) {
       return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
     }

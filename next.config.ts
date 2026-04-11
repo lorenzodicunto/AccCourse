@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   serverExternalPackages: ["@libsql/client", "libsql"],
   experimental: {
@@ -11,7 +11,10 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "**" },
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "plus.unsplash.com" },
+      { protocol: "https", hostname: "oaidalleapiprodscus.blob.core.windows.net" },
+      { protocol: "https", hostname: "acccourse.accuracy.com.br" },
     ],
     formats: ["image/avif", "image/webp"],
   },

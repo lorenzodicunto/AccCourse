@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { ChevronDown, ChevronUp, Bookmark, BookmarkOff, Volume2, VolumeX, Play, Pause, RotateCcw } from "lucide-react";
+import { ChevronDown, ChevronUp, Bookmark, BookmarkMinus, Volume2, VolumeX, Play, Pause, RotateCcw } from "lucide-react";
 
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
 
@@ -381,7 +381,7 @@ export function InteractiveVideoPlayer({
                       className="p-1 rounded hover:bg-gray-700 text-gray-400 hover:text-red-400 transition-colors"
                       title="Remover marcador"
                     >
-                      <BookmarkOff size={14} />
+                      <BookmarkMinus size={14} />
                     </button>
                   </div>
                 ))}

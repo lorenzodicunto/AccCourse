@@ -105,11 +105,9 @@ export function UnsplashDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 px-2">
-          <Search className="h-3.5 w-3.5 text-rose-600" />
-          Unsplash
-        </Button>
+      <DialogTrigger render={<Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 px-2" />}>
+        <Search className="h-3.5 w-3.5 text-rose-600" />
+        Unsplash
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>

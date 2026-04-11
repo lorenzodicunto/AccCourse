@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
 
 // Rate limit: 5 TTS requests per minute per IP
@@ -11,8 +12,13 @@ const VALID_VOICES = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"] as co
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
-    const { success } = ttsLimiter.check(ip);
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    const rateLimitKey = session.user.id ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
+    const { success } = ttsLimiter.check(rateLimitKey);
     if (!success) {
       return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
     }
@@ -60,8 +66,6 @@ export async function POST(req: Request) {
       });
     }
 
-    const { openai } = await import("@ai-sdk/openai");
-    const client = openai.client || (await import("openai")).default;
     const OpenAI = await import("openai");
 
     const openaiClient = new OpenAI.default({

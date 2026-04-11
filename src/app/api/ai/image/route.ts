@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import fetch from "node-fetch";
+import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
 
 // Rate limit: 3 image generation requests per minute per IP
@@ -12,8 +13,13 @@ const VALID_SIZES = ["1024x1024", "1792x1024", "1024x1792"] as const;
 
 export async function POST(req: Request) {
   try {
-    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
-    const { success } = imageLimiter.check(ip);
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
+
+    const rateLimitKey = session.user.id ?? req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
+    const { success } = imageLimiter.check(rateLimitKey);
     if (!success) {
       return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
     }

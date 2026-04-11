@@ -94,11 +94,9 @@ export function TTSDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 px-2">
-          <Volume2 className="h-3.5 w-3.5 text-green-600" />
-          TTS
-        </Button>
+      <DialogTrigger render={<Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 px-2" />}>
+        <Volume2 className="h-3.5 w-3.5 text-green-600" />
+        TTS
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
@@ -152,7 +150,7 @@ export function TTSDialog({
             </label>
             <Slider
               value={[speed]}
-              onValueChange={(v) => setSpeed(v[0])}
+              onValueChange={(v: number[]) => setSpeed(v[0])}
               min={0.5}
               max={2.0}
               step={0.1}

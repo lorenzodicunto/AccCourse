@@ -8,6 +8,7 @@ import { createDefaultProject } from "@/store/useEditorStore";
 import { getUserCourses, createCourse, deleteCourse, toggleCourseStatus } from "@/actions/courses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { CookieConsent } from "@/components/dashboard/CookieConsent";
 import { SkeletonCourseCard, SkeletonStats } from "@/components/ui/skeleton";
 import {
@@ -511,8 +512,10 @@ export default function DashboardPage() {
                                     lineHeight: 1.3,
                                   }}
                                   dangerouslySetInnerHTML={{
-                                    __html: block.content.replace(/<[^>]*>/g, (tag) =>
-                                      tag.replace(/font-size:[^;"]+;?/g, "")
+                                    __html: sanitizeHtml(
+                                      block.content.replace(/<[^>]*>/g, (tag) =>
+                                        tag.replace(/font-size:[^;"]+;?/g, "")
+                                      )
                                     ),
                                   }}
                                 />

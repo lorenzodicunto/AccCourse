@@ -95,11 +95,9 @@ export function AIImageDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 px-2">
-          <ImageIcon className="h-3.5 w-3.5 text-cyan-600" />
-          AI Imagem
-        </Button>
+      <DialogTrigger render={<Button variant="ghost" size="sm" className="gap-1.5 text-xs h-7 px-2" />}>
+        <ImageIcon className="h-3.5 w-3.5 text-cyan-600" />
+        AI Imagem
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>

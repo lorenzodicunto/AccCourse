@@ -77,12 +77,27 @@ async function execute(sql: string, args: InArgs[] = []): Promise<void> {
 
 // âââ Where / OrderBy / Select builders ââââââââââââââââââââââââââââââââââââââââ
 
+// Field whitelist to prevent SQL injection
+const ALLOWED_FIELDS = new Set([
+  "id", "email", "passwordHash", "name", "role", "tenantId", "createdAt",
+  "title", "description", "thumbnail", "courseData", "status", "publishedAt",
+  "authorId", "deletedAt", "updatedAt", "text", "slideId", "sharedCourseId",
+  "reviewerId", "url", "type", "size", "uploadedBy",
+]);
+
+function assertValidField(field: string): void {
+  if (!ALLOWED_FIELDS.has(field) || !/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(field)) {
+    throw new Error(`Invalid field name: ${field}`);
+  }
+}
+
 function buildWhere(where?: Record<string, unknown>): { clause: string; args: InArgs[] } {
   if (!where || Object.keys(where).length === 0) return { clause: "", args: [] };
   const conditions: string[] = [];
   const args: InArgs[] = [];
   for (const [key, value] of Object.entries(where)) {
     if (value === undefined) continue;
+    assertValidField(key);
     if (value === null) {
       conditions.push(`"${key}" IS NULL`);
     } else {
@@ -101,7 +116,9 @@ function buildOrderBy(orderBy?: Record<string, string> | Record<string, string>[
   const items = Array.isArray(orderBy) ? orderBy : [orderBy];
   const parts = items.map((item) => {
     const [key, dir] = Object.entries(item)[0];
-    return `"${key}" ${dir.toUpperCase()}`;
+    assertValidField(key);
+    const safeDir = dir.toUpperCase() === "DESC" ? "DESC" : "ASC";
+    return `"${key}" ${safeDir}`;
   });
   return parts.length > 0 ? `ORDER BY ${parts.join(", ")}` : "";
 }
@@ -110,7 +127,7 @@ function buildSelect(select?: Record<string, unknown>): string {
   if (!select) return "*";
   const fields = Object.entries(select)
     .filter(([, v]) => v === true)
-    .map(([k]) => `"${k}"`);
+    .map(([k]) => { assertValidField(k); return `"${k}"`; });
   return fields.length > 0 ? fields.join(", ") : "*";
 }
 

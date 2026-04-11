@@ -57,12 +57,12 @@ export function ScreenRecorder({
       setError(null);
       setIsStarting(true);
 
-      const displayMediaOptions: DisplayMediaStreamOptions = {
+      const displayMediaOptions = {
         video: {
-          cursor: "always" as DesktopCaptureOptions["cursor"],
+          cursor: "always",
         },
         audio: includeAudio ? true : false,
-      };
+      } as DisplayMediaStreamOptions;
 
       const stream = await navigator.mediaDevices.getDisplayMedia(
         displayMediaOptions
