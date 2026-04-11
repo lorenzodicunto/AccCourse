@@ -1,9 +1,30 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 
-// ─── Share a Course ───
-export async function shareCourse(title: string, courseData: string) {
+// ─── Share a Course (with ownership verification) ───
+export async function shareCourse(title: string, courseData: string, courseId?: string) {
+  // Verify user is authenticated
+  const session = await auth();
+  if (!session?.user) throw new Error("Não autorizado");
+
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user) throw new Error("Usuário não encontrado");
+
+  // If courseId is provided, verify ownership before sharing
+  if (courseId) {
+    const course = await prisma.course.findFirst({
+      where: {
+        id: courseId,
+        ...(user.role === "SUPER_ADMIN" ? {} :
+          user.tenantId ? { tenantId: user.tenantId } :
+          { authorId: user.id }),
+      },
+    });
+    if (!course) throw new Error("Curso não encontrado ou sem permissão para compartilhar.");
+  }
+
   const shared = await prisma.sharedCourse.create({
     data: { title, courseData: JSON.parse(courseData) },
   });
@@ -70,4 +91,35 @@ export async function getSlideComments(
     orderBy: { createdAt: "asc" },
   });
   return comments;
+}
+
+// ─── Toggle Comment Status (pending <-> resolved) ───
+export async function toggleCommentStatus(commentId: string) {
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { status: true },
+  });
+  if (!comment) throw new Error("Comentário não encontrado.");
+
+  const newStatus = comment.status === "resolved" ? "pending" : "resolved";
+  await prisma.comment.update({
+    where: { id: commentId },
+    data: { status: newStatus },
+  });
+  return { status: newStatus };
+}
+
+// ─── Delete a Comment ───
+export async function deleteComment(commentId: string, reviewerId: string) {
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
+    select: { reviewerId: true },
+  });
+  if (!comment) throw new Error("Comentário não encontrado.");
+  if (comment.reviewerId !== reviewerId) throw new Error("Sem permissão para excluir este comentário.");
+
+  await prisma.comment.delete({
+    where: { id: commentId },
+  });
+  return { success: true };
 }

@@ -5,13 +5,25 @@ import { useParams, useRouter } from "next/navigation";
 import { useEditorStore, CourseProject, Block, Slide } from "@/store/useEditorStore";
 import { getCourse } from "@/actions/courses";
 import { saveCourse } from "@/actions/courses";
+import dynamic from "next/dynamic";
 import { TopToolbar } from "@/components/editor/TopToolbar";
 import { SlideNavigator } from "@/components/editor/SlideNavigator";
-import { Canvas } from "@/components/editor/Canvas";
-import { PropertiesPanel } from "@/components/editor/PropertiesPanel";
 import { StatusBar } from "@/components/editor/StatusBar";
-import { ComponentLibrarySidebar } from "@/components/editor/ComponentLibrarySidebar";
 import { Loader2 } from "lucide-react";
+
+// Lazy-load heavy editor components for faster initial paint
+const Canvas = dynamic(
+  () => import("@/components/editor/Canvas").then((m) => ({ default: m.Canvas })),
+  { ssr: false, loading: () => <div className="flex-1 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-purple-500" /></div> }
+);
+const PropertiesPanel = dynamic(
+  () => import("@/components/editor/PropertiesPanel").then((m) => ({ default: m.PropertiesPanel })),
+  { ssr: false }
+);
+const ComponentLibrarySidebar = dynamic(
+  () => import("@/components/editor/ComponentLibrarySidebar").then((m) => ({ default: m.ComponentLibrarySidebar })),
+  { ssr: false }
+);
 import { toast } from "sonner";
 
 export type SaveStatus = "saved" | "saving" | "unsaved" | "error";

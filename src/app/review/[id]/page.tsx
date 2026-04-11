@@ -7,6 +7,8 @@ import {
   registerReviewer,
   addComment,
   getSlideComments,
+  toggleCommentStatus as toggleCommentStatusAction,
+  deleteComment as deleteCommentAction,
 } from "@/actions/review";
 import type { CourseProject, Block, FlashcardBlock, QuizBlock, VideoBlock as VideoBlockType, VideoInteraction } from "@/store/useEditorStore";
 import { sanitizeHtml } from "@/lib/sanitize";
@@ -121,6 +123,12 @@ export default function ReviewPage() {
         ...c,
         createdAt: new Date(c.createdAt),
       })));
+      // Initialize statuses from database
+      const statuses: Record<string, "pending" | "resolved"> = {};
+      data.forEach((c: { id: string; status?: string }) => {
+        statuses[c.id] = (c.status === "resolved" ? "resolved" : "pending");
+      });
+      setCommentStatuses((prev) => ({ ...prev, ...statuses }));
     } catch {
       // silently fail
     }
@@ -176,12 +184,33 @@ export default function ReviewPage() {
     setSubmitting(false);
   };
 
-  // ─── Toggle Comment Status ───
-  const toggleCommentStatus = (commentId: string) => {
+  // ─── Toggle Comment Status (persisted) ───
+  const toggleCommentStatus = async (commentId: string) => {
+    // Optimistic update
     setCommentStatuses((prev) => ({
       ...prev,
       [commentId]: prev[commentId] === "resolved" ? "pending" : "resolved",
     }));
+    try {
+      await toggleCommentStatusAction(commentId);
+    } catch {
+      // Revert on error
+      setCommentStatuses((prev) => ({
+        ...prev,
+        [commentId]: prev[commentId] === "resolved" ? "pending" : "resolved",
+      }));
+    }
+  };
+
+  // ─── Delete Comment ───
+  const handleDeleteComment = async (commentId: string) => {
+    if (!reviewer) return;
+    try {
+      await deleteCommentAction(commentId, reviewer.id);
+      setComments((prev) => prev.filter((c) => c.id !== commentId));
+    } catch {
+      // silently fail — user might not own this comment
+    }
   };
 
   // ─── Navigation ───

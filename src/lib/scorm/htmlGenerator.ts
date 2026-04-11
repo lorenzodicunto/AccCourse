@@ -1,7 +1,7 @@
 // SCORM Course HTML Generator
 // Generates the index.html content from course slides and blocks
 
-import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock, BranchingBlock, TimelineBlock, DragDropBlock } from "@/store/useEditorStore";
+import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock, BranchingBlock, TimelineBlock, DragDropBlock, InteractiveVideoBlock } from "@/store/useEditorStore";
 import { sanitizeHtml } from "@/lib/sanitize";
 
 export function generateCourseHTML(project: CourseProject, assetMap?: Map<string, string>): string {
@@ -464,6 +464,8 @@ function generateBlockHTML(block: Block, assetMap?: Map<string, string>): string
       return generateTimelineBlockHTML(block as TimelineBlock, style);
     case "dragdrop":
       return generateDragDropBlockHTML(block as DragDropBlock, style);
+    case "interactiveVideo":
+      return generateInteractiveVideoBlockHTML(block as InteractiveVideoBlock, style);
     default:
       return "";
   }
@@ -643,7 +645,7 @@ function generateTrueFalseBlockHTML(block: TrueFalseBlock, style: string): strin
   return `<div class="block truefalse-block" style="${style}" id="tf-${uid}">
     <div style="background:linear-gradient(135deg,#ecfdf5,#f0fdfa);border:1px solid #a7f3d0;border-radius:12px;padding:20px;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;">
       <div style="font-size:10px;font-weight:700;color:#047857;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Verdadeiro ou Falso</div>
-      <p style="font-size:16px;color:#1e293b;text-align:center;margin-bottom:16px;">${block.statement}</p>
+      <p style="font-size:16px;color:#1e293b;text-align:center;margin-bottom:16px;">${escapeHtml(block.statement)}</p>
       <div style="display:flex;gap:12px;" id="tf-btns-${uid}">
         <button onclick="checkTF_${uid}(true)" style="padding:8px 24px;border-radius:8px;border:2px solid #10b981;background:#ecfdf5;color:#047857;font-weight:600;cursor:pointer;font-size:14px;">✓ Verdadeiro</button>
         <button onclick="checkTF_${uid}(false)" style="padding:8px 24px;border-radius:8px;border:2px solid #ef4444;background:#fef2f2;color:#dc2626;font-weight:600;cursor:pointer;font-size:14px;">✗ Falso</button>
@@ -674,10 +676,10 @@ function generateMatchingBlockHTML(block: MatchingBlock, style: string): string 
       <div style="font-size:10px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Liga Pontos</div>
       <div style="display:flex;justify-content:space-between;flex:1;gap:20px;">
         <div style="display:flex;flex-direction:column;gap:8px;">
-          ${pairs.map((p, i) => `<div style="padding:8px 16px;background:#dbeafe;border-radius:8px;font-size:13px;color:#1e40af;cursor:pointer;" onclick="selectLeft_${uid}(${i})" id="ml-${uid}-${i}">${p.left}</div>`).join('')}
+          ${pairs.map((p, i) => `<div style="padding:8px 16px;background:#dbeafe;border-radius:8px;font-size:13px;color:#1e40af;cursor:pointer;" onclick="selectLeft_${uid}(${i})" id="ml-${uid}-${i}">${escapeHtml(p.left)}</div>`).join('')}
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          ${pairs.map((p, i) => `<div style="padding:8px 16px;background:#e0e7ff;border-radius:8px;font-size:13px;color:#3730a3;cursor:pointer;" onclick="selectRight_${uid}(${i})" id="mr-${uid}-${i}">${p.right}</div>`).join('')}
+          ${pairs.map((p, i) => `<div style="padding:8px 16px;background:#e0e7ff;border-radius:8px;font-size:13px;color:#3730a3;cursor:pointer;" onclick="selectRight_${uid}(${i})" id="mr-${uid}-${i}">${escapeHtml(p.right)}</div>`).join('')}
         </div>
       </div>
       <button onclick="checkMatch_${uid}()" style="margin-top:12px;padding:8px 20px;border-radius:8px;background:#4f46e5;color:white;border:none;cursor:pointer;font-weight:600;align-self:center;">Verificar</button>
@@ -710,7 +712,7 @@ function generateFillBlankBlockHTML(block: FillBlankBlock, style: string): strin
       <div style="font-size:10px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Preencher Lacunas</div>
       <div style="font-size:15px;line-height:2;color:#1e293b;">
         ${block.segments.map((seg, i) => {
-          if (seg.type === 'text') return seg.content;
+          if (seg.type === 'text') return escapeHtml(seg.content);
           return `<input type="text" id="fbi-${uid}-${i}" style="border:none;border-bottom:2px solid #f59e0b;background:#fef3c7;padding:2px 8px;border-radius:4px;font-size:14px;width:100px;outline:none;" placeholder="..." />`;
         }).join('')}
       </div>
@@ -744,7 +746,7 @@ function generateSortingBlockHTML(block: SortingBlock, style: string): string {
       <div style="font-size:10px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Ordenação</div>
       <div id="sort-list-${uid}" style="display:flex;flex-direction:column;gap:6px;flex:1;">
         ${block.items.map((item, i) => `<div draggable="true" data-id="${item.id}" style="padding:10px 16px;background:#f3e8ff;border:1px solid #d8b4fe;border-radius:8px;cursor:grab;font-size:13px;color:#581c87;display:flex;align-items:center;gap:8px;" ondragstart="event.dataTransfer.setData('text',event.target.dataset.id)" ondragover="event.preventDefault()" ondrop="dropSort_${uid}(event)">
-          <span style="color:#a78bfa;font-family:monospace;">≡</span> ${item.content}
+          <span style="color:#a78bfa;font-family:monospace;">≡</span> ${escapeHtml(item.content)}
         </div>`).join('')}
       </div>
       <button onclick="checkSort_${uid}()" style="margin-top:12px;padding:8px 20px;border-radius:8px;background:#7c3aed;color:white;border:none;cursor:pointer;font-weight:600;align-self:center;">Verificar</button>
@@ -777,7 +779,7 @@ function generateHotspotBlockHTML(block: HotspotBlock, style: string): string {
           <span style="color:white;font-size:10px;font-weight:700;">${i + 1}</span>
         </div>
         <div id="hs-tip-${uid}-${i}" style="display:none;position:absolute;left:${spot.x}%;top:${Math.min(spot.y + spot.radius + 2, 85)}%;transform:translateX(-50%);background:white;padding:8px 12px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);font-size:12px;z-index:10;max-width:200px;">
-          <strong>${spot.label}</strong><br/>${spot.content}
+          <strong>${escapeHtml(spot.label)}</strong><br/>${escapeHtml(spot.content)}
         </div>
       `).join('')}
       <div style="position:absolute;top:8px;left:8px;padding:4px 10px;border-radius:6px;background:rgba(0,0,0,0.6);color:white;font-size:10px;">
@@ -805,11 +807,11 @@ function generateAccordionBlockHTML(block: AccordionBlock, style: string): strin
       ${(block.sections || []).map((section, i) => `
         <div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
           <div onclick="toggleAcc_${uid}(${i})" style="padding:10px 16px;background:${i === 0 ? '#eef2ff' : '#ffffff'};cursor:pointer;display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:13px;font-weight:600;color:#1e293b;">${section.title}</span>
+            <span style="font-size:13px;font-weight:600;color:#1e293b;">${escapeHtml(section.title)}</span>
             <span id="acc-icon-${uid}-${i}" style="font-size:10px;color:#94a3b8;transition:transform 0.2s;">${i === 0 ? '▼' : '▶'}</span>
           </div>
           <div id="acc-content-${uid}-${i}" style="padding:0 16px;max-height:${i === 0 ? '200px' : '0'};overflow:hidden;transition:max-height 0.3s ease;${i === 0 ? 'padding-bottom:12px;' : ''}">
-            <p style="font-size:13px;color:#64748b;line-height:1.6;padding-top:8px;">${section.content}</p>
+            <p style="font-size:13px;color:#64748b;line-height:1.6;padding-top:8px;">${escapeHtml(section.content)}</p>
           </div>
         </div>
       `).join('')}
@@ -841,14 +843,14 @@ function generateTabsBlockHTML(block: TabsBlock, style: string): string {
               block.style === 'pills' ? `border-radius:20px;background:${i === 0 ? '#eef2ff' : 'transparent'};` :
               `border-radius:8px;background:${i === 0 ? 'white' : 'transparent'};${i === 0 ? 'box-shadow:0 1px 3px rgba(0,0,0,0.1);' : ''}`
             }transition:all 0.2s;">
-            ${tab.label}
+            ${escapeHtml(tab.label)}
           </div>
         `).join('')}
       </div>
       <div style="flex:1;padding:16px;overflow-y:auto;">
         ${(block.tabs || []).map((tab, i) => `
           <div id="tab-content-${uid}-${i}" style="display:${i === 0 ? 'block' : 'none'};font-size:14px;color:#475569;line-height:1.6;">
-            ${tab.content}
+            ${escapeHtml(tab.content)}
           </div>
         `).join('')}
       </div>
@@ -875,12 +877,12 @@ function generateBranchingBlockHTML(block: BranchingBlock, style: string): strin
   return `<div class="block branching-block" style="${style}" id="branch-${uid}">
     <div style="background:linear-gradient(135deg,#fff1f2,#fef2f2);border:1px solid #fecdd3;border-radius:12px;padding:20px;height:100%;display:flex;flex-direction:column;">
       <div style="font-size:10px;font-weight:700;color:#be123c;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🌿 Cenário de Decisão</div>
-      <p style="font-size:15px;color:#1e293b;margin-bottom:16px;font-weight:500;">${block.scenario}</p>
+      <p style="font-size:15px;color:#1e293b;margin-bottom:16px;font-weight:500;">${escapeHtml(block.scenario)}</p>
       <div style="display:flex;flex-direction:column;gap:8px;flex:1;" id="branch-choices-${uid}">
         ${block.choices.map((c, i) => `
           <button onclick="chooseBranch_${uid}(${i},${!!c.isCorrect},'${c.id}')" id="bc-${uid}-${i}"
             style="padding:10px 16px;border-radius:10px;border:2px solid #e5e7eb;background:white;color:#374151;font-size:14px;cursor:pointer;text-align:left;transition:all 0.2s;font-family:inherit;">
-            ${c.text}
+            ${escapeHtml(c.text)}
           </button>
         `).join('')}
       </div>
@@ -982,6 +984,103 @@ function generateDragDropBlockHTML(block: DragDropBlock, style: string): string 
         fb.style.color=correct?'#047857':'#dc2626';
         if(window.SCORM)SCORM.setInteraction('${uid}','performance','dragdrop','all_correct',correct?'correct':'wrong',${block.pointsValue});
       }
+    </script>
+  </div>`;
+}
+
+// ─── INTERACTIVE VIDEO BLOCK ───
+function generateInteractiveVideoBlockHTML(block: InteractiveVideoBlock, style: string): string {
+  const uid = block.id.slice(0, 8);
+  const chapters = block.chapters || [];
+  const quizPoints = block.quizPoints || [];
+  const bookmarks = block.bookmarks || [];
+
+  return `<div class="block interactive-video-block" style="${style}" id="iv-${uid}">
+    <div style="background:#0f172a;border-radius:12px;overflow:hidden;height:100%;display:flex;flex-direction:column;">
+      <div style="flex:1;position:relative;background:#000;">
+        ${block.src
+          ? `<video id="iv-video-${uid}" src="${escapeHtml(block.src)}" ${block.poster ? `poster="${escapeHtml(block.poster)}"` : ''} ${block.autoplay ? 'autoplay' : ''} ${block.loop ? 'loop' : ''} style="width:100%;height:100%;object-fit:contain;" onclick="togglePlay_${uid}()"></video>`
+          : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:14px;">Nenhum v&iacute;deo configurado</div>`
+        }
+        <div id="iv-overlay-${uid}" style="position:absolute;inset:0;background:rgba(0,0,0,0.8);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:10;padding:20px;"></div>
+      </div>
+      ${(chapters.length > 0 || bookmarks.length > 0) ? `
+      <div style="display:flex;gap:4px;padding:6px 8px;background:#1e293b;overflow-x:auto;">
+        ${chapters.map((ch) => `
+          <button onclick="seekTo_${uid}(${ch.time})" style="padding:4px 10px;border-radius:6px;background:#334155;color:#e2e8f0;border:none;cursor:pointer;font-size:10px;white-space:nowrap;" title="${escapeHtml(ch.description)}">
+            &#x1F4D1; ${escapeHtml(ch.title)}
+          </button>
+        `).join('')}
+        ${bookmarks.map((bm) => `
+          <button onclick="seekTo_${uid}(${bm.time})" style="padding:4px 10px;border-radius:6px;background:#312e81;color:#c7d2fe;border:none;cursor:pointer;font-size:10px;white-space:nowrap;">
+            &#x1F516; ${escapeHtml(bm.label)}
+          </button>
+        `).join('')}
+      </div>` : ''}
+      <div style="padding:6px 12px;background:#1e293b;display:flex;align-items:center;gap:8px;">
+        <button onclick="togglePlay_${uid}()" id="iv-playbtn-${uid}" style="background:none;border:none;color:white;cursor:pointer;font-size:16px;">&#x25B6;</button>
+        <input type="range" id="iv-progress-${uid}" min="0" max="100" value="0" style="flex:1;accent-color:#7c3aed;cursor:pointer;" oninput="seekPercent_${uid}(this.value)">
+        <span id="iv-time-${uid}" style="color:#94a3b8;font-size:10px;font-family:monospace;">0:00</span>
+      </div>
+    </div>
+    <script>
+      (function(){
+        var video=document.getElementById('iv-video-${uid}');
+        if(!video)return;
+        var playBtn=document.getElementById('iv-playbtn-${uid}');
+        var progress=document.getElementById('iv-progress-${uid}');
+        var timeLabel=document.getElementById('iv-time-${uid}');
+        var overlay=document.getElementById('iv-overlay-${uid}');
+        var quizPts=${JSON.stringify(quizPoints.map(q => ({ time: q.time, question: q.question, options: q.options, correctIndex: q.correctIndex, points: q.pointsValue, id: q.id })))};
+        var answered={};
+
+        function fmt(s){var m=Math.floor(s/60);var sec=Math.floor(s%60);return m+':'+(sec<10?'0':'')+sec;}
+
+        window['togglePlay_${uid}']=function(){
+          if(video.paused){video.play();playBtn.innerHTML='&#x23F8;';}
+          else{video.pause();playBtn.innerHTML='&#x25B6;';}
+        };
+        window['seekTo_${uid}']=function(t){video.currentTime=t;};
+        window['seekPercent_${uid}']=function(val){if(video.duration)video.currentTime=(val/100)*video.duration;};
+
+        video.addEventListener('timeupdate',function(){
+          if(video.duration){
+            progress.value=Math.round((video.currentTime/video.duration)*100);
+            timeLabel.textContent=fmt(video.currentTime)+' / '+fmt(video.duration);
+          }
+          for(var i=0;i<quizPts.length;i++){
+            var qp=quizPts[i];
+            if(!answered[qp.id]&&Math.abs(video.currentTime-qp.time)<0.5){
+              video.pause();playBtn.innerHTML='&#x25B6;';
+              showIVQuiz_${uid}(qp);break;
+            }
+          }
+        });
+
+        window['showIVQuiz_${uid}']=function(qp){
+          overlay.style.display='flex';
+          var h='<div style="max-width:400px;width:100%;text-align:center;">';
+          h+='<div style="font-size:10px;color:#a78bfa;text-transform:uppercase;margin-bottom:8px;">Quiz do V&iacute;deo</div>';
+          h+='<p style="color:white;font-size:16px;font-weight:600;margin-bottom:16px;">'+qp.question+'</p>';
+          qp.options.forEach(function(opt,idx){
+            h+='<button onclick="ansIVQ_${uid}(\\''+qp.id+'\\','+idx+','+qp.correctIndex+','+qp.points+')" style="display:block;width:100%;margin:6px 0;padding:10px 16px;border-radius:10px;border:2px solid #475569;background:#1e293b;color:#e2e8f0;font-size:14px;cursor:pointer;text-align:left;">'+String.fromCharCode(65+idx)+') '+opt+'</button>';
+          });
+          h+='</div>';
+          overlay.innerHTML=h;
+        };
+
+        window['ansIVQ_${uid}']=function(qpId,chosen,correct,pts){
+          answered[qpId]=true;
+          var ok=chosen===correct;
+          overlay.innerHTML='<div style="text-align:center;"><div style="font-size:48px;margin-bottom:12px;">'+(ok?'&#x2705;':'&#x274C;')+'</div><p style="color:white;font-size:18px;font-weight:600;">'+(ok?'Correto! +'+pts+' pontos':'Incorreto')+'</p><button onclick="document.getElementById(\\'iv-overlay-${uid}\\').style.display=\\'none\\';document.getElementById(\\'iv-video-${uid}\\').play();document.getElementById(\\'iv-playbtn-${uid}\\').innerHTML=\\'&#x23F8;\\';" style="margin-top:16px;padding:10px 24px;border-radius:10px;background:#7c3aed;color:white;border:none;cursor:pointer;font-weight:600;">Continuar</button></div>';
+          if(window.SCORM)SCORM.setInteraction(qpId,'choice',String(chosen),String(correct),ok?'correct':'wrong',pts);
+        };
+
+        video.addEventListener('ended',function(){
+          playBtn.innerHTML='&#x25B6;';
+          if(window.SCORM)SCORM.setStatus('completed');
+        });
+      })();
     </script>
   </div>`;
 }

@@ -4,6 +4,10 @@ import { auth } from "@/lib/auth";
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
+import { rateLimit } from "@/lib/rateLimit";
+
+// Rate limit: 30 requests per minute per IP for asset operations
+const assetLimiter = rateLimit({ interval: 60_000, limit: 30 });
 
 // ─── GET: List assets for current tenant ───
 export async function GET(request: NextRequest) {
@@ -46,6 +50,12 @@ export async function GET(request: NextRequest) {
 
 // ─── POST: Upload new asset ───
 export async function POST(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
+  const { success } = assetLimiter.check(ip);
+  if (!success) {
+    return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
+  }
+
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -101,11 +111,18 @@ export async function POST(request: NextRequest) {
   return NextResponse.json(asset, { status: 201 });
 }
 
-// ─── DELETE: Remove asset ───
+// ─── DELETE: Remove asset (with ownership check + file cleanup) ───
 export async function DELETE(request: NextRequest) {
   const session = await auth();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+  });
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   const { searchParams } = new URL(request.url);
@@ -115,6 +132,43 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Asset ID required" }, { status: 400 });
   }
 
+  // Fetch asset and verify ownership
+  const asset = await prisma.asset.findUnique({ where: { id } });
+  if (!asset) {
+    return NextResponse.json({ error: "Asset not found" }, { status: 404 });
+  }
+
+  // Only allow delete if: SUPER_ADMIN, or same tenant, or the uploader themselves
+  const isOwner = asset.uploadedBy === user.id;
+  const isSameTenant = user.tenantId && asset.tenantId === user.tenantId;
+  const isSuperAdmin = user.role === "SUPER_ADMIN";
+
+  if (!isOwner && !isSameTenant && !isSuperAdmin) {
+    return NextResponse.json({ error: "Sem permissão para excluir este asset" }, { status: 403 });
+  }
+
+  // Delete file from disk
+  try {
+    const filename = asset.url.split("/").pop();
+    if (filename) {
+      const { unlink } = await import("fs/promises");
+      const uploadsDir = join(process.cwd(), "data", "uploads", "assets");
+      const filepath = join(uploadsDir, filename);
+      if (existsSync(filepath)) {
+        await unlink(filepath);
+      }
+      // Also try the main uploads dir (files from /api/upload)
+      const mainDir = join(process.env.NODE_ENV === "production" ? "/app" : process.cwd(), "data", "uploads");
+      const mainPath = join(mainDir, filename);
+      if (existsSync(mainPath)) {
+        await unlink(mainPath);
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to delete file from disk:", e);
+  }
+
+  // Delete DB record
   await prisma.asset.delete({ where: { id } });
 
   return NextResponse.json({ success: true });

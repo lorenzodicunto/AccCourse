@@ -36,16 +36,45 @@ export function Canvas() {
 
 
 
-  // Keyboard zoom shortcuts
+  // ─── Canvas-specific shortcuts: Zoom + Arrow nudge ───
+  // (Undo/Redo, Copy/Paste, Delete, Select All are handled in editor/[id]/page.tsx)
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '+')) { e.preventDefault(); zoomIn(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === '-') { e.preventDefault(); zoomOut(); }
-      if ((e.ctrlKey || e.metaKey) && e.key === '0') { e.preventDefault(); zoomFit(); }
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable) return;
+
+      const mod = e.ctrlKey || e.metaKey;
+
+      // Zoom
+      if (mod && (e.key === '=' || e.key === '+')) { e.preventDefault(); zoomIn(); return; }
+      if (mod && e.key === '-') { e.preventDefault(); zoomOut(); return; }
+      if (mod && e.key === '0') { e.preventDefault(); zoomFit(); return; }
+
+      // Arrow keys: nudge selected block by 1px (or 10px with Shift)
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key) && selectedBlockId) {
+        e.preventDefault();
+        const project = getCurrentProject();
+        const slide = getCurrentSlide();
+        if (!project || !slide) return;
+
+        const block = slide.blocks.find((b: { id: string }) => b.id === selectedBlockId);
+        if (!block) return;
+
+        const step = e.shiftKey ? 10 : 1;
+        const updates: Partial<{ x: number; y: number }> = {};
+        if (e.key === 'ArrowUp') updates.y = block.y - step;
+        if (e.key === 'ArrowDown') updates.y = block.y + step;
+        if (e.key === 'ArrowLeft') updates.x = block.x - step;
+        if (e.key === 'ArrowRight') updates.x = block.x + step;
+
+        updateBlock(project.id, slide.id, selectedBlockId, updates);
+        return;
+      }
     };
+
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, []);
+  }, [selectedBlockId]);
 
   const project = getCurrentProject();
   const slide = getCurrentSlide();

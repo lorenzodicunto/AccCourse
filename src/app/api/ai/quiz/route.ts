@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rateLimit";
+
+// Rate limit: 10 AI quiz requests per minute per IP
+const quizLimiter = rateLimit({ interval: 60_000, limit: 10 });
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
+    const { success } = quizLimiter.check(ip);
+    if (!success) {
+      return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
+    }
+
     const { text, numQuestions = 3, types = ["quiz", "truefalse"] } = await req.json();
 
     if (!text || text.trim().length < 20) {

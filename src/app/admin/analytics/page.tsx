@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
+import { getAnalyticsData, AnalyticsData } from "@/actions/analytics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -125,20 +126,33 @@ export default function AnalyticsDashboard() {
   const { data: session } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"analytics" | "performance" | "engagement">("analytics");
+  const [realData, setRealData] = useState<AnalyticsData | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  // Calculate total stats
-  const totalCourses = mockCourses.length;
-  const totalSlides = mockCourses.reduce((sum, course) => sum + course.slides, 0);
-  const totalViews = mockCourses.reduce((sum, course) => sum + course.views, 0);
-  const avgCompletion = Math.round(
-    mockCourses.reduce((sum, course) => sum + course.completion, 0) / mockCourses.length
-  );
+  useEffect(() => {
+    getAnalyticsData()
+      .then(setRealData)
+      .catch(() => {}) // Fallback to mock data
+      .finally(() => setDataLoading(false));
+  }, []);
+
+  // Use real data when available, fallback to mock
+  const totalCourses = realData?.totalCourses ?? mockCourses.length;
+  const totalSlides = realData?.totalSlides ?? mockCourses.reduce((sum, course) => sum + course.slides, 0);
+  const totalViews = realData ? realData.totalSharedCourses : mockCourses.reduce((sum, course) => sum + course.views, 0);
+  const avgCompletion = realData
+    ? (realData.totalComments > 0 ? Math.min(100, Math.round((realData.totalComments / Math.max(1, realData.totalSharedCourses)) * 10)) : 0)
+    : Math.round(mockCourses.reduce((sum, course) => sum + course.completion, 0) / mockCourses.length);
 
   // Calculate max views for chart scaling
   const maxViews = Math.max(...topCoursesByViews.map((c) => c.views));
 
   // Calculate max monthly courses for chart scaling
-  const maxMonthly = Math.max(...monthlyData.map((d) => d.courses));
+  const effectiveMonthlyData = realData?.coursesByMonth?.map((d) => ({
+    month: new Date(d.month + "-01").toLocaleString("pt-BR", { month: "long" }).replace(/^\w/, (c) => c.toUpperCase()),
+    courses: d.count,
+  })) ?? monthlyData;
+  const maxMonthly = Math.max(...effectiveMonthlyData.map((d) => d.courses), 1);
 
   return (
     <div className="min-h-screen flex bg-slate-50">

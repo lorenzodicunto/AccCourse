@@ -112,27 +112,176 @@ export function PreviewDialog() {
             )}
           </div>
         );
+      case "truefalse":
+        return (
+          <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #ecfdf5, #f0fdf4)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", border: "1px solid #a7f3d0" }}>
+            <div style={{ fontSize: "10px", fontWeight: 700, color: "#047857", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Verdadeiro ou Falso</div>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <p style={{ fontSize: "15px", color: "#1e293b", textAlign: "center", fontWeight: 500 }}>{(block as any).statement || "Afirmação..."}</p>
+            </div>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "12px" }}>
+              <button style={{ padding: "10px 24px", borderRadius: "10px", background: "#d1fae5", color: "#065f46", border: "2px solid #6ee7b7", fontWeight: 600, fontSize: "14px", cursor: "pointer" }}>✓ Verdadeiro</button>
+              <button style={{ padding: "10px 24px", borderRadius: "10px", background: "#fee2e2", color: "#991b1b", border: "2px solid #fca5a5", fontWeight: 600, fontSize: "14px", cursor: "pointer" }}>✗ Falso</button>
+            </div>
+          </div>
+        );
+      case "matching":
+        return (
+          <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #eff6ff, #eef2ff)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", border: "1px solid #bfdbfe" }}>
+            <div style={{ fontSize: "10px", fontWeight: 700, color: "#1d4ed8", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>Liga Pontos</div>
+            <div style={{ flex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", gap: "16px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {((block as any).pairs || []).map((pair: any, i: number) => (
+                  <div key={i} style={{ padding: "8px 14px", background: "#dbeafe", borderRadius: "8px", fontSize: "13px", color: "#1e3a5f", border: "1px solid #93c5fd", fontWeight: 500 }}>{pair.left}</div>
+                ))}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {((block as any).pairs || []).map((pair: any, i: number) => (
+                  <div key={i} style={{ padding: "8px 14px", background: "#e0e7ff", borderRadius: "8px", fontSize: "13px", color: "#312e81", border: "1px solid #a5b4fc", fontWeight: 500 }}>{pair.right}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
       case "sorting":
-      case "dragdrop":
-      case "interactiveVideo":
-      case "accordion":
-      case "tabs":
-      case "branching":
-      case "timeline":
+        return (
+          <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #faf5ff, #fdf4ff)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", border: "1px solid #d8b4fe" }}>
+            <div style={{ fontSize: "10px", fontWeight: 700, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>Ordenação</div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+              {((block as any).items || []).map((item: any, i: number) => (
+                <div key={i} style={{ padding: "10px 16px", background: "#f3e8ff", border: "1px solid #d8b4fe", borderRadius: "8px", fontSize: "13px", color: "#581c87", display: "flex", alignItems: "center", gap: "8px", cursor: "grab" }}>
+                  <span style={{ color: "#a78bfa", fontFamily: "monospace" }}>≡</span> {item.content}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
       case "hotspot":
         return (
-          <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #f0f9ff, #e0f2fe)", borderRadius: "12px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontSize: "13px", color: "#0284c7", fontWeight: 600, border: "2px solid #bae6fd", padding: "16px", textAlign: "center" }}>
-            <span style={{ fontSize: "24px", marginBottom: "8px" }}>✨</span>
-            Componente Interativo ({block.type})
-            <span style={{ fontSize: "10px", color: "#38bdf8", marginTop: "4px", fontWeight: 400 }}>Visível dinamicamente no Player oficial</span>
+          <div key={block.id} style={{ ...baseStyle, borderRadius: "12px", overflow: "hidden", position: "absolute" }}>
+            <div style={{ position: "relative", width: "100%", height: "100%" }}>
+              {(block as any).imageSrc ? (
+                <img src={(block as any).imageSrc} alt="Hotspot" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, #f1f5f9, #e2e8f0)", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: "12px" }}>Imagem de fundo</div>
+              )}
+              {((block as any).spots || []).map((spot: any, i: number) => (
+                <div key={i} style={{ position: "absolute", left: `${spot.x}%`, top: `${spot.y}%`, transform: "translate(-50%, -50%)", width: `${(spot.radius || 3) * 2}%`, height: `${(spot.radius || 3) * 2}%`, borderRadius: "50%", background: "rgba(6,182,212,0.4)", border: "2px solid white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 0 12px rgba(6,182,212,0.3)" }}>
+                  <span style={{ color: "white", fontSize: "10px", fontWeight: 700 }}>{i + 1}</span>
+                </div>
+              ))}
+              <div style={{ position: "absolute", top: "8px", left: "8px", padding: "4px 10px", borderRadius: "6px", background: "rgba(0,0,0,0.6)", color: "white", fontSize: "10px" }}>
+                {(block as any).mode === "quiz" ? "🎯 Quiz" : "🔍 Explorar"}
+              </div>
+            </div>
           </div>
         );
-      default:
+      case "accordion":
         return (
-          <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #f8fafc, #f1f5f9)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "#94a3b8", fontWeight: 500, border: "1px dashed #cbd5e1" }}>
-            📦 {block.type}
+          <div key={block.id} style={{ ...baseStyle, background: "#f8fafc", borderRadius: "12px", padding: "12px", display: "flex", flexDirection: "column", gap: "6px", border: "1px solid #e2e8f0", overflowY: "auto" }}>
+            {((block as any).sections || []).map((section: any, i: number) => (
+              <div key={i} style={{ border: "1px solid #e2e8f0", borderRadius: "8px", overflow: "hidden" }}>
+                <div style={{ padding: "10px 16px", background: i === 0 ? "#eef2ff" : "#ffffff", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 600, color: "#1e293b" }}>{section.title}</span>
+                  <span style={{ fontSize: "10px", color: "#94a3b8" }}>{i === 0 ? "▼" : "▶"}</span>
+                </div>
+                {i === 0 && (
+                  <div style={{ padding: "8px 16px 12px", fontSize: "13px", color: "#64748b", lineHeight: "1.6", borderTop: "1px solid #e2e8f0" }}>
+                    {section.content}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         );
+      case "tabs":
+        return (
+          <div key={block.id} style={{ ...baseStyle, display: "flex", flexDirection: "column", borderRadius: "12px", overflow: "hidden", border: "1px solid #e2e8f0", background: "white" }}>
+            <div style={{ display: "flex", borderBottom: "1px solid #e2e8f0", background: "#f8fafc", padding: "4px" }}>
+              {((block as any).tabs || []).map((tab: any, i: number) => (
+                <div key={i} style={{ padding: "8px 16px", fontSize: "12px", fontWeight: i === 0 ? 600 : 400, color: i === 0 ? "#4f46e5" : "#64748b", borderBottom: i === 0 ? "2px solid #4f46e5" : "none", cursor: "pointer" }}>
+                  {tab.label}
+                </div>
+              ))}
+            </div>
+            <div style={{ flex: 1, padding: "16px", fontSize: "14px", color: "#475569", lineHeight: "1.6", overflowY: "auto" }}>
+              {((block as any).tabs || [])[0]?.content || ""}
+            </div>
+          </div>
+        );
+      case "branching":
+        return (
+          <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #fff1f2, #fef2f2)", borderRadius: "12px", padding: "20px", display: "flex", flexDirection: "column", border: "1px solid #fecdd3" }}>
+            <div style={{ fontSize: "10px", fontWeight: 700, color: "#be123c", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>🌿 Cenário de Decisão</div>
+            <p style={{ fontSize: "15px", color: "#1e293b", marginBottom: "16px", fontWeight: 500 }}>{(block as any).scenario}</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
+              {((block as any).choices || []).map((c: any, i: number) => (
+                <button key={i} style={{ padding: "10px 16px", borderRadius: "10px", border: "2px solid #e5e7eb", background: "white", color: "#374151", fontSize: "14px", cursor: "pointer", textAlign: "left" }}>
+                  {c.text}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      case "timeline":
+        return (
+          <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #f0f9ff, #e0f2fe)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", border: "1px solid #bae6fd" }}>
+            <div style={{ fontSize: "10px", fontWeight: 700, color: "#0369a1", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>⏱ Linha do Tempo</div>
+            <div style={{ flex: 1, display: "flex", flexDirection: (block as any).orientation === "vertical" ? "column" : "row", alignItems: "center", justifyContent: "space-around", gap: "8px" }}>
+              {((block as any).events || []).map((event: any, i: number) => (
+                <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "4px" }}>
+                  <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#e0f2fe", border: "2px solid #38bdf8", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>{event.icon || "📌"}</div>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#0369a1" }}>{event.date}</span>
+                  <span style={{ fontSize: "10px", color: "#475569" }}>{event.title}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case "dragdrop":
+        return (
+          <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #f0fdfa, #ecfeff)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", border: "1px solid #99f6e4" }}>
+            <div style={{ fontSize: "10px", fontWeight: 700, color: "#0f766e", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "12px" }}>↕ Drag & Drop</div>
+            <div style={{ display: "flex", gap: "12px", flex: 1 }}>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span style={{ fontSize: "9px", color: "#94a3b8", textTransform: "uppercase" }}>Itens</span>
+                {((block as any).items || []).map((item: any, i: number) => (
+                  <div key={i} style={{ padding: "8px 12px", background: "white", border: "1px solid #99f6e4", borderRadius: "8px", fontSize: "12px", color: "#134e4a", cursor: "grab" }}>≡ {item.content}</div>
+                ))}
+              </div>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+                <span style={{ fontSize: "9px", color: "#94a3b8", textTransform: "uppercase" }}>Categorias</span>
+                {((block as any).categories || []).map((cat: any, i: number) => (
+                  <div key={i} style={{ padding: "12px", background: "#ccfbf1", border: "2px dashed #5eead4", borderRadius: "8px", fontSize: "12px", color: "#0f766e", textAlign: "center" }}>{cat.label}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      case "interactiveVideo":
+        return (
+          <div key={block.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #581c87, #86198f)", borderRadius: "12px", padding: "16px", display: "flex", flexDirection: "column", color: "white" }}>
+            <div style={{ fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px", color: "#e9d5ff" }}>🎬 Vídeo Interativo</div>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {(block as any).src ? (
+                <video src={(block as any).src} controls style={{ width: "100%", height: "100%", borderRadius: "8px" }} />
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                  <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>▶</div>
+                  <span style={{ fontSize: "11px", opacity: 0.5 }}>Adicione URL do vídeo</span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      default: {
+        const unknownBlock = block as any;
+        return (
+          <div key={unknownBlock.id} style={{ ...baseStyle, background: "linear-gradient(135deg, #f8fafc, #f1f5f9)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "#94a3b8", fontWeight: 500, border: "1px dashed #cbd5e1" }}>
+            📦 {unknownBlock.type}
+          </div>
+        );
+      }
     }
   }
 

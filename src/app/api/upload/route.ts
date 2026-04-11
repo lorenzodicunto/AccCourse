@@ -4,12 +4,26 @@ import path from "path";
 import crypto from "crypto";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { rateLimit } from "@/lib/rateLimit";
 
 // Maximum file size: 100MB (for video support)
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
+// Rate limit: 20 uploads per minute per IP
+const uploadLimiter = rateLimit({ interval: 60_000, limit: 20 });
+
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
+    const { success } = uploadLimiter.check(ip);
+    if (!success) {
+      return NextResponse.json(
+        { error: "Muitas requisições. Tente novamente em breve." },
+        { status: 429 }
+      );
+    }
+
     // Verify authentication
     const session = await auth();
     if (!session?.user) {
@@ -76,7 +90,7 @@ export async function POST(request: NextRequest) {
       ...videoExtensions,
     ];
 
-    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(ext)) {
+    if (!allowedTypes.includes(file.type) || !allowedExtensions.includes(ext)) {
       return NextResponse.json(
         {
           error:

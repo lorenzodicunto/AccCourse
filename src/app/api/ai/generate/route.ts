@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rateLimit";
+
+// Rate limit: 5 AI course generation requests per minute per IP
+const generateLimiter = rateLimit({ interval: 60_000, limit: 5 });
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "anonymous";
+    const { success } = generateLimiter.check(ip);
+    if (!success) {
+      return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
+    }
+
     const { prompt, slideCount = 5, includeQuiz = true } = await req.json();
 
     if (!prompt || prompt.trim().length < 10) {

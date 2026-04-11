@@ -42,20 +42,22 @@ model User {
 }
 
 model Course {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
-  description String   @default("")
-  thumbnail   String   @default("")
-  courseData   Json     @default("{}")
+  description String    @default("")
+  thumbnail   String    @default("")
+  courseData   Json      @default("{}")
   tenantId    String?
   authorId    String
-  tenant      Tenant?  @relation(fields: [tenantId], references: [id])
-  author      User     @relation(fields: [authorId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // Soft delete — null = active, set = in trash
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id])
+  author      User      @relation(fields: [authorId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([authorId])
+  @@index([deletedAt])
 }
 
 // ─── Review Portal Models ─────────────────────────────────────────────────────
@@ -80,6 +82,7 @@ model Comment {
   id             String       @id @default(cuid())
   text           String
   slideId        String
+  status         String       @default("pending") // "pending" | "resolved"
   sharedCourseId String
   reviewerId     String
   createdAt      DateTime     @default(now())

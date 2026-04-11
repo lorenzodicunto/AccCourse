@@ -69,6 +69,8 @@ import {
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { exportScormPackage } from "@/lib/scorm/packager";
+import { exportHTML5Package } from "@/lib/export/html5Exporter";
+import { exportXAPIPackage, XAPIExportConfig } from "@/lib/export/xapiExporter";
 import { shareCourse } from "@/actions/review";
 import { saveCourse } from "@/actions/courses";
 import { toast } from "sonner";
@@ -248,43 +250,60 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
     setTimeout(() => setExporting(false), 1500);
   };
 
-  const handleExportHTML5 = () => {
-    toast.promise(
-      new Promise((resolve) => {
-        setTimeout(() => resolve(true), 500);
-      }),
-      {
-        loading: "Preparando exportação HTML5...",
-        success: "Exportação HTML5 em breve — recursos de desenvolvimento em progresso.",
-        error: "Erro ao preparar exportação.",
-      }
-    );
+  const handleExportHTML5 = async () => {
+    if (!project || exporting) return;
+    setExporting(true);
+    toast.promise(exportHTML5Package(project), {
+      loading: "Empacotando HTML5 standalone... Aguarde.",
+      success: "Curso HTML5 exportado com sucesso! Download iniciado.",
+      error: "Erro ao exportar o pacote HTML5.",
+    });
+    setTimeout(() => setExporting(false), 1500);
   };
+
+  const [xapiDialogOpen, setXapiDialogOpen] = useState(false);
+  const [xapiConfig, setXapiConfig] = useState<XAPIExportConfig>({
+    lrsEndpoint: "",
+    lrsKey: "",
+    lrsSecret: "",
+  });
 
   const handleExportXAPI = () => {
-    toast.promise(
-      new Promise((resolve) => {
-        setTimeout(() => resolve(true), 500);
-      }),
-      {
-        loading: "Preparando exportação xAPI...",
-        success: "Exportação xAPI em breve — recursos de desenvolvimento em progresso.",
-        error: "Erro ao preparar exportação.",
-      }
-    );
+    setXapiDialogOpen(true);
   };
 
-  const handlePublicLink = () => {
-    toast.promise(
-      new Promise((resolve) => {
-        setTimeout(() => resolve(true), 500);
-      }),
-      {
-        loading: "Gerando link público...",
-        success: "Link público em breve — recursos de desenvolvimento em progresso.",
-        error: "Erro ao gerar link.",
-      }
-    );
+  const handleXAPIExportConfirm = async () => {
+    if (!project || exporting) return;
+    if (!xapiConfig.lrsEndpoint) {
+      toast.error("Informe o endpoint do LRS.");
+      return;
+    }
+    setXapiDialogOpen(false);
+    setExporting(true);
+    toast.promise(exportXAPIPackage(project, xapiConfig), {
+      loading: "Empacotando xAPI... Aguarde.",
+      success: "Curso xAPI exportado com sucesso! Download iniciado.",
+      error: "Erro ao exportar o pacote xAPI.",
+    });
+    setTimeout(() => setExporting(false), 1500);
+  };
+
+  const [publicLinkLoading, setPublicLinkLoading] = useState(false);
+
+  const handlePublicLink = async () => {
+    if (!project || publicLinkLoading) return;
+    setPublicLinkLoading(true);
+    try {
+      const courseData = JSON.stringify(project);
+      const result = await shareCourse(project.title, courseData);
+      const link = `${window.location.origin}/review/${result.id}`;
+      await navigator.clipboard.writeText(link);
+      toast.success("Link público copiado para a área de transferência!");
+    } catch (err) {
+      toast.error("Erro ao gerar link público.");
+    } finally {
+      setPublicLinkLoading(false);
+    }
   };
 
   const handleShare = async () => {
@@ -1640,6 +1659,85 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                 onClick={() => setShareDialogOpen(false)}
               >
                 Fechar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* xAPI Config Dialog */}
+      {xapiDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setXapiDialogOpen(false)}
+        >
+          <div
+            className="rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 animate-in fade-in zoom-in-95 duration-200 bg-white border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center">
+                <Globe className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-slate-900">
+                  Configuração xAPI / LRS
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Informe os dados do Learning Record Store
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Endpoint do LRS</label>
+                <input
+                  type="url"
+                  placeholder="https://lrs.exemplo.com/xapi"
+                  value={xapiConfig.lrsEndpoint}
+                  onChange={(e) => setXapiConfig((c) => ({ ...c, lrsEndpoint: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Key (usuário)</label>
+                <input
+                  type="text"
+                  placeholder="Chave de autenticação"
+                  value={xapiConfig.lrsKey}
+                  onChange={(e) => setXapiConfig((c) => ({ ...c, lrsKey: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-600 mb-1 block">Secret (senha)</label>
+                <input
+                  type="password"
+                  placeholder="Senha de autenticação"
+                  value={xapiConfig.lrsSecret}
+                  onChange={(e) => setXapiConfig((c) => ({ ...c, lrsSecret: e.target.value }))}
+                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+                />
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                onClick={() => setXapiDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-xl bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+                onClick={handleXAPIExportConfirm}
+              >
+                <Download className="h-3.5 w-3.5 mr-1.5" />
+                Exportar xAPI
               </Button>
             </div>
           </div>

@@ -37,8 +37,10 @@ export async function getUserCourses() {
   } as const;
 
   // Super Admin sees all courses; Authors see only their tenant's
+  // Always exclude soft-deleted courses from the main list
   if (user.role === "SUPER_ADMIN") {
     return prisma.course.findMany({
+      where: { deletedAt: null },
       select: selectFields,
       orderBy: { updatedAt: "desc" },
     });
@@ -47,14 +49,14 @@ export async function getUserCourses() {
   // Users without tenant see only their own courses
   if (!user.tenantId) {
     return prisma.course.findMany({
-      where: { authorId: user.id },
+      where: { authorId: user.id, deletedAt: null },
       select: selectFields,
       orderBy: { updatedAt: "desc" },
     });
   }
 
   return prisma.course.findMany({
-    where: { tenantId: user.tenantId },
+    where: { tenantId: user.tenantId, deletedAt: null },
     select: selectFields,
     orderBy: { updatedAt: "desc" },
   });
@@ -65,7 +67,7 @@ export async function getCourse(id: string) {
   const user = await getAuthenticatedUser();
 
   const course = await prisma.course.findFirst({
-    where: { id, ...ownershipFilter(user) },
+    where: { id, deletedAt: null, ...ownershipFilter(user) },
   });
 
   if (!course) throw new Error("Curso não encontrado ou sem permissão.");
@@ -138,19 +140,118 @@ export async function updateCourseMetadata(id: string, data: { title?: string; d
   return { success: true };
 }
 
-// ─── Delete a course (with ownership check) ───
+// ─── Soft-delete a course (move to trash) ───
 export async function deleteCourse(id: string) {
   const user = await getAuthenticatedUser();
 
   const existing = await prisma.course.findFirst({
-    where: { id, ...ownershipFilter(user) },
+    where: { id, deletedAt: null, ...ownershipFilter(user) },
     select: { id: true },
   });
   if (!existing) throw new Error("Curso não encontrado ou sem permissão.");
+
+  await prisma.course.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+  });
+
+  return { success: true };
+}
+
+// ─── Get trashed courses ───
+export async function getTrashedCourses() {
+  const user = await getAuthenticatedUser();
+
+  const selectFields = {
+    id: true,
+    title: true,
+    description: true,
+    thumbnail: true,
+    updatedAt: true,
+    deletedAt: true,
+    author: { select: { name: true, email: true } },
+  } as const;
+
+  const where = {
+    deletedAt: { not: null },
+    ...(user.role === "SUPER_ADMIN"
+      ? {}
+      : user.tenantId
+        ? { tenantId: user.tenantId }
+        : { authorId: user.id }),
+  };
+
+  return prisma.course.findMany({
+    where,
+    select: selectFields,
+    orderBy: { deletedAt: "desc" },
+  });
+}
+
+// ─── Restore a trashed course ───
+export async function restoreCourse(id: string) {
+  const user = await getAuthenticatedUser();
+
+  const existing = await prisma.course.findFirst({
+    where: { id, deletedAt: { not: null }, ...ownershipFilter(user) },
+    select: { id: true },
+  });
+  if (!existing) throw new Error("Curso não encontrado na lixeira ou sem permissão.");
+
+  await prisma.course.update({
+    where: { id },
+    data: { deletedAt: null },
+  });
+
+  return { success: true };
+}
+
+// ─── Permanently delete a trashed course ───
+export async function permanentlyDeleteCourse(id: string) {
+  const user = await getAuthenticatedUser();
+
+  const existing = await prisma.course.findFirst({
+    where: { id, deletedAt: { not: null }, ...ownershipFilter(user) },
+    select: { id: true },
+  });
+  if (!existing) throw new Error("Curso não encontrado na lixeira ou sem permissão.");
 
   await prisma.course.delete({
     where: { id },
   });
 
   return { success: true };
+}
+
+// ─── Duplicate a course ───
+export async function duplicateCourse(id: string) {
+  const user = await getAuthenticatedUser();
+
+  const original = await prisma.course.findFirst({
+    where: { id, deletedAt: null, ...ownershipFilter(user) },
+  });
+  if (!original) throw new Error("Curso não encontrado ou sem permissão.");
+
+  const copy = await prisma.course.create({
+    data: {
+      title: `${original.title} (Cópia)`,
+      description: original.description,
+      thumbnail: original.thumbnail,
+      courseData: original.courseData as object,
+      tenantId: user.tenantId || null,
+      authorId: user.id,
+    },
+  });
+
+  return { id: copy.id };
+}
+
+// ─── Create course from template ───
+export async function createCourseFromTemplate(templateId: string) {
+  const user = await getAuthenticatedUser();
+
+  // Templates are stored in the TEMPLATES constant on the client
+  // This action receives the template data as a pre-built courseData JSON string
+  // See /src/lib/templates.ts for available templates
+  throw new Error("Use createCourse with template data instead.");
 }

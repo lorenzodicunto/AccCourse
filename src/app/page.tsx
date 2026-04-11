@@ -319,9 +319,9 @@ export default function DashboardPage() {
           <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
             <NavItem icon={BookOpen} label="Meus Cursos" active />
             <NavItem icon={Users} label="Compartilhados" />
-            <NavItem icon={Layout} label="Templates" />
-            <NavItem icon={FolderOpen} label="Biblioteca" />
-            <NavItem icon={Trash2} label="Lixeira" />
+            <NavItem icon={Layout} label="Templates" href="/templates" />
+            <NavItem icon={FolderOpen} label="Biblioteca" href="/biblioteca" />
+            <NavItem icon={Trash2} label="Lixeira" href="/lixeira" />
           </nav>
         </aside>
 
@@ -683,10 +683,12 @@ export default function DashboardPage() {
 }
 
 // Helper component for sidebar navigation
-function NavItem({ icon: Icon, label, active = false }: { icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean }) {
+function NavItem({ icon: Icon, label, active = false, href }: { icon: React.ComponentType<{ className?: string }>; label: string; active?: boolean; href?: string }) {
+  const router = useRouter();
   return (
     <button
       aria-current={active ? "page" : undefined}
+      onClick={href ? () => router.push(href) : undefined}
       className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer ${
         active
           ? "bg-purple-100 text-purple-700"
