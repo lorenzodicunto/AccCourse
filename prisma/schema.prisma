@@ -47,6 +47,8 @@ model Course {
   description String    @default("")
   thumbnail   String    @default("")
   courseData   Json      @default("{}")
+  status      String    @default("draft") // "draft" | "published"
+  publishedAt DateTime? // When the course was last published
   tenantId    String?
   authorId    String
   deletedAt   DateTime? // Soft delete — null = active, set = in trash
@@ -58,6 +60,7 @@ model Course {
   @@index([tenantId])
   @@index([authorId])
   @@index([deletedAt])
+  @@index([status])
 }
 
 // ─── Review Portal Models ─────────────────────────────────────────────────────

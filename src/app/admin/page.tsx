@@ -61,7 +61,7 @@ const ROLE_COLORS: Record<string, string> = {
   ADMIN: "bg-orange-100 text-orange-700 border border-orange-200",
   EDITOR: "bg-purple-100 text-purple-700 border border-purple-200",
   REVIEWER: "bg-blue-100 text-blue-700 border border-blue-200",
-  VIEWER: "bg-gray-100 text-gray-700 border border-gray-200",
+  VIEWER: "bg-muted text-foreground/80 border border-border",
 };
 
 export default function AdminPage() {

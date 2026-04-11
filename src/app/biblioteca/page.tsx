@@ -34,6 +34,7 @@ import {
   Shield,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton, SkeletonAssetCard } from "@/components/ui/skeleton";
 
 type Asset = {
   id: string;
@@ -224,22 +225,22 @@ export default function BibliotecaPage() {
       case "document":
         return <FileText className={`${iconClass} text-blue-600`} />;
       default:
-        return <FileText className={`${iconClass} text-slate-600`} />;
+        return <FileText className={`${iconClass} text-muted-foreground`} />;
     }
   };
 
   const getAssetBgColor = (type: Asset["type"]) => {
     switch (type) {
       case "image":
-        return "bg-purple-100";
+        return "bg-purple-100 dark:bg-purple-900/30";
       case "video":
-        return "bg-violet-100";
+        return "bg-violet-100 dark:bg-violet-900/30";
       case "audio":
-        return "bg-violet-100";
+        return "bg-violet-100 dark:bg-violet-900/30";
       case "document":
-        return "bg-blue-100";
+        return "bg-blue-100 dark:bg-blue-900/30";
       default:
-        return "bg-slate-100";
+        return "bg-muted";
     }
   };
 
@@ -267,13 +268,13 @@ export default function BibliotecaPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white">
+      <header className="sticky top-0 z-40 border-b border-border bg-card">
         <div className="mx-auto max-w-full px-6 py-3 flex items-center justify-between">
           {/* Left: Sidebar toggle + Logo */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-600 cursor-pointer lg:hidden"
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground cursor-pointer lg:hidden"
             >
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -288,13 +289,13 @@ export default function BibliotecaPage() {
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
+                <h1 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-1.5">
                   AccCourse
-                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md text-purple-700 bg-purple-100">
+                  <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/30">
                     2.0
                   </span>
                 </h1>
-                <p className="text-[11px] text-slate-500 leading-none -mt-0.5">
+                <p className="text-[11px] text-muted-foreground/70 leading-none -mt-0.5">
                   Plataforma Enterprise E-Learning
                 </p>
               </div>
@@ -316,12 +317,12 @@ export default function BibliotecaPage() {
             )}
 
             {/* Notifications */}
-            <button className="relative p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-600 cursor-pointer">
+            <button className="relative p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground cursor-pointer">
               <Bell className="h-5 w-5" />
             </button>
 
             {/* User info + Logout */}
-            <div className="flex items-center gap-2 ml-1 pl-3 border-l border-slate-200">
+            <div className="flex items-center gap-2 ml-1 pl-3 border-l border-border">
               <div
                 className="flex items-center justify-center h-8 w-8 rounded-full text-xs font-semibold text-white"
                 style={{
@@ -331,17 +332,17 @@ export default function BibliotecaPage() {
                 {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-medium text-slate-900">
+                <p className="text-xs font-medium text-foreground">
                   {session?.user?.name}
                 </p>
-                <p className="text-[10px] text-slate-500">
+                <p className="text-[10px] text-muted-foreground/70">
                   {session?.user?.email}
                 </p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                className="h-8 w-8 p-0 rounded-lg text-muted-foreground/70 hover:text-foreground hover:bg-muted cursor-pointer"
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 title="Sair"
               >
@@ -359,7 +360,7 @@ export default function BibliotecaPage() {
           aria-label="Navegação principal"
           className={`${
             sidebarOpen ? "w-64" : "w-0"
-          } transition-all duration-300 border-r border-slate-200 bg-white hidden lg:flex lg:w-64 flex-col`}
+          } transition-all duration-300 border-r border-border bg-card hidden lg:flex lg:w-64 flex-col`}
         >
           <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
             <NavItem
@@ -377,67 +378,81 @@ export default function BibliotecaPage() {
         {/* Main Content */}
         <main id="main-content" role="main" className="flex-1 mx-auto max-w-7xl px-6 py-8 w-full">
           {/* Stats Cards */}
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-card rounded-xl p-4 flex items-center gap-3 border border-border">
+                  <Skeleton className="h-10 w-10 rounded-lg" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-6 w-12" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8 animate-fade-in">
-            <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-purple-100">
-                <FileText className="h-5 w-5 text-purple-600" />
+            <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-border shadow-sm">
+              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-2xl font-bold text-foreground">
                   {stats.total}
                 </p>
-                <p className="text-xs text-slate-600">Total de arquivos</p>
+                <p className="text-xs text-muted-foreground">Total de arquivos</p>
               </div>
             </div>
 
-            <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-purple-100">
-                <ImageIcon className="h-5 w-5 text-purple-600" />
+            <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-border shadow-sm">
+              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-purple-100 dark:bg-purple-900/30">
+                <ImageIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-2xl font-bold text-foreground">
                   {stats.images}
                 </p>
-                <p className="text-xs text-slate-600">Imagens</p>
+                <p className="text-xs text-muted-foreground">Imagens</p>
               </div>
             </div>
 
-            <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-violet-100">
-                <Film className="h-5 w-5 text-violet-600" />
+            <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-border shadow-sm">
+              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-violet-100 dark:bg-violet-900/30">
+                <Film className="h-5 w-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-2xl font-bold text-foreground">
                   {stats.videos}
                 </p>
-                <p className="text-xs text-slate-600">Vídeos</p>
+                <p className="text-xs text-muted-foreground">Vídeos</p>
               </div>
             </div>
 
-            <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-violet-100">
-                <Music className="h-5 w-5 text-violet-600" />
+            <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-border shadow-sm">
+              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-violet-100 dark:bg-violet-900/30">
+                <Music className="h-5 w-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-2xl font-bold text-foreground">
                   {stats.audios}
                 </p>
-                <p className="text-xs text-slate-600">Áudios</p>
+                <p className="text-xs text-muted-foreground">Áudios</p>
               </div>
             </div>
 
-            <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-blue-100">
-                <FileText className="h-5 w-5 text-blue-600" />
+            <div className="bg-card rounded-xl p-4 flex items-center gap-3 border border-border shadow-sm">
+              <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-900/30">
+                <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-2xl font-bold text-foreground">
                   {stats.documents}
                 </p>
-                <p className="text-xs text-slate-600">Documentos</p>
+                <p className="text-xs text-muted-foreground">Documentos</p>
               </div>
             </div>
           </div>
+          )}
 
           {/* Upload Area */}
           <div
@@ -447,18 +462,18 @@ export default function BibliotecaPage() {
             onDrop={handleDrop}
             className={`mb-8 rounded-2xl border-2 border-dashed transition-all ${
               isDragging
-                ? "border-purple-500 bg-purple-50"
-                : "border-slate-300 bg-slate-50"
+                ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20"
+                : "border-border bg-muted"
             }`}
           >
             <div className="p-12 text-center">
-              <div className="flex items-center justify-center h-16 w-16 rounded-2xl bg-white border border-slate-200 mx-auto mb-4 shadow-sm">
+              <div className="flex items-center justify-center h-16 w-16 rounded-2xl bg-card border border-border mx-auto mb-4 shadow-sm dark:shadow-none">
                 <Upload className="h-8 w-8 text-purple-600" />
               </div>
-              <h3 className="text-lg font-semibold text-slate-900 mb-1">
+              <h3 className="text-lg font-semibold text-foreground mb-1">
                 Arraste arquivos ou clique para fazer upload
               </h3>
-              <p className="text-sm text-slate-600 mb-6">
+              <p className="text-sm text-muted-foreground mb-6">
                 Imagens (PNG, JPG, GIF), Vídeos (MP4, WebM), Áudios (MP3, WAV), Documentos (PDF, DOC, PPT)
               </p>
               <button
@@ -484,13 +499,13 @@ export default function BibliotecaPage() {
 
               {uploading && (
                 <div className="mt-6">
-                  <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                     <div
                       className="bg-purple-600 h-full transition-all duration-300"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
-                  <p className="text-xs text-slate-600 mt-2">
+                  <p className="text-xs text-muted-foreground mt-2">
                     {Math.round(uploadProgress)}% concluído
                   </p>
                 </div>
@@ -511,10 +526,10 @@ export default function BibliotecaPage() {
           {/* Section Header */}
           <div className="flex flex-col gap-6 mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="text-2xl font-bold text-foreground">
                 Biblioteca de Mídia
               </h2>
-              <p className="text-sm text-slate-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {loading
                   ? "Carregando..."
                   : filteredAssets.length === 0
@@ -530,12 +545,12 @@ export default function BibliotecaPage() {
               <div className="flex flex-col gap-4">
                 {/* Search bar */}
                 <div className="relative max-w-xs">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                   <Input
                     placeholder="Buscar arquivos..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                    className="pl-9 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:ring-offset-0"
                   />
                 </div>
 
@@ -575,7 +590,7 @@ export default function BibliotecaPage() {
                     <select
                       value={sortType}
                       onChange={(e) => setSortType(e.target.value as SortType)}
-                      className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm font-medium focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                      className="px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm font-medium focus:border-purple-500 focus:ring-1 focus:ring-purple-500 cursor-pointer"
                     >
                       <option value="recentes">Mais recentes</option>
                       <option value="antigos">Mais antigos</option>
@@ -583,13 +598,13 @@ export default function BibliotecaPage() {
                       <option value="tamanho">Maior tamanho</option>
                     </select>
 
-                    <div className="flex items-center gap-1 border border-slate-200 rounded-lg bg-white">
+                    <div className="flex items-center gap-1 border border-border rounded-lg bg-card">
                       <button
                         onClick={() => setViewType("grid")}
                         className={`p-2 rounded-md transition-colors ${
                           viewType === "grid"
-                            ? "bg-purple-100 text-purple-600"
-                            : "text-slate-600 hover:bg-slate-100"
+                            ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                            : "text-muted-foreground hover:bg-muted"
                         }`}
                         title="Visualização em grade"
                       >
@@ -599,8 +614,8 @@ export default function BibliotecaPage() {
                         onClick={() => setViewType("list")}
                         className={`p-2 rounded-md transition-colors ${
                           viewType === "list"
-                            ? "bg-purple-100 text-purple-600"
-                            : "text-slate-600 hover:bg-slate-100"
+                            ? "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
+                            : "text-muted-foreground hover:bg-muted"
                         }`}
                         title="Visualização em lista"
                       >
@@ -615,22 +630,28 @@ export default function BibliotecaPage() {
 
           {/* Assets Display */}
           {loading ? (
-            <div className="flex items-center justify-center py-24">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <SkeletonAssetCard key={i} />
+              ))}
             </div>
           ) : filteredAssets.length === 0 && assets.length === 0 ? (
-            /* Empty state */
-            <div className="flex flex-col items-center justify-center py-24 animate-fade-in">
-              <div className="flex items-center justify-center h-24 w-24 rounded-3xl mb-6 bg-gradient-to-br from-purple-50 to-slate-50 border border-purple-100">
-                <FolderOpen className="h-12 w-12 text-purple-400" />
+            /* Rich Empty State */
+            <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
+              <div className="relative mb-6">
+                <div className="h-24 w-24 rounded-3xl bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 flex items-center justify-center border border-purple-100 dark:border-purple-800/30">
+                  <FolderOpen className="h-10 w-10 text-purple-300 dark:text-purple-600" />
+                </div>
+                <div className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center border-2 border-background">
+                  <Upload className="h-4 w-4 text-purple-500" />
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                Sua biblioteca está vazia
-              </h3>
-              <p className="text-slate-600 text-center max-w-md mb-8">
-                Faça upload do seu primeiro arquivo para começar a organizar seus
-                recursos de mídia
+
+              <h2 className="text-xl font-bold text-foreground mb-2">Sua biblioteca está vazia</h2>
+              <p className="text-sm text-muted-foreground max-w-sm mb-8">
+                Faça upload do seu primeiro arquivo para começar a organizar seus recursos de mídia. Arraste e solte ou clique para enviar.
               </p>
+
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-medium transition-all cursor-pointer shadow-md hover:shadow-lg"
@@ -645,11 +666,13 @@ export default function BibliotecaPage() {
           ) : filteredAssets.length === 0 ? (
             /* No results */
             <div className="flex flex-col items-center justify-center py-24">
-              <Search className="h-12 w-12 text-slate-400 mb-4" />
-              <h3 className="text-lg font-semibold text-slate-900 mb-1">
+              <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                <Search className="h-8 w-8 text-muted-foreground/50" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-1">
                 Nenhum resultado encontrado
               </h3>
-              <p className="text-slate-600 text-sm">
+              <p className="text-muted-foreground text-sm">
                 Tente ajustar os filtros ou buscar com outros termos
               </p>
             </div>
@@ -659,7 +682,7 @@ export default function BibliotecaPage() {
               {filteredAssets.map((asset) => (
                 <div
                   key={asset.id}
-                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 transition-all duration-300 hover:border-slate-300 hover:shadow-md cursor-pointer bg-white"
+                  className="group relative flex flex-col overflow-hidden rounded-2xl border border-border transition-all duration-300 hover:border-primary/30 hover:shadow-md cursor-pointer bg-card"
                 >
                   {/* Preview / Icon */}
                   <button
@@ -687,15 +710,15 @@ export default function BibliotecaPage() {
                   <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button
                       onClick={() => handleCopyUrl(asset.url)}
-                      className="p-1.5 rounded-lg shadow-sm hover:bg-slate-200 transition-colors cursor-pointer bg-white/90 border border-slate-200"
+                      className="p-1.5 rounded-lg shadow-sm hover:bg-muted transition-colors cursor-pointer bg-card/90 border border-border"
                       aria-label={`Copiar URL de ${asset.name}`}
                       title="Copiar URL"
                     >
-                      <Copy className="h-3.5 w-3.5 text-slate-700" />
+                      <Copy className="h-3.5 w-3.5 text-foreground/80" />
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(asset.id)}
-                      className="p-1.5 rounded-lg shadow-sm hover:bg-red-100 transition-colors cursor-pointer bg-white/90 border border-slate-200"
+                      className="p-1.5 rounded-lg shadow-sm hover:bg-red-100 transition-colors cursor-pointer bg-card/90 border border-border"
                       aria-label={`Deletar ${asset.name}`}
                       title="Deletar"
                     >
@@ -705,23 +728,23 @@ export default function BibliotecaPage() {
 
                   {/* Content */}
                   <div className="flex flex-col flex-1 p-3">
-                    <h3 className="font-medium text-sm text-slate-900 line-clamp-2 mb-2 group-hover:text-purple-600 transition-colors">
+                    <h3 className="font-medium text-sm text-foreground line-clamp-2 mb-2 group-hover:text-purple-600 transition-colors">
                       {asset.name}
                     </h3>
 
                     <div className="flex items-center gap-1.5 mb-2">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-slate-100 text-slate-700">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted text-foreground/80">
                         {asset.type === "image" && "Imagem"}
                         {asset.type === "video" && "Vídeo"}
                         {asset.type === "audio" && "Áudio"}
                         {asset.type === "document" && "Documento"}
                       </span>
-                      <span className="text-[10px] font-medium text-slate-600">
+                      <span className="text-[10px] font-medium text-muted-foreground">
                         {formatSize(asset.size)}
                       </span>
                     </div>
 
-                    <div className="mt-auto pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+                    <div className="mt-auto pt-2 border-t border-border/50 text-[11px] text-muted-foreground/70">
                       <p className="line-clamp-1">
                         {asset.uploader.name}
                       </p>
@@ -733,38 +756,38 @@ export default function BibliotecaPage() {
             </div>
           ) : (
             /* List View */
-            <div className="rounded-2xl overflow-hidden border border-slate-200 bg-white animate-fade-in">
+            <div className="rounded-2xl overflow-hidden border border-border bg-card animate-fade-in">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50">
-                    <th className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider px-6 py-3.5">
+                  <tr className="border-b border-border bg-muted">
+                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3.5">
                       Preview
                     </th>
-                    <th className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider px-6 py-3.5">
+                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3.5">
                       Nome
                     </th>
-                    <th className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider px-6 py-3.5">
+                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3.5">
                       Tipo
                     </th>
-                    <th className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider px-6 py-3.5">
+                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3.5">
                       Tamanho
                     </th>
-                    <th className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider px-6 py-3.5">
+                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3.5">
                       Enviado por
                     </th>
-                    <th className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider px-6 py-3.5">
+                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3.5">
                       Data
                     </th>
-                    <th className="text-left text-xs font-semibold text-slate-600 uppercase tracking-wider px-6 py-3.5">
+                    <th className="text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider px-6 py-3.5">
                       Ações
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200">
+                <tbody className="divide-y divide-border">
                   {filteredAssets.map((asset) => (
                     <tr
                       key={asset.id}
-                      className="hover:bg-slate-50 transition-colors"
+                      className="hover:bg-muted transition-colors"
                     >
                       <td className="px-6 py-4">
                         <button
@@ -793,33 +816,33 @@ export default function BibliotecaPage() {
                             setSelectedAsset(asset);
                             setPreviewOpen(true);
                           }}
-                          className="text-sm font-medium text-slate-900 hover:text-purple-600 transition-colors line-clamp-1 max-w-xs"
+                          className="text-sm font-medium text-foreground hover:text-purple-600 transition-colors line-clamp-1 max-w-xs"
                         >
                           {asset.name}
                         </button>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-slate-100 text-slate-700">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-muted text-foreground/80">
                           {asset.type === "image" && "Imagem"}
                           {asset.type === "video" && "Vídeo"}
                           {asset.type === "audio" && "Áudio"}
                           {asset.type === "document" && "Documento"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
                         {formatSize(asset.size)}
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm">
-                          <p className="font-medium text-slate-900">
+                          <p className="font-medium text-foreground">
                             {asset.uploader.name}
                           </p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-muted-foreground/70">
                             {asset.uploader.email}
                           </p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
                         {formatDate(asset.createdAt)}
                       </td>
                       <td className="px-6 py-4">
@@ -829,14 +852,14 @@ export default function BibliotecaPage() {
                               setSelectedAsset(asset);
                               setPreviewOpen(true);
                             }}
-                            className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-600 hover:text-slate-900"
+                            className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                             title="Visualizar"
                           >
                             <Eye className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => handleCopyUrl(asset.url)}
-                            className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-600 hover:text-slate-900"
+                            className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                             title="Copiar URL"
                           >
                             <Copy className="h-4 w-4" />
@@ -866,17 +889,17 @@ export default function BibliotecaPage() {
           onClick={() => setPreviewOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+            className="bg-card rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-border"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Preview Header */}
-            <div className="sticky top-0 flex items-center justify-between p-6 border-b border-slate-200 bg-white rounded-t-2xl">
-              <h3 className="text-lg font-semibold text-slate-900 line-clamp-1">
+            <div className="sticky top-0 flex items-center justify-between p-6 border-b border-border bg-card rounded-t-2xl z-10">
+              <h3 className="text-lg font-semibold text-foreground line-clamp-1">
                 {selectedAsset.name}
               </h3>
               <button
                 onClick={() => setPreviewOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-600 cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground cursor-pointer"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -885,7 +908,7 @@ export default function BibliotecaPage() {
             {/* Preview Content */}
             <div className="p-6">
               {/* Asset Preview */}
-              <div className="mb-6 rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center min-h-64">
+              <div className="mb-6 rounded-xl overflow-hidden bg-muted flex items-center justify-center min-h-64">
                 {selectedAsset.type === "image" ? (
                   <img
                     src={selectedAsset.url}
@@ -906,14 +929,14 @@ export default function BibliotecaPage() {
                   />
                 ) : (
                   <div className="flex flex-col items-center gap-4">
-                    <div className="h-16 w-16 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <div className="h-16 w-16 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                       <FileText className="h-8 w-8 text-blue-600" />
                     </div>
                     <div className="text-center">
-                      <p className="font-medium text-slate-900">
+                      <p className="font-medium text-foreground">
                         {selectedAsset.name}
                       </p>
-                      <p className="text-sm text-slate-600 mt-1">
+                      <p className="text-sm text-muted-foreground mt-1">
                         {formatSize(selectedAsset.size)}
                       </p>
                     </div>
@@ -922,10 +945,10 @@ export default function BibliotecaPage() {
               </div>
 
               {/* Metadata */}
-              <div className="bg-slate-50 rounded-xl p-4 mb-6 space-y-3">
+              <div className="bg-muted rounded-xl p-4 mb-6 space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-slate-600">Tipo:</span>
-                  <span className="text-sm font-medium text-slate-900">
+                  <span className="text-sm text-muted-foreground">Tipo:</span>
+                  <span className="text-sm font-medium text-foreground">
                     {selectedAsset.type === "image" && "Imagem"}
                     {selectedAsset.type === "video" && "Vídeo"}
                     {selectedAsset.type === "audio" && "Áudio"}
@@ -933,32 +956,32 @@ export default function BibliotecaPage() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-slate-600">Tamanho:</span>
-                  <span className="text-sm font-medium text-slate-900">
+                  <span className="text-sm text-muted-foreground">Tamanho:</span>
+                  <span className="text-sm font-medium text-foreground">
                     {formatSize(selectedAsset.size)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-slate-600">Data:</span>
-                  <span className="text-sm font-medium text-slate-900">
+                  <span className="text-sm text-muted-foreground">Data:</span>
+                  <span className="text-sm font-medium text-foreground">
                     {formatDate(selectedAsset.createdAt)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-slate-600">Enviado por:</span>
+                  <span className="text-sm text-muted-foreground">Enviado por:</span>
                   <div className="text-right">
-                    <p className="text-sm font-medium text-slate-900">
+                    <p className="text-sm font-medium text-foreground">
                       {selectedAsset.uploader.name}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground/70">
                       {selectedAsset.uploader.email}
                     </p>
                   </div>
                 </div>
-                <div className="pt-3 border-t border-slate-200">
-                  <span className="text-sm text-slate-600 break-all">
+                <div className="pt-3 border-t border-border">
+                  <span className="text-sm text-muted-foreground break-all">
                     URL: <br />
-                    <code className="text-xs bg-white p-2 rounded border border-slate-200 block mt-1 text-slate-600">
+                    <code className="text-xs bg-card p-2 rounded border border-border block mt-1 text-muted-foreground">
                       {selectedAsset.url}
                     </code>
                   </span>
@@ -969,7 +992,7 @@ export default function BibliotecaPage() {
               <div className="flex gap-3">
                 <Button
                   onClick={() => handleCopyUrl(selectedAsset.url)}
-                  className="flex-1 gap-2 rounded-xl bg-slate-100 text-slate-900 hover:bg-slate-200 cursor-pointer border border-slate-200"
+                  className="flex-1 gap-2 rounded-xl bg-muted text-foreground hover:bg-muted cursor-pointer border border-border"
                   variant="outline"
                 >
                   <Copy className="h-4 w-4" />
@@ -978,7 +1001,7 @@ export default function BibliotecaPage() {
                 <a
                   href={selectedAsset.url}
                   download={selectedAsset.name}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-900 hover:bg-slate-200 cursor-pointer border border-slate-200 text-sm font-medium transition-colors"
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-muted text-foreground hover:bg-muted cursor-pointer border border-border text-sm font-medium transition-colors"
                 >
                   <Download className="h-4 w-4" />
                   Download
@@ -1004,18 +1027,18 @@ export default function BibliotecaPage() {
           onClick={() => setDeleteConfirm(null)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6"
+            className="bg-card rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-border"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start gap-4 mb-4">
-              <div className="flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+              <div className="flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/30">
                 <AlertCircle className="h-6 w-6 text-red-600" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-slate-900">
+                <h3 className="text-lg font-semibold text-foreground">
                   Deletar arquivo?
                 </h3>
-                <p className="text-sm text-slate-600 mt-1">
+                <p className="text-sm text-muted-foreground mt-1">
                   Esta ação não pode ser desfeita. O arquivo será permanentemente
                   removido da biblioteca.
                 </p>
@@ -1042,8 +1065,8 @@ export default function BibliotecaPage() {
       )}
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white mt-12">
-        <div className="mx-auto max-w-7xl px-6 py-6 flex items-center justify-between text-xs text-slate-600">
+      <footer className="border-t border-border bg-card mt-12">
+        <div className="mx-auto max-w-7xl px-6 py-6 flex items-center justify-between text-xs text-muted-foreground">
           <p>© 2026 Accuracy. Todos os direitos reservados.</p>
           <p>AccCourse v2.0</p>
         </div>
@@ -1070,8 +1093,8 @@ function NavItem({
       onClick={onClick}
       className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer ${
         active
-          ? "bg-purple-100 text-purple-700"
-          : "text-slate-700 hover:bg-slate-100"
+          ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+          : "text-foreground/80 hover:bg-muted"
       }`}
     >
       <Icon className="h-4 w-4" aria-hidden="true" />
@@ -1096,7 +1119,7 @@ function FilterChip({
       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer ${
         active
           ? "bg-purple-600 text-white"
-          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          : "bg-muted text-foreground/80 hover:bg-muted/80"
       }`}
     >
       {label}

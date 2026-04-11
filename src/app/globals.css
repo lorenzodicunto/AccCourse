@@ -124,6 +124,35 @@
   --gradient-orange: linear-gradient(135deg, #F97316 0%, #EC4899 100%);
   --gradient-light: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
   --gradient-glow: radial-gradient(ellipse at center, rgba(124, 58, 237, 0.1), transparent 70%);
+
+  /* ─── Spacing Scale (4px base) ─── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ─── Typography Scale ─── */
+  --text-xs: 0.6875rem;   /* 11px */
+  --text-sm: 0.8125rem;   /* 13px */
+  --text-base: 0.875rem;  /* 14px — corpo principal */
+  --text-md: 0.9375rem;   /* 15px */
+  --text-lg: 1.0625rem;   /* 17px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+
+  /* ─── Shadow Scale ─── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-focus: 0 0 0 3px rgba(124, 58, 237, 0.3);
 }
 
 /* ─── Dark Mode Override ─── */
@@ -327,8 +356,9 @@
   .interactive-smooth {
     transition: all 0.2s ease;
   }
-  .button-focus {
-    focus-visible: ring 2px rgba(124, 58, 237, 0.4);
+  .button-focus:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.4);
   }
 
   /* Animations */
@@ -368,6 +398,34 @@
 @keyframes bounceSubtle {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
+}
+
+/* ─── Reduced Motion — Accessibility ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in,
+  .animate-glow-pulse,
+  .animate-bounce-subtle {
+    animation: none !important;
+  }
+
+  .card-hover:hover {
+    transform: none;
+  }
+
+  button:active, [role="button"]:active {
+    transform: none;
+  }
 }
 
 /* ─── Scrollbar Styling — Light Mode ─── */

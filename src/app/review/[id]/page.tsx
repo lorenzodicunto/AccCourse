@@ -229,10 +229,10 @@ export default function ReviewPage() {
   // ─── LOADING ───
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-card">
         <div className="flex flex-col items-center gap-3">
           <div className="h-10 w-10 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
-          <p className="text-sm text-gray-600 font-medium">
+          <p className="text-sm text-muted-foreground font-medium">
             Carregando curso...
           </p>
         </div>
@@ -243,13 +243,13 @@ export default function ReviewPage() {
   // ─── ERROR ───
   if (error || !project) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-card">
         <div className="text-center max-w-sm">
-          <GraduationCap className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">
+          <GraduationCap className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
+          <h2 className="text-lg font-semibold text-foreground mb-1">
             {error || "Curso não encontrado"}
           </h2>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Verifique o link e tente novamente.
           </p>
         </div>
@@ -260,52 +260,52 @@ export default function ReviewPage() {
   // ─── GATEKEEPER ───
   if (!reviewer) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-muted to-muted">
         <div className="w-full max-w-sm">
-          <div className="rounded-2xl shadow-lg p-8 bg-white border border-gray-200">
+          <div className="rounded-2xl shadow-lg p-8 bg-card border border-border">
             <div className="text-center mb-6">
               <div className="mx-auto mb-4 h-14 w-14 rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
                 <GraduationCap className="h-7 w-7 text-white" />
               </div>
-              <h1 className="text-lg font-bold text-gray-900">
+              <h1 className="text-lg font-bold text-foreground">
                 {project.title}
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Identifique-se para acessar e deixar comentários
               </p>
             </div>
 
             <form onSubmit={handleGatekeeperSubmit} className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-1.5">
+                <label className="text-xs font-semibold text-foreground/80 uppercase tracking-wider block mb-1.5">
                   Nome Completo
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                   <input
                     type="text"
                     required
                     value={gkName}
                     onChange={(e) => setGkName(e.target.value)}
                     placeholder="Seu nome"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-500"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-xl bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-muted-foreground/70"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-1.5">
+                <label className="text-xs font-semibold text-foreground/80 uppercase tracking-wider block mb-1.5">
                   E-mail Corporativo
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                   <input
                     type="email"
                     required
                     value={gkEmail}
                     onChange={(e) => setGkEmail(e.target.value)}
                     placeholder="nome@empresa.com"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-xl bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-gray-500"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-border rounded-xl bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all placeholder:text-muted-foreground/70"
                   />
                 </div>
               </div>
@@ -329,21 +329,21 @@ export default function ReviewPage() {
 
   // ─── REVIEW PORTAL (Read-only Player + Comments) ───
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-card">
       {/* Header */}
-      <header className="h-14 flex items-center justify-between px-6 flex-shrink-0 bg-white border-b border-gray-200">
+      <header className="h-14 flex items-center justify-between px-6 flex-shrink-0 bg-card border-b border-border">
         <div className="flex items-center gap-2.5">
           <div className="h-7 w-7 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
             <GraduationCap className="h-3.5 w-3.5 text-white" />
           </div>
-          <span className="text-sm font-semibold text-gray-900">
+          <span className="text-sm font-semibold text-foreground">
             {project.title}
           </span>
-          <span className="text-xs text-gray-600 bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">
+          <span className="text-xs text-muted-foreground bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">
             Revisão
           </span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-gray-600">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <User className="h-3.5 w-3.5" />
           <span>{reviewer.name}</span>
         </div>
@@ -352,9 +352,9 @@ export default function ReviewPage() {
       {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar - Slide Navigator */}
-        <div className="w-32 border-r border-gray-200 bg-gray-50 flex flex-col overflow-hidden">
-          <div className="p-3 border-b border-gray-200">
-            <p className="text-xs font-semibold text-gray-700 text-center">
+        <div className="w-32 border-r border-border bg-muted flex flex-col overflow-hidden">
+          <div className="p-3 border-b border-border">
+            <p className="text-xs font-semibold text-foreground/80 text-center">
               Slides
             </p>
           </div>
@@ -365,8 +365,8 @@ export default function ReviewPage() {
                 onClick={() => setCurrentSlideIndex(idx)}
                 className={`w-full aspect-video rounded-lg text-xs font-medium transition-all flex items-center justify-center ${
                   currentSlideIndex === idx
-                    ? "ring-2 ring-purple-500 bg-white text-gray-900"
-                    : "bg-white text-gray-500 hover:ring-1 hover:ring-purple-300"
+                    ? "ring-2 ring-purple-500 bg-card text-foreground"
+                    : "bg-card text-muted-foreground/70 hover:ring-1 hover:ring-purple-300"
                 }`}
               >
                 {idx + 1}
@@ -376,10 +376,10 @@ export default function ReviewPage() {
         </div>
 
         {/* Center - Canvas + Navigation */}
-        <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-white to-gray-50">
+        <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-card to-muted">
           {/* 16:9 Canvas */}
           <div
-            className="relative w-full max-w-[860px] bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden"
+            className="relative w-full max-w-[860px] bg-card rounded-2xl shadow-lg border border-border overflow-hidden"
             style={{ aspectRatio: "16 / 9" }}
           >
             {currentSlide && (
@@ -400,17 +400,17 @@ export default function ReviewPage() {
             <button
               onClick={goPrev}
               disabled={currentSlideIndex === 0}
-              className="h-10 w-10 rounded-xl border border-gray-300 shadow-sm flex items-center justify-center hover:bg-gray-100 disabled:opacity-30 transition-all text-gray-600 cursor-pointer bg-white"
+              className="h-10 w-10 rounded-xl border border-border shadow-sm flex items-center justify-center hover:bg-muted disabled:opacity-30 transition-all text-muted-foreground cursor-pointer bg-card"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <span className="text-sm font-medium text-gray-700 min-w-[90px] text-center">
+            <span className="text-sm font-medium text-foreground/80 min-w-[90px] text-center">
               {currentSlideIndex + 1} de {slides.length}
             </span>
             <button
               onClick={goNext}
               disabled={currentSlideIndex === slides.length - 1}
-              className="h-10 w-10 rounded-xl border border-gray-300 shadow-sm flex items-center justify-center hover:bg-gray-100 disabled:opacity-30 transition-all text-gray-600 cursor-pointer bg-white"
+              className="h-10 w-10 rounded-xl border border-border shadow-sm flex items-center justify-center hover:bg-muted disabled:opacity-30 transition-all text-muted-foreground cursor-pointer bg-card"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -418,18 +418,18 @@ export default function ReviewPage() {
         </div>
 
         {/* Right Sidebar - Comments */}
-        <aside className="w-[380px] flex flex-col flex-shrink-0 bg-white border-l border-gray-200">
-          <div className="p-4 border-b border-gray-200">
+        <aside className="w-[380px] flex flex-col flex-shrink-0 bg-card border-l border-border">
+          <div className="p-4 border-b border-border">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-purple-600" />
-              <h3 className="text-sm font-semibold text-gray-900">
+              <h3 className="text-sm font-semibold text-foreground">
                 Comentários
               </h3>
-              <span className="inline-flex items-center justify-center h-5 min-w-[20px] text-[10px] font-bold bg-purple-100 text-purple-700 rounded-full px-1.5">
+              <span className="inline-flex items-center justify-center h-5 min-w-[20px] text-[10px] font-bold bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-full px-1.5">
                 {comments.length}
               </span>
             </div>
-            <p className="text-xs text-gray-600 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Slide {currentSlideIndex + 1}
             </p>
           </div>
@@ -438,8 +438,8 @@ export default function ReviewPage() {
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {comments.length === 0 && (
               <div className="text-center py-8">
-                <MessageSquare className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                <p className="text-xs text-gray-500">
+                <MessageSquare className="h-8 w-8 text-muted-foreground/40 mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground/70">
                   Nenhum comentário neste slide
                 </p>
               </div>
@@ -452,8 +452,8 @@ export default function ReviewPage() {
                   key={comment.id}
                   className={`rounded-xl p-3.5 border-l-4 transition-all ${
                     isResolved
-                      ? "bg-green-50 border-l-green-500"
-                      : "bg-orange-50 border-l-orange-500"
+                      ? "bg-green-50 dark:bg-green-950 border-l-green-500"
+                      : "bg-orange-50 dark:bg-orange-950 border-l-orange-500"
                   }`}
                 >
                   <div className="flex items-start gap-2 mb-2">
@@ -469,33 +469,33 @@ export default function ReviewPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-xs font-semibold text-gray-900">
+                        <span className="text-xs font-semibold text-foreground">
                           {comment.reviewer.name}
                         </span>
                         <span
                           className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-medium ${
                             isResolved
-                              ? "bg-green-200 text-green-800"
-                              : "bg-orange-200 text-orange-800"
+                              ? "bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-300"
+                              : "bg-orange-200 dark:bg-orange-900 text-orange-800 dark:text-orange-300"
                           }`}
                         >
                           {isResolved ? "Resolvido" : "Pendente"}
                         </span>
                       </div>
-                      <span className="text-[11px] text-gray-500">
+                      <span className="text-[11px] text-muted-foreground/70">
                         {getRelativeTime(new Date(comment.createdAt))}
                       </span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-700 leading-relaxed mb-2">
+                  <p className="text-xs text-foreground/80 leading-relaxed mb-2">
                     {comment.text}
                   </p>
                   <button
                     onClick={() => toggleCommentStatus(comment.id)}
                     className={`w-full text-xs font-medium py-1.5 rounded-lg transition-all ${
                       isResolved
-                        ? "bg-green-100 text-green-700 hover:bg-green-200"
-                        : "bg-orange-100 text-orange-700 hover:bg-orange-200"
+                        ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800"
+                        : "bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-300 hover:bg-orange-200 dark:hover:bg-orange-800"
                     }`}
                   >
                     {isResolved ? "Marcar como Pendente" : "Resolver"}
@@ -506,14 +506,14 @@ export default function ReviewPage() {
           </div>
 
           {/* Comment Input */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-border">
             <div className="flex gap-2">
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Escreva um comentário..."
                 rows={2}
-                className="flex-1 text-sm border border-gray-300 rounded-xl px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 resize-none transition-all placeholder:text-gray-500"
+                className="flex-1 text-sm border border-border rounded-xl px-3 py-2 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 resize-none transition-all placeholder:text-muted-foreground/70"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
@@ -657,12 +657,12 @@ function ReadOnlyBlock({ block }: { block: Block }) {
     const qb = block as QuizBlock;
     return (
       <div
-        className="rounded-xl bg-white border border-gray-200 p-3 overflow-hidden shadow-md"
+        className="rounded-xl bg-card border border-border p-3 overflow-hidden shadow-md"
         style={style}
       >
         <div className="flex items-center gap-1.5 mb-2">
           <HelpCircle className="h-4 w-4 text-purple-600 flex-shrink-0" />
-          <p className="text-xs font-semibold text-gray-900 line-clamp-1">
+          <p className="text-xs font-semibold text-foreground line-clamp-1">
             {qb.question}
           </p>
         </div>
@@ -670,7 +670,7 @@ function ReadOnlyBlock({ block }: { block: Block }) {
           {qb.options.map((opt) => (
             <div
               key={opt.id}
-              className="text-[10px] px-2 py-1 rounded-md line-clamp-1 bg-purple-50 text-gray-700"
+              className="text-[10px] px-2 py-1 rounded-md line-clamp-1 bg-purple-50 dark:bg-purple-950 text-foreground/80"
             >
               {opt.text}
             </div>
@@ -723,7 +723,7 @@ function InteractiveVideoBlock({ block, style }: { block: VideoBlockType; style:
 
   if (!block.url) {
     return (
-      <div className="rounded-xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center shadow-lg" style={style}>
+      <div className="rounded-xl bg-gradient-to-br from-foreground/40 to-foreground/60 flex items-center justify-center shadow-lg" style={style}>
         <Play className="h-6 w-6 text-white/40" />
       </div>
     );
@@ -747,16 +747,16 @@ function InteractiveVideoBlock({ block, style }: { block: VideoBlockType; style:
         {/* Quiz Overlay */}
         {activeInteraction && (
           <div className="absolute inset-0 z-20 bg-black/70 flex items-center justify-center backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4">
+            <div className="bg-card rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4">
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
                   <Play className="h-4 w-4 text-white" />
                 </div>
-                <span className="text-xs text-gray-600 font-medium">
+                <span className="text-xs text-muted-foreground font-medium">
                   Pergunta em {activeInteraction.timestampSeconds}s
                 </span>
               </div>
-              <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              <h3 className="text-sm font-semibold text-foreground mb-3">
                 {activeInteraction.question}
               </h3>
               <div className="space-y-2">
@@ -764,16 +764,16 @@ function InteractiveVideoBlock({ block, style }: { block: VideoBlockType; style:
                   <button
                     key={idx}
                     onClick={() => handleAnswer(idx)}
-                    className="w-full text-left text-sm px-4 py-2.5 rounded-xl border border-gray-200 bg-purple-50 hover:bg-purple-100 hover:border-purple-300 transition-all flex items-center gap-2 text-gray-900"
+                    className="w-full text-left text-sm px-4 py-2.5 rounded-xl border border-border bg-purple-50 dark:bg-purple-950 hover:bg-purple-100 dark:hover:bg-purple-900 hover:border-purple-300 transition-all flex items-center gap-2 text-foreground"
                   >
-                    <span className="h-5 w-5 rounded-full border-2 border-gray-300 flex items-center justify-center text-[10px] font-bold flex-shrink-0 bg-white">
+                    <span className="h-5 w-5 rounded-full border-2 border-border flex items-center justify-center text-[10px] font-bold flex-shrink-0 bg-card">
                       {String.fromCharCode(65 + idx)}
                     </span>
                     {opt.text}
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-gray-600 mt-3 text-center">
+              <p className="text-[10px] text-muted-foreground mt-3 text-center">
                 Selecione a resposta correta para continuar
               </p>
             </div>

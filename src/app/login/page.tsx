@@ -40,7 +40,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-muted via-white to-blue-50">
       {/* Ambient glow effects */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-10 blur-3xl pointer-events-none"
         style={{ background: 'radial-gradient(circle, #7C3AED 0%, transparent 70%)' }}
@@ -62,42 +62,42 @@ export default function LoginPage() {
           >
             <GraduationCap className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
             AccCourse
           </h1>
           <span className="text-xs font-semibold tracking-widest uppercase mt-1 text-purple-600">
             2.0
           </span>
-          <p className="text-sm text-slate-500 mt-2">
+          <p className="text-sm text-muted-foreground/70 mt-2">
             Plataforma Enterprise de E-Learning
           </p>
         </div>
 
         {/* Login Card */}
-        <div className="rounded-2xl p-8 animate-slide-up bg-white shadow-xl border border-slate-200">
+        <div className="rounded-2xl p-8 animate-slide-up bg-card shadow-xl border border-border">
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h2 className="text-lg font-semibold text-foreground">
               Entrar na plataforma
             </h2>
-            <p className="text-sm text-slate-600 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Acesse sua conta para criar e gerenciar cursos
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="email-input" className="text-sm font-medium text-slate-700">
+              <label htmlFor="email-input" className="text-sm font-medium text-foreground/80">
                 Email
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" aria-hidden="true" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" aria-hidden="true" />
                 <Input
                   id="email-input"
                   type="email"
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:bg-white transition-all"
+                  className="pl-10 h-11 rounded-xl bg-muted border-border text-foreground placeholder:text-muted-foreground/50 focus:border-purple-500 focus:bg-card transition-all"
                   required
                   aria-required="true"
                   autoFocus
@@ -106,18 +106,18 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password-input" className="text-sm font-medium text-slate-700">
+              <label htmlFor="password-input" className="text-sm font-medium text-foreground/80">
                 Senha
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" aria-hidden="true" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" aria-hidden="true" />
                 <Input
                   id="password-input"
                   type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 h-11 rounded-xl bg-slate-50 border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:bg-white transition-all"
+                  className="pl-10 h-11 rounded-xl bg-muted border-border text-foreground placeholder:text-muted-foreground/50 focus:border-purple-500 focus:bg-card transition-all"
                   required
                   aria-required="true"
                 />
@@ -147,8 +147,8 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-4 border-t border-slate-200">
-            <p className="text-xs text-slate-500 text-center">
+          <div className="mt-6 pt-4 border-t border-border">
+            <p className="text-xs text-muted-foreground/70 text-center">
               Acesso restrito. Contas são provisionadas pelo administrador do
               sistema.
             </p>
@@ -156,7 +156,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-xs text-slate-500 text-center mt-6">
+        <p className="text-xs text-muted-foreground/70 text-center mt-6">
           © 2026 AccCourse — Accuracy Tecnologia
         </p>
       </div>

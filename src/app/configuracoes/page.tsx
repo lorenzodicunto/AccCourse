@@ -93,20 +93,20 @@ export default function ConfiguracoesPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-muted">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-10">
+      <div className="bg-card border-b border-border sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.push("/")}
-            className="gap-2 text-slate-600 hover:text-slate-900 cursor-pointer"
+            className="gap-2 text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
-          <h1 className="text-lg font-semibold text-slate-900">Configurações da Conta</h1>
+          <h1 className="text-lg font-semibold text-foreground">Configurações da Conta</h1>
         </div>
       </div>
 
@@ -120,8 +120,8 @@ export default function ConfiguracoesPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                   activeTab === tab.id
-                    ? "bg-purple-100 text-purple-700"
-                    : "text-slate-600 hover:bg-slate-100"
+                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400"
+                    : "text-muted-foreground hover:bg-muted"
                 }`}
               >
                 <tab.icon className="h-4 w-4" />
@@ -134,33 +134,33 @@ export default function ConfiguracoesPage() {
         {/* Content */}
         <div className="flex-1">
           {activeTab === "profile" && (
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="text-base font-semibold text-slate-900 mb-1">Informações do Perfil</h2>
-              <p className="text-sm text-slate-500 mb-6">Atualize suas informações pessoais.</p>
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h2 className="text-base font-semibold text-foreground mb-1">Informações do Perfil</h2>
+              <p className="text-sm text-muted-foreground/70 mb-6">Atualize suas informações pessoais.</p>
 
               <div className="flex flex-col gap-4 max-w-md">
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Nome</label>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Nome</label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">E-mail</label>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">E-mail</label>
                   <input
                     type="email"
                     value={email}
                     disabled
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-500 cursor-not-allowed"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm bg-muted text-muted-foreground/70 cursor-not-allowed"
                   />
-                  <p className="text-xs text-slate-400 mt-1">O e-mail não pode ser alterado.</p>
+                  <p className="text-xs text-muted-foreground/50 mt-1">O e-mail não pode ser alterado.</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Função</label>
-                  <div className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 text-slate-600">
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Função</label>
+                  <div className="px-3 py-2 border border-border rounded-lg text-sm bg-muted text-muted-foreground">
                     {(session?.user as any)?.role || "EDITOR"}
                   </div>
                 </div>
@@ -168,7 +168,7 @@ export default function ConfiguracoesPage() {
                 <Button
                   onClick={handleSaveProfile}
                   disabled={saving}
-                  className="w-fit mt-2 bg-purple-600 hover:bg-purple-700 cursor-pointer"
+                  className="w-fit mt-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 cursor-pointer"
                 >
                   {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                   Salvar Alterações
@@ -178,44 +178,44 @@ export default function ConfiguracoesPage() {
           )}
 
           {activeTab === "security" && (
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="text-base font-semibold text-slate-900 mb-1">Alterar Senha</h2>
-              <p className="text-sm text-slate-500 mb-6">Mantenha sua conta segura com uma senha forte.</p>
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h2 className="text-base font-semibold text-foreground mb-1">Alterar Senha</h2>
+              <p className="text-sm text-muted-foreground/70 mb-6">Mantenha sua conta segura com uma senha forte.</p>
 
               <div className="flex flex-col gap-4 max-w-md">
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Senha Atual</label>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Senha Atual</label>
                   <input
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Nova Senha</label>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Nova Senha</label>
                   <input
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Mínimo 8 caracteres"
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1.5 block">Confirmar Nova Senha</label>
+                  <label className="text-sm font-medium text-foreground/80 mb-1.5 block">Confirmar Nova Senha</label>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400"
                   />
                 </div>
 
                 <Button
                   onClick={handleChangePassword}
                   disabled={saving}
-                  className="w-fit mt-2 bg-purple-600 hover:bg-purple-700 cursor-pointer"
+                  className="w-fit mt-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 cursor-pointer"
                 >
                   {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Lock className="h-4 w-4 mr-2" />}
                   Alterar Senha
@@ -225,16 +225,16 @@ export default function ConfiguracoesPage() {
           )}
 
           {activeTab === "privacy" && (
-            <div className="bg-white rounded-xl border border-slate-200 p-6">
-              <h2 className="text-base font-semibold text-slate-900 mb-1">Privacidade e Dados</h2>
-              <p className="text-sm text-slate-500 mb-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h2 className="text-base font-semibold text-foreground mb-1">Privacidade e Dados</h2>
+              <p className="text-sm text-muted-foreground/70 mb-6">
                 Gerencie suas preferências de privacidade conforme a LGPD.
               </p>
 
               <div className="flex flex-col gap-6">
-                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                  <h3 className="text-sm font-semibold text-slate-800 mb-1">Exportar Meus Dados</h3>
-                  <p className="text-xs text-slate-500 mb-3">
+                <div className="p-4 bg-muted rounded-xl border border-border">
+                  <h3 className="text-sm font-semibold text-foreground/90 mb-1">Exportar Meus Dados</h3>
+                  <p className="text-xs text-muted-foreground/70 mb-3">
                     Baixe uma cópia de todos os seus dados pessoais (cursos, perfil, atividade).
                   </p>
                   <Button variant="outline" size="sm" className="cursor-pointer">
@@ -242,12 +242,12 @@ export default function ConfiguracoesPage() {
                   </Button>
                 </div>
 
-                <div className="p-4 bg-red-50 rounded-xl border border-red-200">
-                  <h3 className="text-sm font-semibold text-red-800 mb-1">Excluir Minha Conta</h3>
-                  <p className="text-xs text-red-600/70 mb-3">
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+                  <h3 className="text-sm font-semibold text-red-800 dark:text-red-400 mb-1">Excluir Minha Conta</h3>
+                  <p className="text-xs text-red-600/70 dark:text-red-400/70 mb-3">
                     Essa ação é irreversível. Todos os seus dados, cursos e configurações serão permanentemente removidos.
                   </p>
-                  <Button variant="outline" size="sm" className="border-red-300 text-red-600 hover:bg-red-100 cursor-pointer">
+                  <Button variant="outline" size="sm" className="border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 cursor-pointer">
                     Solicitar Exclusão
                   </Button>
                 </div>

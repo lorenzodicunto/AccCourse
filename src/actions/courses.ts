@@ -31,6 +31,8 @@ export async function getUserCourses() {
     description: true,
     thumbnail: true,
     courseData: true,
+    status: true,
+    publishedAt: true,
     updatedAt: true,
     author: { select: { name: true, email: true } },
     tenant: { select: { name: true } },
@@ -244,6 +246,30 @@ export async function duplicateCourse(id: string) {
   });
 
   return { id: copy.id };
+}
+
+// ─── Toggle course publication status (draft ↔ published) ───
+export async function toggleCourseStatus(id: string) {
+  const user = await getAuthenticatedUser();
+
+  const existing = await prisma.course.findFirst({
+    where: { id, deletedAt: null, ...ownershipFilter(user) },
+    select: { id: true, status: true },
+  });
+  if (!existing) throw new Error("Curso não encontrado ou sem permissão.");
+
+  const newStatus = existing.status === "published" ? "draft" : "published";
+
+  await prisma.course.update({
+    where: { id },
+    data: {
+      status: newStatus,
+      publishedAt: newStatus === "published" ? new Date() : undefined,
+      updatedAt: new Date(),
+    },
+  });
+
+  return { success: true, status: newStatus };
 }
 
 // ─── Create course from template ───

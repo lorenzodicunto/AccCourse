@@ -155,17 +155,17 @@ export default function AnalyticsDashboard() {
   const maxMonthly = Math.max(...effectiveMonthlyData.map((d) => d.courses), 1);
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div className="min-h-screen flex bg-muted">
       {/* Sidebar */}
-      <aside className="w-64 flex flex-col flex-shrink-0 bg-white border-r border-slate-200">
-        <div className="p-5 border-b border-slate-200">
+      <aside className="w-64 flex flex-col flex-shrink-0 bg-card border-r border-border">
+        <div className="p-5 border-b border-border">
           <div className="flex items-center gap-3 mb-1">
             <div className="h-9 w-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-purple-600 to-purple-700">
               <Shield className="h-4.5 w-4.5 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-slate-900">Admin Portal</h1>
-              <p className="text-[10px] text-slate-500">AccCourse 2.0</p>
+              <h1 className="text-sm font-bold tracking-tight text-foreground">Admin Portal</h1>
+              <p className="text-[10px] text-muted-foreground/70">AccCourse 2.0</p>
             </div>
           </div>
         </div>
@@ -173,32 +173,32 @@ export default function AnalyticsDashboard() {
         <nav className="flex-1 p-3 space-y-1">
           <button
             onClick={() => router.push("/admin")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <BarChart3 className="h-4 w-4" />
             Empresas
           </button>
           <button
             onClick={() => router.push("/admin")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-muted-foreground hover:text-foreground hover:bg-muted"
           >
             <Users className="h-4 w-4" />
             Usuários
           </button>
           <button
             onClick={() => setActiveTab("analytics")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all bg-purple-100 text-purple-700"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all bg-purple-100 dark:bg-purple-900/30 text-purple-700"
           >
             <BarChart3 className="h-4 w-4" />
             Analytics
           </button>
         </nav>
 
-        <div className="p-4 border-t border-slate-200 space-y-2">
+        <div className="p-4 border-t border-border space-y-2">
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl"
+            className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl"
             onClick={() => router.push("/")}
           >
             <ArrowLeft className="h-4 w-4" />
@@ -207,7 +207,7 @@ export default function AnalyticsDashboard() {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start gap-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl"
+            className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl"
             onClick={() => signOut({ callbackUrl: "/login" })}
           >
             <LogOut className="h-4 w-4" />
@@ -216,9 +216,9 @@ export default function AnalyticsDashboard() {
         </div>
 
         <div className="px-4 pb-4">
-          <div className="bg-slate-100 rounded-xl p-3">
-            <p className="text-xs text-slate-600">{session?.user?.email}</p>
-            <p className="text-[10px] text-slate-500 mt-0.5">Super Admin</p>
+          <div className="bg-muted rounded-xl p-3">
+            <p className="text-xs text-muted-foreground">{session?.user?.email}</p>
+            <p className="text-[10px] text-muted-foreground/70 mt-0.5">Super Admin</p>
           </div>
         </div>
       </aside>
@@ -228,28 +228,28 @@ export default function AnalyticsDashboard() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
               <BarChart3 className="h-8 w-8 text-purple-600" />
               Analytics Dashboard
             </h1>
-            <p className="text-slate-600 mt-2">Métricas e análises dos cursos criados na plataforma.</p>
+            <p className="text-muted-foreground mt-2">Métricas e análises dos cursos criados na plataforma.</p>
           </div>
 
           {/* Overview Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {/* Total de Cursos */}
-            <Card className="border-slate-200 bg-white hover:border-purple-300 hover:shadow-lg transition-all">
+            <Card className="border-border bg-card hover:border-purple-300 hover:shadow-lg transition-all">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total de Cursos</p>
-                    <p className="text-3xl font-bold text-slate-900 mt-2">{totalCourses}</p>
+                    <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wide">Total de Cursos</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{totalCourses}</p>
                     <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
                       <ArrowUpRight className="h-3 w-3" />
                       +2 este mês
                     </p>
                   </div>
-                  <div className="p-3 bg-purple-100 rounded-lg">
+                  <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
                     <BookOpen className="h-6 w-6 text-purple-600" />
                   </div>
                 </div>
@@ -257,18 +257,18 @@ export default function AnalyticsDashboard() {
             </Card>
 
             {/* Total de Slides */}
-            <Card className="border-slate-200 bg-white hover:border-purple-300 hover:shadow-lg transition-all">
+            <Card className="border-border bg-card hover:border-purple-300 hover:shadow-lg transition-all">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total de Slides</p>
-                    <p className="text-3xl font-bold text-slate-900 mt-2">{totalSlides}</p>
+                    <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wide">Total de Slides</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{totalSlides}</p>
                     <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
                       <ArrowUpRight className="h-3 w-3" />
                       +18 esta semana
                     </p>
                   </div>
-                  <div className="p-3 bg-blue-100 rounded-lg">
+                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
                     <Layers className="h-6 w-6 text-blue-600" />
                   </div>
                 </div>
@@ -276,18 +276,18 @@ export default function AnalyticsDashboard() {
             </Card>
 
             {/* Usuários Ativos */}
-            <Card className="border-slate-200 bg-white hover:border-purple-300 hover:shadow-lg transition-all">
+            <Card className="border-border bg-card hover:border-purple-300 hover:shadow-lg transition-all">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Usuários Ativos</p>
-                    <p className="text-3xl font-bold text-slate-900 mt-2">127</p>
+                    <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wide">Usuários Ativos</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">127</p>
                     <p className="text-xs text-orange-600 mt-2 flex items-center gap-1">
                       <ArrowDownRight className="h-3 w-3" />
                       -3 desde ontem
                     </p>
                   </div>
-                  <div className="p-3 bg-indigo-100 rounded-lg">
+                  <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
                     <Users className="h-6 w-6 text-indigo-600" />
                   </div>
                 </div>
@@ -295,18 +295,18 @@ export default function AnalyticsDashboard() {
             </Card>
 
             {/* Taxa de Conclusão */}
-            <Card className="border-slate-200 bg-white hover:border-purple-300 hover:shadow-lg transition-all">
+            <Card className="border-border bg-card hover:border-purple-300 hover:shadow-lg transition-all">
               <CardContent className="p-5">
                 <div className="flex items-start justify-between">
                   <div>
-                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Taxa de Conclusão</p>
-                    <p className="text-3xl font-bold text-slate-900 mt-2">{avgCompletion}%</p>
+                    <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wide">Taxa de Conclusão</p>
+                    <p className="text-3xl font-bold text-foreground mt-2">{avgCompletion}%</p>
                     <p className="text-xs text-green-600 mt-2 flex items-center gap-1">
                       <ArrowUpRight className="h-3 w-3" />
                       +4% vs mês passado
                     </p>
                   </div>
-                  <div className="p-3 bg-emerald-100 rounded-lg">
+                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
                     <TrendingUp className="h-6 w-6 text-emerald-600" />
                   </div>
                 </div>
@@ -317,36 +317,36 @@ export default function AnalyticsDashboard() {
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             {/* Vertical Bar Chart - Cursos por Mês */}
-            <Card className="border-slate-200 bg-white lg:col-span-2">
+            <Card className="border-border bg-card lg:col-span-2">
               <CardHeader>
-                <CardTitle className="text-sm font-semibold text-slate-900">Cursos Criados por Mês</CardTitle>
+                <CardTitle className="text-sm font-semibold text-foreground">Cursos Criados por Mês</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex items-end justify-between h-64 gap-3 px-2">
                   {monthlyData.map((data, idx) => (
                     <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                      <div className="w-full bg-slate-200 rounded-t-lg overflow-hidden flex-1 relative group">
+                      <div className="w-full bg-muted rounded-t-lg overflow-hidden flex-1 relative group">
                         <div
                           className="w-full bg-gradient-to-t from-purple-600 to-purple-400 rounded-t-lg transition-all hover:from-purple-700 hover:to-purple-500 cursor-pointer"
                           style={{ height: `${(data.courses / maxMonthly) * 100}%` }}
                         >
                           <div className="absolute -top-8 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p className="text-xs font-bold text-slate-900 text-center">{data.courses}</p>
+                            <p className="text-xs font-bold text-foreground text-center">{data.courses}</p>
                           </div>
                         </div>
                       </div>
-                      <p className="text-xs font-medium text-slate-600 text-center">{data.month.slice(0, 3)}</p>
+                      <p className="text-xs font-medium text-muted-foreground text-center">{data.month.slice(0, 3)}</p>
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-slate-500 mt-4 text-center">Últimos 6 meses</p>
+                <p className="text-xs text-muted-foreground/70 mt-4 text-center">Últimos 6 meses</p>
               </CardContent>
             </Card>
 
             {/* Activity Feed */}
-            <Card className="border-slate-200 bg-white">
+            <Card className="border-border bg-card">
               <CardHeader>
-                <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Activity className="h-4 w-4 text-purple-600" />
                   Atividades Recentes
                 </CardTitle>
@@ -355,11 +355,11 @@ export default function AnalyticsDashboard() {
                 <div className="space-y-3">
                   {activityFeed.map((activity) => (
                     <div key={activity.id} className="border-l-2 border-purple-200 pl-3 pb-3 last:pb-0">
-                      <p className="text-xs font-semibold text-slate-900">{activity.action}</p>
-                      <p className="text-xs text-slate-600 mt-0.5">{activity.course}</p>
+                      <p className="text-xs font-semibold text-foreground">{activity.action}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{activity.course}</p>
                       <div className="flex items-center justify-between mt-1">
-                        <p className="text-[10px] text-slate-500">{activity.user}</p>
-                        <p className="text-[10px] text-slate-400">{activity.time}</p>
+                        <p className="text-[10px] text-muted-foreground/70">{activity.user}</p>
+                        <p className="text-[10px] text-muted-foreground/50">{activity.time}</p>
                       </div>
                     </div>
                   ))}
@@ -370,9 +370,9 @@ export default function AnalyticsDashboard() {
 
           {/* Top Courses Chart */}
           <div className="grid grid-cols-1 gap-6 mb-8">
-            <Card className="border-slate-200 bg-white">
+            <Card className="border-border bg-card">
               <CardHeader>
-                <CardTitle className="text-sm font-semibold text-slate-900">Top 5 Cursos por Acessos</CardTitle>
+                <CardTitle className="text-sm font-semibold text-foreground">Top 5 Cursos por Acessos</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -381,11 +381,11 @@ export default function AnalyticsDashboard() {
                       <div className="flex items-center justify-between mb-1.5">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-purple-600 w-6">#{idx + 1}</span>
-                          <span className="text-sm font-medium text-slate-900">{course.name}</span>
+                          <span className="text-sm font-medium text-foreground">{course.name}</span>
                         </div>
-                        <span className="text-sm font-semibold text-slate-900">{course.views}</span>
+                        <span className="text-sm font-semibold text-foreground">{course.views}</span>
                       </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                         <div
                           className="bg-gradient-to-r from-purple-600 to-purple-400 h-full rounded-full transition-all"
                           style={{ width: `${(course.views / maxViews) * 100}%` }}
@@ -400,37 +400,37 @@ export default function AnalyticsDashboard() {
 
           {/* Course Performance Table */}
           <div className="grid grid-cols-1 gap-6 mb-8">
-            <Card className="border-slate-200 bg-white">
+            <Card className="border-border bg-card">
               <CardHeader>
-                <CardTitle className="text-sm font-semibold text-slate-900">Desempenho dos Cursos</CardTitle>
+                <CardTitle className="text-sm font-semibold text-foreground">Desempenho dos Cursos</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-slate-200">
-                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Curso</th>
-                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Autor</th>
-                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Slides</th>
-                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Acessos</th>
-                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Conclusão</th>
-                        <th className="text-left py-3 px-4 font-semibold text-slate-600 text-xs uppercase tracking-wide">Última Edição</th>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-3 px-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Curso</th>
+                        <th className="text-left py-3 px-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Autor</th>
+                        <th className="text-left py-3 px-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Slides</th>
+                        <th className="text-left py-3 px-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Acessos</th>
+                        <th className="text-left py-3 px-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Conclusão</th>
+                        <th className="text-left py-3 px-4 font-semibold text-muted-foreground text-xs uppercase tracking-wide">Última Edição</th>
                       </tr>
                     </thead>
                     <tbody>
                       {mockCourses.map((course) => (
-                        <tr key={course.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <tr key={course.id} className="border-b border-border/50 hover:bg-muted transition-colors">
                           <td className="py-3 px-4">
-                            <p className="font-medium text-slate-900">{course.name}</p>
+                            <p className="font-medium text-foreground">{course.name}</p>
                           </td>
-                          <td className="py-3 px-4 text-slate-600">{course.author}</td>
-                          <td className="py-3 px-4 text-slate-600">{course.slides}</td>
+                          <td className="py-3 px-4 text-muted-foreground">{course.author}</td>
+                          <td className="py-3 px-4 text-muted-foreground">{course.slides}</td>
                           <td className="py-3 px-4">
-                            <span className="font-semibold text-slate-900">{course.views}</span>
+                            <span className="font-semibold text-foreground">{course.views}</span>
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
-                              <div className="w-16 h-2 bg-slate-200 rounded-full overflow-hidden">
+                              <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
                                 <div
                                   className={`h-full rounded-full ${
                                     course.completion >= 80
@@ -442,10 +442,10 @@ export default function AnalyticsDashboard() {
                                   style={{ width: `${course.completion}%` }}
                                 />
                               </div>
-                              <span className="text-xs font-semibold text-slate-900">{course.completion}%</span>
+                              <span className="text-xs font-semibold text-foreground">{course.completion}%</span>
                             </div>
                           </td>
-                          <td className="py-3 px-4 text-slate-500 text-sm">
+                          <td className="py-3 px-4 text-muted-foreground/70 text-sm">
                             {new Date(course.lastEdited).toLocaleDateString("pt-BR")}
                           </td>
                         </tr>
@@ -460,9 +460,9 @@ export default function AnalyticsDashboard() {
           {/* Engagement Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Tempo Médio por Slide */}
-            <Card className="border-slate-200 bg-white">
+            <Card className="border-border bg-card">
               <CardHeader>
-                <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Clock className="h-4 w-4 text-purple-600" />
                   Tempo Médio
                 </CardTitle>
@@ -470,22 +470,22 @@ export default function AnalyticsDashboard() {
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs text-slate-600 mb-1">Por Slide</p>
-                    <p className="text-2xl font-bold text-slate-900">3m 24s</p>
+                    <p className="text-xs text-muted-foreground mb-1">Por Slide</p>
+                    <p className="text-2xl font-bold text-foreground">3m 24s</p>
                   </div>
-                  <div className="pt-3 border-t border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Por Curso</p>
-                    <p className="text-2xl font-bold text-slate-900">54m</p>
+                  <div className="pt-3 border-t border-border">
+                    <p className="text-xs text-muted-foreground mb-1">Por Curso</p>
+                    <p className="text-2xl font-bold text-foreground">54m</p>
                   </div>
-                  <p className="text-xs text-slate-500 pt-2">Média dos últimos 30 dias</p>
+                  <p className="text-xs text-muted-foreground/70 pt-2">Média dos últimos 30 dias</p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Taxa de Abandono */}
-            <Card className="border-slate-200 bg-white">
+            <Card className="border-border bg-card">
               <CardHeader>
-                <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <TrendingUp className="h-4 w-4 text-purple-600" />
                   Taxa de Abandono
                 </CardTitle>
@@ -493,38 +493,38 @@ export default function AnalyticsDashboard() {
               <CardContent>
                 <div className="space-y-3">
                   <div>
-                    <p className="text-xs text-slate-600 mb-1">Cursos Iniciados</p>
-                    <p className="text-2xl font-bold text-slate-900">842</p>
+                    <p className="text-xs text-muted-foreground mb-1">Cursos Iniciados</p>
+                    <p className="text-2xl font-bold text-foreground">842</p>
                   </div>
-                  <div className="pt-3 border-t border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Taxa de Conclusão</p>
-                    <p className="text-2xl font-bold text-slate-900">74%</p>
+                  <div className="pt-3 border-t border-border">
+                    <p className="text-xs text-muted-foreground mb-1">Taxa de Conclusão</p>
+                    <p className="text-2xl font-bold text-foreground">74%</p>
                   </div>
-                  <p className="text-xs text-slate-500 pt-2">26% de abandono</p>
+                  <p className="text-xs text-muted-foreground/70 pt-2">26% de abandono</p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Slides Mais Revisitados */}
-            <Card className="border-slate-200 bg-white">
+            <Card className="border-border bg-card">
               <CardHeader>
-                <CardTitle className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <Layers className="h-4 w-4 text-purple-600" />
                   Top Slides
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                    <span className="text-xs font-medium text-slate-900">Slide 5 - Python</span>
+                  <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                    <span className="text-xs font-medium text-foreground">Slide 5 - Python</span>
                     <span className="text-xs font-bold text-purple-600">456 visitas</span>
                   </div>
-                  <div className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                    <span className="text-xs font-medium text-slate-900">Slide 3 - UX Design</span>
+                  <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                    <span className="text-xs font-medium text-foreground">Slide 3 - UX Design</span>
                     <span className="text-xs font-bold text-purple-600">423 visitas</span>
                   </div>
-                  <div className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                    <span className="text-xs font-medium text-slate-900">Slide 8 - Agile</span>
+                  <div className="flex items-center justify-between p-2 bg-muted rounded-lg">
+                    <span className="text-xs font-medium text-foreground">Slide 8 - Agile</span>
                     <span className="text-xs font-bold text-purple-600">398 visitas</span>
                   </div>
                 </div>
