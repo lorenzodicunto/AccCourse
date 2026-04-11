@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { createDefaultProject } from "@/store/useEditorStore";
-import { getUserCourses, createCourse, deleteCourse } from "@/actions/courses";
+import { getUserCourses, createCourse, deleteCourse, toggleCourseStatus } from "@/actions/courses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CookieConsent } from "@/components/dashboard/CookieConsent";
+import { SkeletonCourseCard, SkeletonStats } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +46,8 @@ import {
   FolderOpen,
   Zap,
   Lightbulb,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -53,6 +57,8 @@ type CourseRow = {
   description: string;
   thumbnail: string;
   courseData: unknown;
+  status: string;
+  publishedAt: Date | null;
   updatedAt: Date;
   author: { name: string; email: string };
   tenant: { name: string } | null;
@@ -131,6 +137,8 @@ export default function DashboardPage() {
   const [creating, setCreating] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeFilter, setActiveFilter] = useState<"todos" | "rascunho" | "publicados">("todos");
+  const { theme, setTheme } = useTheme();
+  const [courseToDelete, setCourseToDelete] = useState<CourseRow | null>(null);
 
   useEffect(() => {
     loadCourses();
@@ -184,14 +192,40 @@ export default function DashboardPage() {
     }
   };
 
-  const handleDelete = async (course: CourseRow) => {
-    if (!confirm(`Tem certeza que deseja excluir "${course.title}"?`)) return;
+  const handleDelete = (course: CourseRow) => {
+    setCourseToDelete(course);
+  };
+
+  const confirmDelete = async () => {
+    if (!courseToDelete) return;
     try {
-      await deleteCourse(course.id);
-      setCourses((prev) => prev.filter((c) => c.id !== course.id));
+      await deleteCourse(courseToDelete.id);
+      setCourses((prev) => prev.filter((c) => c.id !== courseToDelete.id));
       toast.success("Curso excluído.");
     } catch {
       toast.error("Erro ao excluir.");
+    } finally {
+      setCourseToDelete(null);
+    }
+  };
+
+  const handleToggleStatus = async (course: CourseRow) => {
+    try {
+      const result = await toggleCourseStatus(course.id);
+      setCourses((prev) =>
+        prev.map((c) =>
+          c.id === course.id
+            ? { ...c, status: result.status, publishedAt: result.status === "published" ? new Date() : c.publishedAt }
+            : c
+        )
+      );
+      toast.success(
+        result.status === "published"
+          ? "Curso publicado com sucesso!"
+          : "Curso voltou a rascunho."
+      );
+    } catch {
+      toast.error("Erro ao alterar status do curso.");
     }
   };
 
@@ -205,6 +239,8 @@ export default function DashboardPage() {
 
   // Stats
   const totalCourses = courses.length;
+  const publishedCourses = courses.filter((c) => c.status === "published").length;
+  const draftCourses = courses.filter((c) => c.status !== "published").length;
   const totalSlides = courses.reduce((sum, c) => {
     const preview = getFirstSlidePreview(c.courseData);
     return sum + (preview?.slideCount || 1);
@@ -213,13 +249,13 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white">
+      <header className="sticky top-0 z-40 border-b border-border bg-card">
         <div className="mx-auto max-w-full px-6 py-3 flex items-center justify-between">
           {/* Left: Sidebar toggle + Logo */}
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors text-slate-600 cursor-pointer lg:hidden"
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground cursor-pointer lg:hidden"
             >
               {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -231,13 +267,13 @@ export default function DashboardPage() {
                 <GraduationCap className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold tracking-tight text-slate-900 flex items-center gap-1.5">
+                <h1 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-1.5">
                   AccCourse
                   <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md text-purple-700 bg-purple-100">
                     2.0
                   </span>
                 </h1>
-                <p className="text-[11px] text-slate-500 leading-none -mt-0.5">
+                <p className="text-[11px] text-muted-foreground/70 leading-none -mt-0.5">
                   Plataforma Enterprise E-Learning
                 </p>
               </div>
@@ -258,8 +294,19 @@ export default function DashboardPage() {
               </Button>
             )}
 
+            {/* Theme Toggle */}
+            <button
+              suppressHydrationWarning
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="relative p-2 rounded-xl hover:bg-muted dark:hover:bg-muted transition-colors text-muted-foreground dark:text-muted-foreground/50 cursor-pointer"
+              aria-label={theme === "dark" ? "Ativar modo claro" : "Ativar modo escuro"}
+            >
+              <Moon className="h-5 w-5 dark:hidden" />
+              <Sun className="h-5 w-5 hidden dark:block" />
+            </button>
+
             {/* Notifications */}
-            <button className="relative p-2 rounded-xl hover:bg-slate-100 transition-colors text-slate-600 cursor-pointer">
+            <button className="relative p-2 rounded-xl hover:bg-muted dark:hover:bg-muted transition-colors text-muted-foreground dark:text-muted-foreground/50 cursor-pointer">
               <Bell className="h-5 w-5" />
             </button>
 
@@ -279,24 +326,24 @@ export default function DashboardPage() {
             </Button>
 
             {/* User info + Logout */}
-            <div className="flex items-center gap-2 ml-1 pl-3 border-l border-slate-200">
+            <div className="flex items-center gap-2 ml-1 pl-3 border-l border-border">
               <div className="flex items-center justify-center h-8 w-8 rounded-full text-xs font-semibold text-white"
                 style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%)' }}
               >
                 {session?.user?.name?.charAt(0)?.toUpperCase() || "U"}
               </div>
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-medium text-slate-900">
+                <p className="text-xs font-medium text-foreground">
                   {session?.user?.name}
                 </p>
-                <p className="text-[10px] text-slate-500">
+                <p className="text-[10px] text-muted-foreground/70">
                   {session?.user?.email}
                 </p>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+                className="h-8 w-8 p-0 rounded-lg text-muted-foreground/70 hover:text-foreground hover:bg-muted cursor-pointer"
                 onClick={() => signOut({ callbackUrl: "/login" })}
                 title="Sair"
               >
@@ -314,7 +361,7 @@ export default function DashboardPage() {
           aria-label="Navegação principal"
           className={`${
             sidebarOpen ? "w-64" : "w-0"
-          } transition-all duration-300 border-r border-slate-200 bg-white hidden lg:flex lg:w-64 flex-col`}
+          } transition-all duration-300 border-r border-border bg-card hidden lg:flex lg:w-64 flex-col`}
         >
           <nav className="flex-1 overflow-y-auto px-4 py-6 space-y-2">
             <NavItem icon={BookOpen} label="Meus Cursos" active />
@@ -330,31 +377,31 @@ export default function DashboardPage() {
           {/* Stats Cards — only show if there are courses */}
           {!loading && courses.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 animate-fade-in">
-              <div role="status" className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-purple-100" aria-hidden="true">
-                  <BookOpen className="h-5 w-5 text-purple-600" />
+              <div role="status" className="bg-card rounded-xl p-4 flex items-center gap-3 border border-border shadow-sm">
+                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-purple-100 dark:bg-purple-900/30" aria-hidden="true">
+                  <BookOpen className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">{totalCourses}</p>
-                  <p className="text-xs text-slate-600">Cursos Criados</p>
+                  <p className="text-2xl font-bold text-foreground">{totalCourses}</p>
+                  <p className="text-xs text-muted-foreground">Cursos Criados</p>
                 </div>
               </div>
-              <div role="status" className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-blue-100" aria-hidden="true">
-                  <Layers className="h-5 w-5 text-blue-600" />
+              <div role="status" className="bg-card rounded-xl p-4 flex items-center gap-3 border border-border shadow-sm">
+                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30" aria-hidden="true">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">{totalSlides}</p>
-                  <p className="text-xs text-slate-600">Total de Slides</p>
+                  <p className="text-2xl font-bold text-foreground">{publishedCourses}</p>
+                  <p className="text-xs text-muted-foreground">Publicados</p>
                 </div>
               </div>
-              <div role="status" className="bg-card rounded-xl p-4 flex items-center gap-3 border border-slate-200 shadow-sm">
-                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-emerald-100" aria-hidden="true">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+              <div role="status" className="bg-card rounded-xl p-4 flex items-center gap-3 border border-border shadow-sm">
+                <div className="flex items-center justify-center h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-900/30" aria-hidden="true">
+                  <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-slate-900">0</p>
-                  <p className="text-xs text-slate-600">Publicados</p>
+                  <p className="text-2xl font-bold text-foreground">{draftCourses}</p>
+                  <p className="text-xs text-muted-foreground">Rascunhos</p>
                 </div>
               </div>
             </div>
@@ -363,10 +410,10 @@ export default function DashboardPage() {
           {/* Section Header with Search */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900">
+              <h2 className="text-2xl font-bold text-foreground">
                 Meus Cursos
               </h2>
-              <p className="text-sm text-slate-600 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 {loading
                   ? "Carregando..."
                   : courses.length === 0
@@ -378,13 +425,13 @@ export default function DashboardPage() {
             {/* Search */}
             {courses.length > 0 && (
               <div className="relative w-full sm:w-72">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
                 <Input
                   placeholder="Buscar cursos..."
                   aria-label="Buscar cursos por título ou descrição"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 rounded-xl bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
+                  className="pl-9 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground/50 focus:border-purple-500 focus:ring-1 focus:ring-purple-500"
                 />
               </div>
             )}
@@ -415,9 +462,14 @@ export default function DashboardPage() {
 
           {/* Projects Grid */}
           {loading ? (
-            <div className="flex items-center justify-center py-24">
-              <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
-            </div>
+            <>
+              <SkeletonStats />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                  <SkeletonCourseCard key={i} />
+                ))}
+              </div>
+            </>
           ) : filteredCourses.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
               {filteredCourses.map((course) => {
@@ -425,12 +477,12 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={course.id}
-                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 transition-all duration-300 hover:border-slate-300 hover:shadow-md cursor-pointer animate-fade-in bg-card"
+                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-border transition-all duration-300 hover:border-primary/30 hover:shadow-md cursor-pointer animate-fade-in bg-card"
                   >
                     {/* Thumbnail / Slide Preview */}
                     <button
                       onClick={() => router.push(`/editor/${course.id}`)}
-                      className="relative h-40 w-full overflow-hidden cursor-pointer bg-slate-100"
+                      className="relative h-40 w-full overflow-hidden cursor-pointer bg-muted"
                     >
                       {slidePreview ? (
                         /* Mini slide preview */
@@ -465,8 +517,8 @@ export default function DashboardPage() {
                                   }}
                                 />
                               ) : (
-                                <div className="w-full h-full rounded-sm bg-slate-300/30 flex items-center justify-center">
-                                  <div className="h-3 w-3 text-slate-400">
+                                <div className="w-full h-full rounded-sm bg-muted flex items-center justify-center">
+                                  <div className="h-3 w-3 text-muted-foreground/50">
                                     <MiniBlockIcon type={block.type} />
                                   </div>
                                 </div>
@@ -477,7 +529,7 @@ export default function DashboardPage() {
                           {/* Empty slide indicator */}
                           {slidePreview.blocks.length === 0 && (
                             <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="text-xs text-slate-400 font-medium">
+                              <div className="text-xs text-muted-foreground/50 font-medium">
                                 Slide vazio
                               </div>
                             </div>
@@ -498,15 +550,22 @@ export default function DashboardPage() {
 
                       {/* Status badge */}
                       <div className="absolute top-2 left-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-amber-100 text-amber-700 shadow-sm">
-                          <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
-                          Rascunho
-                        </span>
+                        {course.status === "published" ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 shadow-sm">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            Publicado
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 shadow-sm">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-600 dark:bg-amber-400" />
+                            Rascunho
+                          </span>
+                        )}
                       </div>
 
                       {/* Slide count badge */}
                       <div className="absolute bottom-2 left-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm bg-white/90 text-slate-700 border border-slate-200">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm bg-card/90 text-foreground/80 border border-border">
                           <Layers className="h-3 w-3" />
                           {slidePreview?.slideCount ?? 1} slide
                           {(slidePreview?.slideCount ?? 1) !== 1 ? "s" : ""}
@@ -518,21 +577,21 @@ export default function DashboardPage() {
                     <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <button
                         onClick={() => router.push(`/editor/${course.id}`)}
-                        className="p-1.5 rounded-lg shadow-sm hover:bg-slate-200 transition-colors cursor-pointer bg-white/90 border border-slate-200"
+                        className="p-1.5 rounded-lg shadow-sm hover:bg-muted transition-colors cursor-pointer bg-card/90 border border-border"
                         aria-label={`Editar curso ${course.title}`}
                       >
-                        <Pencil className="h-3.5 w-3.5 text-slate-700" aria-hidden="true" />
+                        <Pencil className="h-3.5 w-3.5 text-foreground/80" aria-hidden="true" />
                       </button>
                       <button
                         onClick={() => handleDuplicate(course)}
-                        className="p-1.5 rounded-lg shadow-sm hover:bg-slate-200 transition-colors cursor-pointer bg-white/90 border border-slate-200"
+                        className="p-1.5 rounded-lg shadow-sm hover:bg-muted transition-colors cursor-pointer bg-card/90 border border-border"
                         aria-label={`Duplicar curso ${course.title}`}
                       >
-                        <Copy className="h-3.5 w-3.5 text-slate-700" aria-hidden="true" />
+                        <Copy className="h-3.5 w-3.5 text-foreground/80" aria-hidden="true" />
                       </button>
                       <button
                         onClick={() => handleDelete(course)}
-                        className="p-1.5 rounded-lg shadow-sm hover:bg-red-100 transition-colors cursor-pointer bg-white/90 border border-slate-200"
+                        className="p-1.5 rounded-lg shadow-sm hover:bg-red-100 transition-colors cursor-pointer bg-card/90 border border-border"
                         aria-label={`Excluir curso ${course.title}`}
                       >
                         <Trash2 className="h-3.5 w-3.5 text-red-500" aria-hidden="true" />
@@ -546,7 +605,7 @@ export default function DashboardPage() {
                           onClick={() => router.push(`/editor/${course.id}`)}
                           className="text-left flex-1 cursor-pointer"
                         >
-                          <h3 className="font-semibold text-sm text-slate-900 leading-tight line-clamp-1 group-hover:text-purple-600 transition-colors">
+                          <h3 className="font-semibold text-sm text-foreground leading-tight line-clamp-1 group-hover:text-purple-600 transition-colors">
                             {course.title}
                           </h3>
                         </button>
@@ -555,30 +614,46 @@ export default function DashboardPage() {
                         <DropdownMenu>
                           <DropdownMenuTrigger
                             render={
-                              <button className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" />
+                              <button className="p-1.5 rounded-lg hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 cursor-pointer" />
                             }
                           >
-                            <MoreVertical className="h-4 w-4 text-slate-500" />
+                            <MoreVertical className="h-4 w-4 text-muted-foreground/70" />
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 rounded-xl bg-white border border-slate-200 shadow-md">
+                          <DropdownMenuContent align="end" className="w-48 rounded-xl bg-card border border-border shadow-md">
                             <DropdownMenuItem
                               onClick={() => router.push(`/editor/${course.id}`)}
-                              className="gap-2 cursor-pointer text-slate-700 hover:text-slate-900 focus:text-slate-900 focus:bg-slate-100"
+                              className="gap-2 cursor-pointer text-foreground/80 hover:text-foreground focus:text-foreground focus:bg-muted"
                             >
                               <Pencil className="h-4 w-4" />
                               Editar
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() => handleDuplicate(course)}
-                              className="gap-2 cursor-pointer text-slate-700 hover:text-slate-900 focus:text-slate-900 focus:bg-slate-100"
+                              className="gap-2 cursor-pointer text-foreground/80 hover:text-foreground focus:text-foreground focus:bg-muted"
                             >
                               <Copy className="h-4 w-4" />
                               Duplicar
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-slate-200" />
+                            <DropdownMenuItem
+                              onClick={() => handleToggleStatus(course)}
+                              className="gap-2 cursor-pointer text-foreground/80 hover:text-foreground focus:text-foreground focus:bg-muted"
+                            >
+                              {course.status === "published" ? (
+                                <>
+                                  <Clock className="h-4 w-4" />
+                                  Voltar a Rascunho
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 className="h-4 w-4" />
+                                  Publicar
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-border" />
                             <DropdownMenuItem
                               onClick={() => handleDelete(course)}
-                              className="gap-2 text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
+                              className="gap-2 text-red-600 focus:text-red-700 focus:bg-red-50 dark:focus:bg-red-900/20 cursor-pointer"
                             >
                               <Trash2 className="h-4 w-4" />
                               Excluir
@@ -589,8 +664,8 @@ export default function DashboardPage() {
 
                       {/* Last edited date */}
                       <div className="flex items-center gap-1.5 mt-2">
-                        <Clock className="h-3 w-3 text-slate-500" />
-                        <p className="text-xs text-slate-600">
+                        <Clock className="h-3 w-3 text-muted-foreground/70" />
+                        <p className="text-xs text-muted-foreground">
                           Última edição: {getRelativeDate(course.updatedAt)}
                         </p>
                       </div>
@@ -610,10 +685,10 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              <h3 className="text-2xl font-bold text-slate-900 mb-2">
+              <h3 className="text-2xl font-bold text-foreground mb-2">
                 Bem-vindo ao AccCourse!
               </h3>
-              <p className="text-slate-600 text-center max-w-md mb-10">
+              <p className="text-muted-foreground text-center max-w-md mb-10">
                 Crie cursos interativos de e-learning profissionais com nosso editor visual drag-and-drop. Exporte para SCORM 1.2 com um clique.
               </p>
 
@@ -656,11 +731,11 @@ export default function DashboardPage() {
           ) : (
             /* No results */
             <div className="flex flex-col items-center justify-center py-24">
-              <Search className="h-12 w-12 text-slate-400 mb-4" />
-              <h3 className="text-lg font-semibold text-slate-900 mb-1">
+              <Search className="h-12 w-12 text-muted-foreground/50 mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-1">
                 Nenhum resultado encontrado
               </h3>
-              <p className="text-slate-600 text-sm">
+              <p className="text-muted-foreground text-sm">
                 Tente buscar com outros termos
               </p>
             </div>
@@ -669,12 +744,46 @@ export default function DashboardPage() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white mt-12">
-        <div className="mx-auto max-w-7xl px-6 py-6 flex items-center justify-between text-xs text-slate-600">
+      <footer className="border-t border-border bg-card mt-12">
+        <div className="mx-auto max-w-7xl px-6 py-6 flex items-center justify-between text-xs text-muted-foreground">
           <p>© 2026 Accuracy. Todos os direitos reservados.</p>
           <p>AccCourse v2.0</p>
         </div>
       </footer>
+
+      {/* Delete Confirmation Modal */}
+      {courseToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-card border border-border rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 rounded-full bg-red-100 dark:bg-red-900/30">
+                <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">Excluir curso</h3>
+            </div>
+            <p className="text-muted-foreground mb-6">
+              Tem certeza que deseja excluir <strong className="text-foreground">&quot;{courseToDelete.title}&quot;</strong>? O curso será movido para a lixeira.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl cursor-pointer"
+                onClick={() => setCourseToDelete(null)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                size="sm"
+                className="rounded-xl bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+                onClick={confirmDelete}
+              >
+                Excluir
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Cookie Consent Banner (LGPD) */}
       <CookieConsent />
@@ -692,7 +801,7 @@ function NavItem({ icon: Icon, label, active = false, href }: { icon: React.Comp
       className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer ${
         active
           ? "bg-purple-100 text-purple-700"
-          : "text-slate-700 hover:bg-slate-100"
+          : "text-foreground/80 hover:bg-muted"
       }`}
     >
       <Icon className="h-4 w-4" aria-hidden="true" />
@@ -709,13 +818,13 @@ function FilterChip({ label, badge, active, onClick }: { label: string; badge?: 
       className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer flex items-center gap-2 ${
         active
           ? "bg-purple-600 text-white"
-          : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+          : "bg-muted text-foreground/80 hover:bg-muted"
       }`}
     >
       {label}
       {badge && (
         <span className={`h-2 w-2 rounded-full ${
-          badge === "Amber" ? "bg-amber-500" : badge === "Green" ? "bg-emerald-500" : "bg-slate-400"
+          badge === "Amber" ? "bg-amber-500" : badge === "Green" ? "bg-emerald-500" : "bg-muted-foreground/50"
         }`} />
       )}
     </button>
@@ -730,21 +839,21 @@ function OnboardingCard({ icon: Icon, title, description, onClick, primary = fal
       className={`p-4 rounded-xl border transition-all text-left cursor-pointer flex flex-col items-start gap-2 ${
         primary
           ? "bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200 hover:border-purple-300 hover:shadow-md"
-          : "bg-white border-slate-200 hover:border-slate-300 hover:shadow-sm"
+          : "bg-card border-border hover:border-primary/30 hover:shadow-sm"
       }`}
     >
       <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
         primary
           ? "bg-purple-200 text-purple-700"
-          : "bg-slate-100 text-slate-600"
+          : "bg-muted text-muted-foreground"
       }`}>
         <Icon className="h-4 w-4" />
       </div>
       <div className="w-full">
-        <p className={`text-sm font-semibold ${primary ? "text-slate-900" : "text-slate-800"}`}>
+        <p className={`text-sm font-semibold ${primary ? "text-foreground" : "text-foreground/90"}`}>
           {title}
         </p>
-        <p className={`text-xs ${primary ? "text-slate-600" : "text-slate-600"}`}>
+        <p className={`text-xs ${primary ? "text-muted-foreground" : "text-muted-foreground"}`}>
           {description}
         </p>
       </div>
