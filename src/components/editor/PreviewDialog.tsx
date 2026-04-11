@@ -144,7 +144,7 @@ export function PreviewDialog() {
           Preview
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[100vw] w-screen h-screen p-0 m-0 border-0 rounded-none bg-slate-950 flex flex-col justify-center">
+      <DialogContent showCloseButton={false} className="sm:max-w-[100vw] max-w-[100vw] w-screen h-screen p-0 m-0 border-0 rounded-none bg-slate-950 flex flex-col justify-center ring-0 gap-0">
         {/* Top bar */}
         <div className="flex items-center justify-between px-4 py-2 bg-slate-800/80 backdrop-blur-sm border-b border-white/5 shrink-0">
           <div className="flex items-center gap-3">
