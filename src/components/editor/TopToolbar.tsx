@@ -66,6 +66,11 @@ import {
   ChevronRight,
   Sparkles,
   FileDown,
+  Volume2,
+  Palette as SwatchBook,
+  Search,
+  Gamepad2,
+  Languages,
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { exportScormPackage } from "@/lib/scorm/packager";
@@ -80,6 +85,7 @@ import { AssetLibraryDialog } from "./AssetLibraryDialog";
 import { SlideTemplatesDialog } from "./SlideTemplatesDialog";
 import { AIQuizDialog } from "./AIQuizDialog";
 import { AICourseDialog } from "./AICourseDialog";
+import { AIGameDialog } from "./AIGameDialog";
 import { ContrastChecker } from "./ContrastChecker";
 import { ImportPPTXDialog } from "./ImportPPTXDialog";
 import { PreviewDialog } from "./PreviewDialog";
@@ -1129,6 +1135,13 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   onClick={() => handleAddBlock("image")}
                 />
                 <RibbonButton
+                  icon={<Search className="h-5 w-5" />}
+                  label="Buscar Imagens"
+                  variant="large"
+                  onClick={() => toast.info("Buscar Imagens: Pesquise no Unsplash")}
+                  title="Buscar imagens no Unsplash"
+                />
+                <RibbonButton
                   icon={<Play className="h-5 w-5" />}
                   label="Vídeo"
                   variant="large"
@@ -1275,6 +1288,26 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   onClick={() => handleAddBlock("interactiveVideo")}
                   title="Vídeo Interativo — Vídeo com questões e pontos de ação"
                 />
+              </RibbonGroup>
+
+              <RibbonGroup label="Jogos">
+                {project && (
+                  <AIGameDialog
+                    onInsertGame={(data) => {
+                      if (!project || !slide) return;
+                      addBlock(project.id, slide.id, {
+                        id: crypto.randomUUID(),
+                        type: "game",
+                        x: 100,
+                        y: 100,
+                        width: 500,
+                        height: 400,
+                        zIndex: slide.blocks.length,
+                        ...data,
+                      });
+                    }}
+                  />
+                )}
               </RibbonGroup>
             </>
           </div>
@@ -1548,6 +1581,37 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                   }}
                 />
                 {project && <AICourseDialog projectId={project.id} />}
+                <RibbonButton
+                  icon={<Volume2 className="h-5 w-5" />}
+                  label="Text-to-Speech"
+                  variant="large"
+                  onClick={() => toast.info("Text-to-Speech: Selecione um bloco de texto e clique aqui")}
+                  title="Gerar áudio a partir de texto"
+                />
+              </RibbonGroup>
+
+              <RibbonGroup label="Conteúdo">
+                <RibbonButton
+                  icon={<Image className="h-5 w-5" />}
+                  label="Gerar Imagem"
+                  variant="large"
+                  onClick={() => toast.info("Gerar Imagem com IA: Funcionalidade em desenvolvimento")}
+                  title="Gerar imagens com IA"
+                />
+                <RibbonButton
+                  icon={<Languages className="h-5 w-5" />}
+                  label="Traduzir"
+                  variant="large"
+                  onClick={() => toast.info("Traduzir Curso: Selecione idiomas de origem e destino")}
+                  title="Traduzir conteúdo do curso"
+                />
+                <RibbonButton
+                  icon={<SwatchBook className="h-5 w-5" />}
+                  label="Smart Colors"
+                  variant="large"
+                  onClick={() => toast.info("Smart Colors: Gerar paleta de cores automática")}
+                  title="Gerar paleta de cores inteligente"
+                />
               </RibbonGroup>
 
               <RibbonGroup label="Acessibilidade">

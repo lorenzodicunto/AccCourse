@@ -20,12 +20,14 @@ import {
   Underline,
   List,
   Eraser,
+  Gamepad2,
 } from "lucide-react";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
+const GameBlock = dynamic(() => import("@/components/games/GameBlock").then(mod => ({ default: mod.GameBlock })), { ssr: false });
 
 interface DraggableBlockProps {
   block: Block;
@@ -805,6 +807,24 @@ export function DraggableBlock({
             <span className="text-[7px] bg-white/10 rounded px-1.5 py-0.5">📑 {((block as any).chapters || []).length} chapters</span>
             <span className="text-[7px] bg-white/10 rounded px-1.5 py-0.5">❓ {((block as any).quizPoints || []).length} quiz</span>
             <span className="text-[7px] bg-white/10 rounded px-1.5 py-0.5">🔖 {((block as any).bookmarks || []).length} marks</span>
+          </div>
+        </div>
+      )}
+
+      {/* ─── GAME BLOCK ─── */}
+      {block.type === "game" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <Gamepad2 className="h-4 w-4 text-indigo-600" />
+            <div className="text-[9px] font-bold text-indigo-700 uppercase tracking-wider">Jogo</div>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-2 text-center">
+              <Gamepad2 className="h-8 w-8 text-indigo-400 opacity-60" />
+              <p className="text-xs font-medium text-slate-700">{(block as any).title || "Jogo"}</p>
+              <p className="text-[8px] text-slate-500 capitalize">{(block as any).gameType || "game"}</p>
+              <p className="text-[8px] text-slate-400 mt-1">Clique para jogar</p>
+            </div>
           </div>
         </div>
       )}

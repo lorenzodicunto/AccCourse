@@ -258,7 +258,14 @@ export interface InteractiveVideoBlock extends BaseBlock {
   loop: boolean;
 }
 
-export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock | InteractiveVideoBlock;
+export interface GameBlock extends BaseBlock {
+  type: "game";
+  gameType: "trivia" | "memory" | "words" | "swipe" | "alphabet";
+  gameData: any; // TriviaGameData | MemoryGameData | WordsGameData | SwipeGameData | AlphabetGameData
+  title: string;
+}
+
+export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock | InteractiveVideoBlock | GameBlock;
 
 export type SlideTransition = "none" | "fade" | "slide" | "zoom";
 

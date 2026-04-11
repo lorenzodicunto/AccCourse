@@ -29,6 +29,9 @@ import {
   Sparkles,
   Layers,
   ChevronRight,
+  Gamepad2,
+  Brain,
+  BookA,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -46,6 +49,7 @@ const CATEGORIES = [
   { id: "all", label: "Todos", icon: <Layers className="h-3.5 w-3.5" /> },
   { id: "texto", label: "Texto & Mídia", icon: <Type className="h-3.5 w-3.5" /> },
   { id: "avaliacoes", label: "Avaliações", icon: <HelpCircle className="h-3.5 w-3.5" /> },
+  { id: "jogos", label: "Jogos", icon: <Gamepad2 className="h-3.5 w-3.5" /> },
   { id: "apresentacao", label: "Apresentação", icon: <PanelTop className="h-3.5 w-3.5" /> },
   { id: "avancado", label: "Avançado", icon: <Sparkles className="h-3.5 w-3.5" /> },
 ];
@@ -69,6 +73,11 @@ const COMPONENTS: ComponentItem[] = [
   { type: "timeline", label: "Linha do Tempo", description: "Eventos cronológicos", icon: <Clock className="h-5 w-5" />, color: "#0EA5E9", category: "avancado" },
   { type: "dragdrop", label: "Drag & Drop", description: "Arrastar para categorias", icon: <GripVertical className="h-5 w-5" />, color: "#14B8A6", category: "avancado" },
   { type: "interactiveVideo", label: "Vídeo Interativo", description: "Vídeo com quiz points", icon: <Video className="h-5 w-5" />, color: "#F97316", category: "avancado" },
+  { type: "game", label: "Trivia", description: "Jogo de perguntas e respostas", icon: <Gamepad2 className="h-5 w-5" />, color: "#8B5CF6", category: "jogos" },
+  { type: "game", label: "Memória", description: "Jogo de memória com pares", icon: <Brain className="h-5 w-5" />, color: "#06B6D4", category: "jogos" },
+  { type: "game", label: "Palavras", description: "Jogo de encontrar palavras", icon: <Type className="h-5 w-5" />, color: "#10B981", category: "jogos" },
+  { type: "game", label: "Swipe", description: "Jogo de cards deslizáveis", icon: <Gamepad2 className="h-5 w-5" />, color: "#F59E0B", category: "jogos" },
+  { type: "game", label: "Alfabeto", description: "Jogo de ordenação de letras", icon: <BookA className="h-5 w-5" />, color: "#EC4899", category: "jogos" },
 ];
 
 interface ComponentLibrarySidebarProps {
@@ -104,10 +113,11 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
   }, {} as Record<string, ComponentItem[]>);
 
   // Define category order and names
-  const categoryOrder = ["texto", "avaliacoes", "apresentacao", "avancado"];
+  const categoryOrder = ["texto", "avaliacoes", "jogos", "apresentacao", "avancado"];
   const categoryLabels: Record<string, string> = {
     texto: "Texto & Mídia",
     avaliacoes: "Avaliações",
+    jogos: "Jogos",
     apresentacao: "Apresentação",
     avancado: "Avançado",
   };
@@ -182,6 +192,9 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
         break;
       case "interactiveVideo":
         newBlock = { ...baseBlock, type: "interactiveVideo", width: 640, height: 360, src: "", poster: "", chapters: [], quizPoints: [], bookmarks: [], autoplay: false, loop: false };
+        break;
+      case "game":
+        newBlock = { ...baseBlock, type: "game", width: 500, height: 400, gameType: "trivia", gameData: {}, title: "Novo Jogo" };
         break;
       default:
         return;
