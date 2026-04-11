@@ -2,8 +2,8 @@
  * AccCourse Database Layer
  *
  * Dual-mode: detects the DATABASE_URL to choose the right adapter.
- *  - PostgreSQL (postgresql://...) → uses Prisma ORM (production / Docker / Coolify)
- *  - SQLite    (file:...)          → uses libSQL wrapper (local development)
+ *  - PostgreSQL (postgresql://...) â uses Prisma ORM (production / Docker / Coolify)
+ *  - SQLite    (file:...)          â uses libSQL wrapper (local development)
  *
  * Both export the same `prisma` object with identical API so the rest
  * of the codebase doesn't need to care which adapter is active.
@@ -12,9 +12,9 @@
 const dbUrl = process.env.DATABASE_URL || "";
 const isPostgres = dbUrl.startsWith("postgresql") || dbUrl.startsWith("postgres://");
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// PRISMA MODE  (Production — PostgreSQL via @prisma/client)
-// ═══════════════════════════════════════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// PRISMA MODE  (Production â PostgreSQL via @prisma/client)
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function createPrismaClient() {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -26,9 +26,9 @@ function createPrismaClient() {
   return globalForPrisma._prisma;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// LIBSQL MODE  (Development — SQLite via @libsql/client)
-// ═══════════════════════════════════════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// LIBSQL MODE  (Development â SQLite via @libsql/client)
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 type InArgs = string | number | bigint | ArrayBuffer | null | boolean;
 type Row = Record<string, unknown>;
@@ -37,11 +37,15 @@ let _libsqlClient: unknown = null;
 
 function getLibsqlClient() {
   if (!_libsqlClient) {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { createClient } = require("@libsql/client");
-    _libsqlClient = createClient({
-      url: process.env.DATABASE_URL || "file:./prisma/dev.db",
-    });
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mod = require(/* webpackIgnore: true */ "@libsql/client");
+      _libsqlClient = mod.createClient({
+        url: process.env.DATABASE_URL || "file:./prisma/dev.db",
+      });
+    } catch {
+      throw new Error("@libsql/client not installed. Use PostgreSQL in production.");
+    }
   }
   return _libsqlClient as {
     execute: (opts: { sql: string; args: InArgs[] }) => Promise<{ rows: Row[] }>;
@@ -49,7 +53,7 @@ function getLibsqlClient() {
   };
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// âââ Helpers ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function cuid(): string {
   const ts = Date.now().toString(36);
@@ -71,7 +75,7 @@ async function execute(sql: string, args: InArgs[] = []): Promise<void> {
   await getLibsqlClient().execute({ sql, args });
 }
 
-// ─── Where / OrderBy / Select builders ────────────────────────────────────────
+// âââ Where / OrderBy / Select builders ââââââââââââââââââââââââââââââââââââââââ
 
 function buildWhere(where?: Record<string, unknown>): { clause: string; args: InArgs[] } {
   if (!where || Object.keys(where).length === 0) return { clause: "", args: [] };
@@ -121,7 +125,7 @@ function extractIncludesFromSelect(select?: Record<string, unknown>): Record<str
   return Object.keys(includes).length > 0 ? includes : undefined;
 }
 
-// ─── JSON Field Parser ────────────────────────────────────────────────────────
+// âââ JSON Field Parser ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 const JSON_FIELDS: Record<string, string[]> = {
   Course: ["courseData"],
@@ -140,7 +144,7 @@ function parseJsonFields(table: string, row: Row): Row {
   return parsed;
 }
 
-// ─── Include Resolver ─────────────────────────────────────────────────────────
+// âââ Include Resolver âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 const RELATION_MAP: Record<string, { table: string; fk: string; type: "many" | "one" }> = {
   tenant:      { table: '"Tenant"',      fk: "tenantId",       type: "one"  },
@@ -185,7 +189,7 @@ async function resolveIncludes(row: Row, _t: string, includes: Record<string, un
   }
 }
 
-// ─── Model Factory (libSQL) ──────────────────────────────────────────────────
+// âââ Model Factory (libSQL) ââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function createModel(table: string) {
   const q = `"${table}"`;
@@ -271,7 +275,7 @@ function createModel(table: string) {
   };
 }
 
-// ─── Tenant Model with _count ─────────────────────────────────────────────────
+// âââ Tenant Model with _count âââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function createTenantModel() {
   const base = createModel("Tenant");
@@ -300,9 +304,9 @@ function createTenantModel() {
   };
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// EXPORT — pick the right client based on DATABASE_URL
-// ═══════════════════════════════════════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// EXPORT â pick the right client based on DATABASE_URL
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 function createLibsqlPrisma() {
   return {
