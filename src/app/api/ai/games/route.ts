@@ -58,7 +58,7 @@ export async function POST(req: Request) {
     const { z } = await import("zod");
 
     let schema: any;
-    let prompt: string;
+    let prompt: string = "";
 
     if (gameType === "trivia") {
       schema = z.object({
