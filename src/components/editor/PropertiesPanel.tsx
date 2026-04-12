@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 import {
   Dialog,
   DialogContent,
@@ -685,11 +686,11 @@ export function PropertiesPanel() {
             >
               <div className="grid grid-cols-3 gap-1">
                 <button onClick={() => handleUpdate({ x: 0 })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Alinhar à Esquerda">← Esq</button>
-                <button onClick={() => handleUpdate({ x: Math.round((960 - block.width) / 2) })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Centralizar H">↔ Centro</button>
-                <button onClick={() => handleUpdate({ x: 960 - block.width })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Alinhar à Direita">Dir →</button>
+                <button onClick={() => handleUpdate({ x: Math.round((CANVAS_WIDTH - block.width) / 2) })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Centralizar H">↔ Centro</button>
+                <button onClick={() => handleUpdate({ x: CANVAS_WIDTH - block.width })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Alinhar à Direita">Dir →</button>
                 <button onClick={() => handleUpdate({ y: 0 })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Alinhar Topo">↑ Topo</button>
-                <button onClick={() => handleUpdate({ y: Math.round((540 - block.height) / 2) })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Centralizar V">↕ Meio</button>
-                <button onClick={() => handleUpdate({ y: 540 - block.height })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Alinhar Base">↓ Base</button>
+                <button onClick={() => handleUpdate({ y: Math.round((CANVAS_HEIGHT - block.height) / 2) })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Centralizar V">↕ Meio</button>
+                <button onClick={() => handleUpdate({ y: CANVAS_HEIGHT - block.height })} className="h-7 text-[10px] rounded-md border border-border hover:bg-accent flex items-center justify-center" title="Alinhar Base">↓ Base</button>
               </div>
             </Section>
 

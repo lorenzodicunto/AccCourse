@@ -70,6 +70,7 @@ export default function BibliotecaPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   // Load assets on mount
   useEffect(() => {
@@ -79,13 +80,14 @@ export default function BibliotecaPage() {
   const loadAssets = async () => {
     try {
       setLoading(true);
+      setLoadError(false);
       const response = await fetch("/api/assets");
       if (!response.ok) throw new Error("Erro ao carregar assets");
       const data = await response.json();
       setAssets(data);
-    } catch (error) {
+    } catch {
+      setLoadError(true);
       toast.error("Erro ao carregar biblioteca.");
-      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -182,9 +184,8 @@ export default function BibliotecaPage() {
       setAssets((prev) => prev.filter((a) => a.id !== assetId));
       setDeleteConfirm(null);
       setPreviewOpen(false);
-    } catch (error) {
+    } catch {
       toast.error("Erro ao deletar arquivo.");
-      console.error(error);
     }
   };
 
@@ -634,6 +635,15 @@ export default function BibliotecaPage() {
               {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
                 <SkeletonAssetCard key={i} />
               ))}
+            </div>
+          ) : loadError ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="h-16 w-16 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-4">
+                <AlertCircle className="h-8 w-8 text-red-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-1">Erro ao carregar biblioteca</h3>
+              <p className="text-sm text-muted-foreground mb-6">Não foi possível carregar seus assets. Verifique sua conexão e tente novamente.</p>
+              <Button onClick={loadAssets} variant="outline">Tentar novamente</Button>
             </div>
           ) : filteredAssets.length === 0 && assets.length === 0 ? (
             /* Rich Empty State */

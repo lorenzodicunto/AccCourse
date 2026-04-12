@@ -15,6 +15,7 @@ import {
 import { restrictToParentElement } from "@dnd-kit/modifiers";
 import { MousePointerClick, ZoomIn, ZoomOut, Maximize } from "lucide-react";
 import { DraggableBlock } from "./DraggableBlock";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
 export function Canvas() {
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
@@ -136,8 +137,8 @@ export function Canvas() {
       if (!project || !slide || !canvasRef.current || !active) return transform;
 
       const rect = canvasRef.current.getBoundingClientRect();
-      const scaleX = 960 / rect.width;
-      const scaleY = 540 / rect.height;
+      const scaleX = CANVAS_WIDTH / rect.width;
+      const scaleY = CANVAS_HEIGHT / rect.height;
       const zoomFactor = zoom / 100;
 
       const block = slide.blocks.find((b) => b.id === active.id);
@@ -147,9 +148,11 @@ export function Canvas() {
       let rawY = block.y + (transform.y * scaleY) / zoomFactor;
 
       const SNAP_THRESHOLD = 8;
-      
-      let targetXs: number[] = [0, 480, 960, 480 - block.width / 2, 960 - block.width];
-      let targetYs: number[] = [0, 270, 540, 270 - block.height / 2, 540 - block.height];
+      const halfW = CANVAS_WIDTH / 2;
+      const halfH = CANVAS_HEIGHT / 2;
+
+      let targetXs: number[] = [0, halfW, CANVAS_WIDTH, halfW - block.width / 2, CANVAS_WIDTH - block.width];
+      let targetYs: number[] = [0, halfH, CANVAS_HEIGHT, halfH - block.height / 2, CANVAS_HEIGHT - block.height];
 
       slide.blocks.forEach((b) => {
         if (b.id !== block.id && !selectedBlockIds.includes(b.id)) {
@@ -204,8 +207,8 @@ export function Canvas() {
       if (!block) return;
 
       const rect = canvasRef.current.getBoundingClientRect();
-      const scaleX = 960 / rect.width;
-      const scaleY = 540 / rect.height;
+      const scaleX = CANVAS_WIDTH / rect.width;
+      const scaleY = CANVAS_HEIGHT / rect.height;
       const zoomFactor = zoom / 100;
 
       // The delta here is ALREADY modified by snapModifier, so it reflects snapped values
@@ -216,8 +219,8 @@ export function Canvas() {
       const DRAW_THRESHOLD = 0.5; // Since we are already snapped, we just check for exact matches (allowing floating point imprecision)
 
       // Only draw guides for major alignments (center of canvas, center of other blocks, edges)
-      const majorXs = [480, 0, 960];
-      const majorYs = [270, 0, 540];
+      const majorXs = [CANVAS_WIDTH / 2, 0, CANVAS_WIDTH];
+      const majorYs = [CANVAS_HEIGHT / 2, 0, CANVAS_HEIGHT];
 
       slide.blocks.forEach((b) => {
         if (b.id !== block.id && !selectedBlockIds.includes(b.id)) {
@@ -262,12 +265,12 @@ export function Canvas() {
       if (!block) return;
 
       const rect = canvasRef.current.getBoundingClientRect();
-      const scaleX = 960 / rect.width;
-      const scaleY = 540 / rect.height;
+      const scaleX = CANVAS_WIDTH / rect.width;
+      const scaleY = CANVAS_HEIGHT / rect.height;
 
       // Adjust delta for zoom level
       const zoomFactor = zoom / 100;
-      
+
       const state = useEditorStore.getState();
       const blocksToMove = state.selectedBlockIds.includes(block.id)
         ? slide.blocks.filter(b => state.selectedBlockIds.includes(b.id))
@@ -277,13 +280,13 @@ export function Canvas() {
         const rawX = b.x + (delta.x * scaleX) / zoomFactor;
         const rawY = b.y + (delta.y * scaleY) / zoomFactor;
 
-        // Snapping was already handled by snapModifier! 
+        // Snapping was already handled by snapModifier!
         // We just round to nearest pixel to avoid messy floating points
         const finalX = Math.round(rawX);
         const finalY = Math.round(rawY);
 
-        const newX = Math.max(0, Math.min(960 - b.width, finalX));
-        const newY = Math.max(0, Math.min(540 - b.height, finalY));
+        const newX = Math.max(0, Math.min(CANVAS_WIDTH - b.width, finalX));
+        const newY = Math.max(0, Math.min(CANVAS_HEIGHT - b.height, finalY));
         
         return {
           id: b.id,
@@ -318,7 +321,7 @@ export function Canvas() {
                 style={{ left: `${(i / 24) * 100}%` }}
               >
                 <span className="text-[8px] text-muted-foreground/50 font-mono">
-                  {i % 4 === 0 ? Math.round((960 / 24) * i) : ""}
+                  {i % 4 === 0 ? Math.round((CANVAS_WIDTH / 24) * i) : ""}
                 </span>
                 <div
                   className={`w-px ${
@@ -349,7 +352,7 @@ export function Canvas() {
                   style={{ top: `${(i / 14) * 100}%` }}
                 >
                   <span className="text-[8px] text-muted-foreground/50 font-mono mr-0.5">
-                    {i % 3 === 0 ? Math.round((540 / 14) * i) : ""}
+                    {i % 3 === 0 ? Math.round((CANVAS_HEIGHT / 14) * i) : ""}
                   </span>
                   <div
                     className={`h-px ${
@@ -396,7 +399,7 @@ export function Canvas() {
                   key={i}
                   className={`absolute bg-purple-500 z-[15] pointer-events-none drop-shadow`}
                   style={{
-                    [guide.axis === "x" ? "left" : "top"]: `${(guide.position / (guide.axis === "x" ? 960 : 540)) * 100}%`,
+                    [guide.axis === "x" ? "left" : "top"]: `${(guide.position / (guide.axis === "x" ? CANVAS_WIDTH : CANVAS_HEIGHT)) * 100}%`,
                     [guide.axis === "x" ? "width" : "height"]: "1px",
                     [guide.axis === "x" ? "height" : "width"]: "100%",
                   }}
@@ -409,10 +412,10 @@ export function Canvas() {
                   block={block}
                   isSelected={selectedBlockIds.includes(block.id)}
                   canvasWidth={
-                    canvasRef.current?.getBoundingClientRect().width ?? 960
+                    canvasRef.current?.getBoundingClientRect().width ?? CANVAS_WIDTH
                   }
                   canvasHeight={
-                    canvasRef.current?.getBoundingClientRect().height ?? 540
+                    canvasRef.current?.getBoundingClientRect().height ?? CANVAS_HEIGHT
                   }
                   onSelect={() => setSelectedBlock(block.id)}
                   isDraggingAny={isDragging}

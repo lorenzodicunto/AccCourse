@@ -16,6 +16,7 @@ import { LayoutTemplate, Check, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
 interface SlideTemplate {
   id: string;
@@ -374,10 +375,10 @@ export function SlideTemplatesDialog() {
                         key={i}
                         className="absolute rounded-[1px]"
                         style={{
-                          left: `${(block.x / 960) * 100}%`,
-                          top: `${(block.y / 540) * 100}%`,
-                          width: `${(block.width / 960) * 100}%`,
-                          height: `${(block.height / 540) * 100}%`,
+                          left: `${(block.x / CANVAS_WIDTH) * 100}%`,
+                          top: `${(block.y / CANVAS_HEIGHT) * 100}%`,
+                          width: `${(block.width / CANVAS_WIDTH) * 100}%`,
+                          height: `${(block.height / CANVAS_HEIGHT) * 100}%`,
                           backgroundColor:
                             block.type === "text" ? "rgba(99,102,241,0.1)" :
                             block.type === "image" ? "rgba(59,130,246,0.15)" :

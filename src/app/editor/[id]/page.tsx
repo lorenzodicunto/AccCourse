@@ -11,6 +11,7 @@ import { SlideNavigator } from "@/components/editor/SlideNavigator";
 import { StatusBar } from "@/components/editor/StatusBar";
 import { Loader2 } from "lucide-react";
 import { ErrorFallback } from "@/components/editor/ErrorFallback";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
 // Shared loading spinner for dynamic imports
 const DynamicLoader = () => (
@@ -203,7 +204,9 @@ export default function EditorPage() {
       // Ctrl+S — Save to cloud
       if (isCtrl && e.key === "s") {
         e.preventDefault();
-        doSave().then(() => toast.success("Curso salvo!"));
+        doSave()
+          .then(() => toast.success("Curso salvo!"))
+          .catch(() => toast.error("Erro ao salvar curso."));
         return;
       }
 
@@ -303,8 +306,8 @@ export default function EditorPage() {
           const newBlocks: Block[] = clipboardRef.current.map((clipboardBlock) => ({
             ...clipboardBlock,
             id: crypto.randomUUID(),
-            x: Math.min(clipboardBlock.x + 20, 960 - clipboardBlock.width),
-            y: Math.min(clipboardBlock.y + 20, 540 - clipboardBlock.height),
+            x: Math.min(clipboardBlock.x + 20, CANVAS_WIDTH - clipboardBlock.width),
+            y: Math.min(clipboardBlock.y + 20, CANVAS_HEIGHT - clipboardBlock.height),
           }));
           addBlocks(project.id, slide.id, newBlocks);
           toast.success(newBlocks.length > 1 ? `${newBlocks.length} blocos colados!` : "Bloco colado!");
@@ -391,8 +394,8 @@ export default function EditorPage() {
         const updates = blocks.map(block => ({
           id: block.id,
           changes: {
-            x: Math.max(0, Math.min(960 - block.width, block.x + dx)),
-            y: Math.max(0, Math.min(540 - block.height, block.y + dy)),
+            x: Math.max(0, Math.min(CANVAS_WIDTH - block.width, block.x + dx)),
+            y: Math.max(0, Math.min(CANVAS_HEIGHT - block.height, block.y + dy)),
           }
         }));
 

@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Play, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useEditorStore, Block } from "@/store/useEditorStore";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
 export function PreviewDialog() {
   const [open, setOpen] = useState(false);
@@ -44,10 +45,10 @@ export function PreviewDialog() {
   function renderBlock(block: Block) {
     const baseStyle: React.CSSProperties = {
       position: "absolute",
-      left: `${(block.x / 960) * 100}%`,
-      top: `${(block.y / 540) * 100}%`,
-      width: `${(block.width / 960) * 100}%`,
-      height: `${(block.height / 540) * 100}%`,
+      left: `${(block.x / CANVAS_WIDTH) * 100}%`,
+      top: `${(block.y / CANVAS_HEIGHT) * 100}%`,
+      width: `${(block.width / CANVAS_WIDTH) * 100}%`,
+      height: `${(block.height / CANVAS_HEIGHT) * 100}%`,
     };
 
     switch (block.type) {

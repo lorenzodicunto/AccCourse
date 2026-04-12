@@ -67,7 +67,7 @@ async function fetchAndMapAssets(
         blobs.set(assetPath, blob);
       }
     } catch (err) {
-      console.warn(`Failed to fetch asset: ${url}`, err);
+      // Silently skip failed assets — logged at export summary level
     }
   }
 

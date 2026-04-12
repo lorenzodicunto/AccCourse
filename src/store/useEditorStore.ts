@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
 // ─── Types (imported & re-exported for backward compatibility) ───────────────
 export type {
@@ -610,8 +611,8 @@ export const useEditorStore = create<EditorStore>()(
         const newBlock: Block = {
           ...JSON.parse(JSON.stringify(block)),
           id: generateId(),
-          x: Math.min(block.x + 20, 960 - block.width),
-          y: Math.min(block.y + 20, 540 - block.height),
+          x: Math.min(block.x + 20, CANVAS_WIDTH - block.width),
+          y: Math.min(block.y + 20, CANVAS_HEIGHT - block.height),
         };
 
         set({
@@ -648,8 +649,8 @@ export const useEditorStore = create<EditorStore>()(
         const newBlocks: Block[] = blocksToDuplicate.map((block) => ({
           ...JSON.parse(JSON.stringify(block)),
           id: generateId(),
-          x: Math.min(block.x + 20, 960 - block.width),
-          y: Math.min(block.y + 20, 540 - block.height),
+          x: Math.min(block.x + 20, CANVAS_WIDTH - block.width),
+          y: Math.min(block.y + 20, CANVAS_HEIGHT - block.height),
         }));
 
         set({

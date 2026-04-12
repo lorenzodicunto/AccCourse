@@ -92,6 +92,7 @@ import { PreviewDialog } from "./PreviewDialog";
 import { CourseSettingsDialog } from "./CourseSettingsDialog";
 import { SlideLayoutsDialog } from "./SlideLayoutsDialog";
 import { exportAsPDF } from "@/lib/export/pdfExporter";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
 interface TopToolbarProps {
   courseId?: string;
@@ -179,7 +180,7 @@ const TRANSITION_OPTIONS = [
 ];
 
 const SLIDE_SIZE_PRESETS = [
-  { name: "16:9", width: 960, height: 540 },
+  { name: "16:9", width: CANVAS_WIDTH, height: CANVAS_HEIGHT },
   { name: "4:3", width: 800, height: 600 },
   { name: "Quadrado", width: 600, height: 600 },
 ];
@@ -223,8 +224,8 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
   const [fontSizeValue, setFontSizeValue] = useState(block?.type === "text" ? block.fontSize : 18);
   const [fontColorValue, setFontColorValue] = useState(block?.type === "text" ? block.color : "#1a1a2e");
   const [slideTransition, setSlideTransition] = useState("none");
-  const [slideWidth, setSlideWidth] = useState(960);
-  const [slideHeight, setSlideHeight] = useState(540);
+  const [slideWidth, setSlideWidth] = useState(CANVAS_WIDTH);
+  const [slideHeight, setSlideHeight] = useState(CANVAS_HEIGHT);
   const [zoom, setZoom] = useState(100);
   const [showHighContrast, setShowHighContrast] = useState(false);
   const [showRuler, setShowRuler] = useState(false);
@@ -807,8 +808,8 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
     const newBlock: Block = {
       ...clipboardRef.current,
       id: crypto.randomUUID(),
-      x: Math.min(clipboardRef.current.x + 20, 960 - clipboardRef.current.width),
-      y: Math.min(clipboardRef.current.y + 20, 540 - clipboardRef.current.height),
+      x: Math.min(clipboardRef.current.x + 20, CANVAS_WIDTH - clipboardRef.current.width),
+      y: Math.min(clipboardRef.current.y + 20, CANVAS_HEIGHT - clipboardRef.current.height),
     };
     addBlock(project.id, slide.id, newBlock);
     setSelectedBlock(newBlock.id);

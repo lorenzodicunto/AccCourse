@@ -3,6 +3,7 @@
 
 import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock, BranchingBlock, TimelineBlock, DragDropBlock, InteractiveVideoBlock } from "@/store/useEditorStore";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
 export function generateCourseHTML(project: CourseProject, assetMap?: Map<string, string>): string {
   const slides = [...project.slides].sort((a, b) => a.order - b.order);
@@ -427,7 +428,7 @@ function generateBlockHTML(block: Block, assetMap?: Map<string, string>): string
   const animStyle = block.animation && block.animation.type !== 'none'
     ? `animation: ${block.animation.type} ${block.animation.duration || 0.5}s ${block.animation.easing || 'ease'} ${block.animation.delay || 0}s both;`
     : '';
-  const style = `position: absolute; left: ${(block.x / 960) * 100}%; top: ${(block.y / 540) * 100}%; width: ${(block.width / 960) * 100}%; height: ${(block.height / 540) * 100}%; ${animStyle}`;
+  const style = `position: absolute; left: ${(block.x / CANVAS_WIDTH) * 100}%; top: ${(block.y / CANVAS_HEIGHT) * 100}%; width: ${(block.width / CANVAS_WIDTH) * 100}%; height: ${(block.height / CANVAS_HEIGHT) * 100}%; ${animStyle}`;
 
   switch (block.type) {
     case "text":

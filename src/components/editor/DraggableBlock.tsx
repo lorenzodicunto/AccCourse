@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import { useDraggable } from "@dnd-kit/core";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 import {
   Block,
   VideoBlock as VideoBlockType,
@@ -89,10 +90,10 @@ export function DraggableBlock({
   const imageInputRef = useRef<HTMLInputElement>(null);
 
   // Convert block coordinates (960x540) to percentage
-  const leftPct = (block.x / 960) * 100;
-  const topPct = (block.y / 540) * 100;
-  const widthPct = (block.width / 960) * 100;
-  const heightPct = (block.height / 540) * 100;
+  const leftPct = (block.x / CANVAS_WIDTH) * 100;
+  const topPct = (block.y / CANVAS_HEIGHT) * 100;
+  const widthPct = (block.width / CANVAS_WIDTH) * 100;
+  const heightPct = (block.height / CANVAS_HEIGHT) * 100;
 
   const style: React.CSSProperties = {
     left: `${leftPct}%`,
@@ -134,8 +135,8 @@ export function DraggableBlock({
       const startW = block.width;
       const startH = block.height;
 
-      const scaleX = 960 / canvasWidth;
-      const scaleY = 540 / canvasHeight;
+      const scaleX = CANVAS_WIDTH / canvasWidth;
+      const scaleY = CANVAS_HEIGHT / canvasHeight;
 
       const handleMouseMove = (me: MouseEvent) => {
         const dx = (me.clientX - startMouseX) * scaleX;
@@ -161,8 +162,8 @@ export function DraggableBlock({
         }
 
         // Clamp to canvas
-        if (newX + newW > 960) newW = 960 - newX;
-        if (newY + newH > 540) newH = 540 - newY;
+        if (newX + newW > CANVAS_WIDTH) newW = CANVAS_WIDTH - newX;
+        if (newY + newH > CANVAS_HEIGHT) newH = CANVAS_HEIGHT - newY;
 
         handleUpdate({
           x: Math.round(newX),

@@ -23,6 +23,7 @@ import {
   Clock,
   CheckCircle2,
 } from "lucide-react";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -135,17 +136,17 @@ export function CourseGridCard({ course, onDuplicate, onDelete, onToggleStatus }
                 key={i}
                 className="absolute flex items-center justify-center"
                 style={{
-                  left: `${(block.x / 960) * 100}%`,
-                  top: `${(block.y / 540) * 100}%`,
-                  width: `${(block.width / 960) * 100}%`,
-                  height: `${(block.height / 540) * 100}%`,
+                  left: `${(block.x / CANVAS_WIDTH) * 100}%`,
+                  top: `${(block.y / CANVAS_HEIGHT) * 100}%`,
+                  width: `${(block.width / CANVAS_WIDTH) * 100}%`,
+                  height: `${(block.height / CANVAS_HEIGHT) * 100}%`,
                 }}
               >
                 {block.type === "text" && block.content ? (
                   <div
                     className="w-full h-full overflow-hidden px-1"
                     style={{
-                      fontSize: `${Math.max(((block.fontSize || 16) / 540) * 160, 5)}px`,
+                      fontSize: `${Math.max(((block.fontSize || 16) / CANVAS_HEIGHT) * 160, 5)}px`,
                       color: block.color || "#000",
                       lineHeight: 1.3,
                     }}

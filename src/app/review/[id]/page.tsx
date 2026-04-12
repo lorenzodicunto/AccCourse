@@ -13,6 +13,7 @@ import {
 import type { CourseProject, Block, FlashcardBlock, QuizBlock, VideoBlock as VideoBlockType, VideoInteraction } from "@/store/useEditorStore";
 import { sanitizeHtml } from "@/lib/sanitize";
 import dynamic from "next/dynamic";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
 const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
 import {
@@ -544,10 +545,10 @@ export default function ReviewPage() {
 function ReadOnlyBlock({ block }: { block: Block }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
-  const leftPct = (block.x / 960) * 100;
-  const topPct = (block.y / 540) * 100;
-  const widthPct = (block.width / 960) * 100;
-  const heightPct = (block.height / 540) * 100;
+  const leftPct = (block.x / CANVAS_WIDTH) * 100;
+  const topPct = (block.y / CANVAS_HEIGHT) * 100;
+  const widthPct = (block.width / CANVAS_WIDTH) * 100;
+  const heightPct = (block.height / CANVAS_HEIGHT) * 100;
 
   const style: React.CSSProperties = {
     position: "absolute",

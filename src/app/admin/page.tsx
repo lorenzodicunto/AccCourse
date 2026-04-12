@@ -120,9 +120,22 @@ export default function AdminPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [t, u] = await Promise.all([listTenants(), listUsers()]);
-      setTenants(t);
-      setUsers(u);
+      const [tenantsResult, usersResult] = await Promise.allSettled([
+        listTenants(),
+        listUsers(),
+      ]);
+
+      if (tenantsResult.status === "fulfilled") {
+        setTenants(tenantsResult.value);
+      } else {
+        toast.error("Erro ao carregar clientes.");
+      }
+
+      if (usersResult.status === "fulfilled") {
+        setUsers(usersResult.value);
+      } else {
+        toast.error("Erro ao carregar usuários.");
+      }
     } catch {
       toast.error("Erro ao carregar dados.");
     } finally {
@@ -132,10 +145,20 @@ export default function AdminPage() {
 
   const handleProvision = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = {
+      ...form,
+      companyName: form.companyName.trim(),
+      userName: form.userName.trim(),
+      userEmail: form.userEmail.trim(),
+    };
+    if (!trimmed.companyName || !trimmed.userName || !trimmed.userEmail) {
+      toast.error("Preencha todos os campos obrigatórios.");
+      return;
+    }
     setProvisioning(true);
     try {
-      await provisionClient(form);
-      toast.success(`Cliente "${form.companyName}" provisionado com sucesso!`);
+      await provisionClient(trimmed);
+      toast.success(`Cliente "${trimmed.companyName}" provisionado com sucesso!`);
       setDialogOpen(false);
       setForm({ companyName: "", userName: "", userEmail: "", userPassword: "", userRole: "EDITOR" });
       loadData();
@@ -148,9 +171,26 @@ export default function AdminPage() {
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = {
+      ...createForm,
+      name: createForm.name.trim(),
+      email: createForm.email.trim(),
+    };
+    if (!trimmed.name || !trimmed.email || !trimmed.password) {
+      toast.error("Preencha todos os campos obrigatórios.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed.email)) {
+      toast.error("E-mail inválido.");
+      return;
+    }
+    if (trimmed.password.length < 6) {
+      toast.error("Senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
     setCreating(true);
     try {
-      await createUser(createForm);
+      await createUser(trimmed);
       toast.success("Usuário criado com sucesso!");
       setCreateDialogOpen(false);
       setCreateForm({ name: "", email: "", password: "", role: "EDITOR", tenantId: "" });
@@ -165,9 +205,14 @@ export default function AdminPage() {
   const handleEditUser = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editTarget) return;
+    const trimmed = { ...editForm, name: editForm.name.trim() };
+    if (!trimmed.name) {
+      toast.error("Nome não pode estar vazio.");
+      return;
+    }
     setEditing(true);
     try {
-      await updateUser(editTarget.id, editForm);
+      await updateUser(editTarget.id, trimmed);
       toast.success("Usuário atualizado!");
       setEditDialogOpen(false);
       setEditTarget(null);
@@ -197,6 +242,10 @@ export default function AdminPage() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetTarget) return;
+    if (newPassword.length < 6) {
+      toast.error("Senha deve ter pelo menos 6 caracteres.");
+      return;
+    }
     setResetting(true);
     try {
       await resetUserPassword(resetTarget.id, newPassword);

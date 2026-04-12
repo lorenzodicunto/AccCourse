@@ -2,6 +2,7 @@
 // Uses a canvas-based approach with browser print API
 
 import { CourseProject } from "@/store/useEditorStore";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
 /**
  * Generates a printable HTML document and triggers browser print dialog (save as PDF)
@@ -14,7 +15,7 @@ export function exportAsPDF(project: CourseProject) {
 
   const slidesHtml = project.slides.map((slide, index) => {
     const blocksHtml = slide.blocks.map((block) => {
-      const baseStyle = `position:absolute;left:${(block.x / 960) * 100}%;top:${(block.y / 540) * 100}%;width:${(block.width / 960) * 100}%;height:${(block.height / 540) * 100}%;`;
+      const baseStyle = `position:absolute;left:${(block.x / CANVAS_WIDTH) * 100}%;top:${(block.y / CANVAS_HEIGHT) * 100}%;width:${(block.width / CANVAS_WIDTH) * 100}%;height:${(block.height / CANVAS_HEIGHT) * 100}%;`;
 
       if (block.type === "text") {
         return `<div style="${baseStyle}color:${block.color};font-size:${block.fontSize}px;font-weight:${block.fontWeight};text-align:${block.textAlign};background-color:${block.backgroundColor};line-height:${block.lineHeight};border-radius:${block.borderRadius}px;opacity:${block.opacity};overflow:hidden;padding:8px;box-sizing:border-box;">${block.content}</div>`;
@@ -41,7 +42,7 @@ export function exportAsPDF(project: CourseProject) {
     }).join("");
 
     return `
-      <div class="slide-page" style="page-break-after:always;position:relative;width:960px;height:540px;background:${slide.background};margin:0 auto 20px;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.1);font-family:${project.theme.fontFamily};">
+      <div class="slide-page" style="page-break-after:always;position:relative;width:${CANVAS_WIDTH}px;height:${CANVAS_HEIGHT}px;background:${slide.background};margin:0 auto 20px;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.1);font-family:${project.theme.fontFamily};">
         ${blocksHtml}
         <div style="position:absolute;bottom:8px;right:16px;font-size:10px;color:#94a3b8;">Slide ${index + 1} de ${project.slides.length}</div>
       </div>
