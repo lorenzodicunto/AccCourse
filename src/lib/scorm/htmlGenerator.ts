@@ -1,7 +1,7 @@
 // SCORM Course HTML Generator
 // Generates the index.html content from course slides and blocks
 
-import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock, BranchingBlock, TimelineBlock, DragDropBlock, InteractiveVideoBlock } from "@/store/useEditorStore";
+import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock, BranchingBlock, TimelineBlock, DragDropBlock, InteractiveVideoBlock, LabeledGraphicBlock, ProcessBlock, LightboxBlock, QuoteBlock, DownloadBlock, CounterBlock, ButtonBlock, DividerBlock, EmbedBlock } from "@/store/useEditorStore";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
@@ -467,6 +467,24 @@ function generateBlockHTML(block: Block, assetMap?: Map<string, string>): string
       return generateDragDropBlockHTML(block as DragDropBlock, style);
     case "interactiveVideo":
       return generateInteractiveVideoBlockHTML(block as InteractiveVideoBlock, style);
+    case "labeled-graphic":
+      return generateLabeledGraphicBlockHTML(block as LabeledGraphicBlock, style);
+    case "process":
+      return generateProcessBlockHTML(block as ProcessBlock, style);
+    case "lightbox":
+      return generateLightboxBlockHTML(block as LightboxBlock, style);
+    case "quote":
+      return generateQuoteBlockHTML(block as QuoteBlock, style);
+    case "download":
+      return generateDownloadBlockHTML(block as DownloadBlock, style);
+    case "counter":
+      return generateCounterBlockHTML(block as CounterBlock, style);
+    case "button":
+      return generateButtonBlockHTML(block as ButtonBlock, style);
+    case "divider":
+      return generateDividerBlockHTML(block as DividerBlock, style);
+    case "embed":
+      return generateEmbedBlockHTML(block as EmbedBlock, style);
     default:
       return "";
   }
@@ -1083,5 +1101,145 @@ function generateInteractiveVideoBlockHTML(block: InteractiveVideoBlock, style: 
         });
       })();
     </script>
+  </div>`;
+}
+
+// ─── Wave 6: New Content Blocks ────────────────────────────────────────────
+
+function generateLabeledGraphicBlockHTML(block: LabeledGraphicBlock, style: string): string {
+  const markersHTML = block.markers.map((m, i) => `
+    <button class="labeled-marker" onclick="this.nextElementSibling.classList.toggle('hidden')" style="position:absolute;left:${m.x}%;top:${m.y}%;transform:translate(-50%,-50%);width:28px;height:28px;border-radius:50%;background:${block.markerColor};color:#fff;border:2px solid #fff;cursor:pointer;font-size:12px;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:2;">${block.markerStyle === 'numbered' ? i + 1 : '•'}</button>
+    <div class="labeled-popup hidden" style="position:absolute;left:${m.x}%;top:${m.y + 4}%;background:#fff;border-radius:8px;padding:12px;box-shadow:0 4px 16px rgba(0,0,0,0.15);z-index:3;min-width:180px;max-width:260px;">
+      <strong style="font-size:13px;">${m.label}</strong>
+      <p style="font-size:12px;margin-top:4px;color:#555;">${m.content}</p>
+      ${m.image ? `<img src="${m.image}" style="width:100%;border-radius:6px;margin-top:6px;" />` : ''}
+    </div>
+  `).join('');
+  return `<div style="${style}" role="figure" aria-label="Imagem interativa">
+    <div style="position:relative;width:100%;height:100%;overflow:hidden;border-radius:8px;">
+      ${block.backgroundImage ? `<img src="${block.backgroundImage}" style="width:100%;height:100%;object-fit:cover;" alt="Labeled graphic" />` : '<div style="width:100%;height:100%;background:#e2e8f0;"></div>'}
+      ${markersHTML}
+    </div>
+  </div>`;
+}
+
+function generateProcessBlockHTML(block: ProcessBlock, style: string): string {
+  const isHoriz = block.layout === 'horizontal';
+  const stepsHTML = block.steps.map((s, i) => `
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;flex:1;${i > 0 && isHoriz ? 'border-left:2px ' + block.connectorStyle + ' ' + block.activeColor + ';padding-left:12px;' : ''}${i > 0 && !isHoriz ? 'border-top:2px ' + block.connectorStyle + ' ' + block.activeColor + ';padding-top:12px;' : ''}">
+      <div style="width:32px;height:32px;border-radius:50%;background:${block.activeColor};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;margin-bottom:6px;">${block.style === 'numbered' ? i + 1 : (s.icon || '•')}</div>
+      <strong style="font-size:13px;">${s.title}</strong>
+      <p style="font-size:11px;color:#666;margin-top:2px;">${s.content}</p>
+    </div>
+  `).join('');
+  return `<div style="${style}" role="list" aria-label="Processo">
+    <div style="display:flex;flex-direction:${isHoriz ? 'row' : 'column'};align-items:${isHoriz ? 'flex-start' : 'stretch'};gap:8px;height:100%;padding:12px;">
+      ${stepsHTML}
+    </div>
+  </div>`;
+}
+
+function generateLightboxBlockHTML(block: LightboxBlock, style: string): string {
+  const modalId = 'modal-' + Math.random().toString(36).slice(2, 9);
+  const widthMap = { small: '400px', medium: '600px', large: '800px' };
+  return `<div style="${style}">
+    <button onclick="document.getElementById('${modalId}').style.display='flex'" style="padding:10px 20px;background:#7c3aed;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;">
+      ${block.triggerLabel || 'Abrir'}
+    </button>
+    <div id="${modalId}" style="display:none;position:fixed;inset:0;background:${block.overlayColor || 'rgba(0,0,0,0.5)'};z-index:1000;align-items:center;justify-content:center;" onclick="if(event.target===this)this.style.display='none'">
+      <div style="background:#fff;border-radius:12px;padding:24px;max-width:${widthMap[block.modalWidth] || '600px'};width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <h3 style="font-size:18px;font-weight:bold;margin-bottom:12px;">${block.modalTitle}</h3>
+        <p style="font-size:14px;color:#444;">${block.modalContent}</p>
+        ${block.modalImage ? `<img src="${block.modalImage}" style="width:100%;border-radius:8px;margin-top:12px;" />` : ''}
+        ${block.modalVideo ? `<video src="${block.modalVideo}" controls style="width:100%;border-radius:8px;margin-top:12px;"></video>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function generateQuoteBlockHTML(block: QuoteBlock, style: string): string {
+  const styleMap: Record<string, string> = {
+    classic: `border-left:4px solid ${block.accentColor};padding-left:16px;`,
+    modern: `background:linear-gradient(135deg, ${block.accentColor}10, ${block.accentColor}05);border-radius:12px;padding:20px;`,
+    callout: `background:${block.accentColor}10;border-left:4px solid ${block.accentColor};border-radius:0 8px 8px 0;padding:16px;`,
+    'speech-bubble': `background:#f8fafc;border-radius:12px;padding:16px;position:relative;`,
+  };
+  return `<div style="${style}" role="blockquote">
+    <div style="${styleMap[block.quoteStyle] || styleMap.modern};height:100%;display:flex;flex-direction:column;justify-content:center;text-align:${block.alignment};">
+      <p style="font-size:16px;font-style:italic;color:#334155;line-height:1.6;">&ldquo;${block.text}&rdquo;</p>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;${block.alignment === 'center' ? 'justify-content:center;' : ''}">
+        ${block.authorImage ? `<img src="${block.authorImage}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" />` : ''}
+        <div>
+          <strong style="font-size:13px;color:#1e293b;">${block.author}</strong>
+          ${block.authorTitle ? `<p style="font-size:11px;color:#94a3b8;">${block.authorTitle}</p>` : ''}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function generateDownloadBlockHTML(block: DownloadBlock, style: string): string {
+  const filesHTML = block.files.map(f => `
+    <a href="${f.url}" download="${f.name}" style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;text-decoration:none;color:#334155;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+      <span style="font-size:20px;">📎</span>
+      <div style="flex:1;min-width:0;">
+        <strong style="font-size:13px;display:block;">${f.name}</strong>
+        ${f.description ? `<span style="font-size:11px;color:#94a3b8;">${f.description}</span>` : ''}
+      </div>
+      <span style="font-size:11px;color:#94a3b8;">${f.size > 0 ? (f.size / 1024).toFixed(0) + ' KB' : ''}</span>
+    </a>
+  `).join('');
+  return `<div style="${style}" role="list" aria-label="Downloads">
+    <div style="display:flex;flex-direction:column;gap:8px;height:100%;padding:8px;overflow-y:auto;">
+      ${filesHTML}
+    </div>
+  </div>`;
+}
+
+function generateCounterBlockHTML(block: CounterBlock, style: string): string {
+  const itemsHTML = block.items.map(item => `
+    <div style="text-align:center;flex:1;padding:12px;">
+      <div class="counter-value" data-target="${item.value}" data-prefix="${item.prefix || ''}" data-suffix="${item.suffix || ''}" data-duration="${block.animationDuration || 2}" style="font-size:32px;font-weight:bold;color:${item.color};">${item.prefix || ''}${item.value}${item.suffix || ''}</div>
+      <div style="font-size:12px;color:#64748b;margin-top:4px;">${item.label}</div>
+    </div>
+  `).join('');
+  return `<div style="${style}">
+    <div style="display:flex;flex-direction:${block.layout === 'grid' ? 'row;flex-wrap:wrap' : 'row'};align-items:center;justify-content:center;height:100%;gap:16px;">
+      ${itemsHTML}
+    </div>
+  </div>`;
+}
+
+function generateButtonBlockHTML(block: ButtonBlock, style: string): string {
+  const sizeMap = { small: 'padding:6px 14px;font-size:12px;', medium: 'padding:10px 24px;font-size:14px;', large: 'padding:14px 32px;font-size:16px;' };
+  const styleMap: Record<string, string> = {
+    primary: `background:#7c3aed;color:#fff;border:none;`,
+    secondary: `background:#e2e8f0;color:#1e293b;border:none;`,
+    outline: `background:transparent;color:#7c3aed;border:2px solid #7c3aed;`,
+    ghost: `background:transparent;color:#7c3aed;border:none;`,
+  };
+  const href = block.action === 'link' ? (block.url || '#') : block.action === 'download' ? (block.downloadUrl || '#') : '#';
+  const onclick = block.action === 'slide' ? `onclick="window.goToSlide && window.goToSlide(${block.targetSlideIndex || 0})"` : '';
+  return `<div style="${style};display:flex;align-items:center;justify-content:center;">
+    <a href="${href}" ${onclick} style="${sizeMap[block.size] || sizeMap.medium}${styleMap[block.buttonStyle] || styleMap.primary}border-radius:8px;text-decoration:none;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;${block.fullWidth ? 'width:100%;justify-content:center;' : ''}" role="button">
+      ${block.label}
+    </a>
+  </div>`;
+}
+
+function generateDividerBlockHTML(block: DividerBlock, style: string): string {
+  if (block.dividerStyle === 'gradient') {
+    return `<div style="${style};display:flex;align-items:center;">
+      <div style="width:100%;height:${block.thickness}px;background:linear-gradient(to right, transparent, ${block.color}, transparent);"></div>
+    </div>`;
+  }
+  return `<div style="${style};display:flex;align-items:center;">
+    <hr style="width:100%;border:none;border-top:${block.thickness}px ${block.dividerStyle} ${block.color};margin:0;" />
+  </div>`;
+}
+
+function generateEmbedBlockHTML(block: EmbedBlock, style: string): string {
+  return `<div style="${style}" role="region" aria-label="${block.title}">
+    <iframe src="${block.url}" title="${block.title}" style="width:100%;height:100%;border:none;border-radius:8px;" ${block.allowFullscreen ? 'allowfullscreen' : ''} loading="lazy"></iframe>
   </div>`;
 }

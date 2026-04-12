@@ -68,6 +68,15 @@ function BlockIcon({ type }: { type: Block["type"] }) {
     branching: <GitBranch className="h-4 w-4 text-rose-500" />,
     timeline: <Clock className="h-4 w-4 text-sky-500" />,
     dragdrop: <GripVertical className="h-4 w-4 text-teal-500" />,
+    "labeled-graphic": <MousePointer className="h-4 w-4 text-cyan-500" />,
+    process: <Layers className="h-4 w-4 text-emerald-500" />,
+    lightbox: <Maximize2 className="h-4 w-4 text-violet-500" />,
+    quote: <Type className="h-4 w-4 text-amber-500" />,
+    download: <Layers className="h-4 w-4 text-blue-500" />,
+    counter: <Layers className="h-4 w-4 text-red-500" />,
+    button: <Layers className="h-4 w-4 text-violet-500" />,
+    divider: <Layers className="h-4 w-4 text-slate-400" />,
+    embed: <Layers className="h-4 w-4 text-sky-500" />,
   };
   return icons[type];
 }
@@ -90,6 +99,15 @@ const BLOCK_LABELS: Record<string, string> = {
   branching: "Cenário",
   timeline: "Linha do Tempo",
   dragdrop: "Drag & Drop",
+  "labeled-graphic": "Imagem Interativa",
+  process: "Processo",
+  lightbox: "Lightbox",
+  quote: "Citação",
+  download: "Download",
+  counter: "Contador",
+  button: "Botão",
+  divider: "Divisor",
+  embed: "Embed",
 };
 
 // ─── Collapsible Section ───
@@ -2191,6 +2209,353 @@ export function PropertiesPanel() {
                     ))}
                   </div>
                 </div>
+              </Section>
+            )}
+
+            {/* ─── LABELED GRAPHIC ─── */}
+            {block.type === "labeled-graphic" && (
+              <Section title="Imagem Interativa" icon={<MousePointer className="h-3 w-3 text-cyan-500" />}>
+                <FieldRow label="Imagem">
+                  <Input value={(block as any).backgroundImage || ""} onChange={(e) => handleUpdate({ backgroundImage: e.target.value } as any)} className="h-7 text-xs" placeholder="URL da imagem de fundo" />
+                </FieldRow>
+                <FieldRow label="Estilo">
+                  <select value={(block as any).markerStyle || "pin"} onChange={(e) => handleUpdate({ markerStyle: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="pin">Pin</option>
+                    <option value="numbered">Numerado</option>
+                    <option value="icon">Ícone</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Cor">
+                  <Input type="color" value={(block as any).markerColor || "#7C3AED"} onChange={(e) => handleUpdate({ markerColor: e.target.value } as any)} className="h-7 w-14" />
+                </FieldRow>
+                <FieldRow label="Popup">
+                  <select value={(block as any).popupPosition || "auto"} onChange={(e) => handleUpdate({ popupPosition: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="auto">Auto</option>
+                    <option value="top">Topo</option>
+                    <option value="bottom">Baixo</option>
+                    <option value="left">Esquerda</option>
+                    <option value="right">Direita</option>
+                  </select>
+                </FieldRow>
+                <Separator />
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] font-semibold text-cyan-700">Marcadores</p>
+                  <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => {
+                    const markers = [...((block as any).markers || []), { id: crypto.randomUUID(), x: 50, y: 50, label: "Novo ponto", content: "Descrição", icon: "pin", image: "" }];
+                    handleUpdate({ markers } as any);
+                  }}>
+                    <Plus className="h-2.5 w-2.5 mr-0.5" /> Add
+                  </Button>
+                </div>
+                {((block as any).markers || []).map((m: any, i: number) => (
+                  <div key={m.id} className="bg-cyan-50/50 rounded-lg p-2 mb-1 space-y-1">
+                    <div className="flex gap-1">
+                      <Input value={m.label} onChange={(e) => { const markers = [...(block as any).markers]; markers[i] = { ...markers[i], label: e.target.value }; handleUpdate({ markers } as any); }} className="h-5 text-[9px] flex-1" placeholder="Label" />
+                      <button onClick={() => handleUpdate({ markers: (block as any).markers.filter((_: any, j: number) => j !== i) } as any)} className="text-red-400 text-xs">✕</button>
+                    </div>
+                    <Input value={m.content} onChange={(e) => { const markers = [...(block as any).markers]; markers[i] = { ...markers[i], content: e.target.value }; handleUpdate({ markers } as any); }} className="h-5 text-[9px]" placeholder="Conteúdo" />
+                    <div className="flex gap-1">
+                      <Input type="number" min={0} max={100} value={m.x} onChange={(e) => { const markers = [...(block as any).markers]; markers[i] = { ...markers[i], x: Number(e.target.value) }; handleUpdate({ markers } as any); }} className="h-5 text-[9px] w-16" placeholder="X %" />
+                      <Input type="number" min={0} max={100} value={m.y} onChange={(e) => { const markers = [...(block as any).markers]; markers[i] = { ...markers[i], y: Number(e.target.value) }; handleUpdate({ markers } as any); }} className="h-5 text-[9px] w-16" placeholder="Y %" />
+                    </div>
+                  </div>
+                ))}
+              </Section>
+            )}
+
+            {/* ─── PROCESS ─── */}
+            {block.type === "process" && (
+              <Section title="Processo" icon={<Layers className="h-3 w-3 text-emerald-500" />}>
+                <FieldRow label="Layout">
+                  <select value={(block as any).layout || "horizontal"} onChange={(e) => handleUpdate({ layout: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="horizontal">Horizontal</option>
+                    <option value="vertical">Vertical</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Estilo">
+                  <select value={(block as any).style || "numbered"} onChange={(e) => handleUpdate({ style: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="numbered">Numerado</option>
+                    <option value="icon">Ícone</option>
+                    <option value="minimal">Minimal</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Conector">
+                  <select value={(block as any).connectorStyle || "arrow"} onChange={(e) => handleUpdate({ connectorStyle: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="line">Linha</option>
+                    <option value="arrow">Seta</option>
+                    <option value="dashed">Tracejado</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Cor">
+                  <Input type="color" value={(block as any).activeColor || "#7C3AED"} onChange={(e) => handleUpdate({ activeColor: e.target.value } as any)} className="h-7 w-14" />
+                </FieldRow>
+                <label className="flex items-center gap-1.5 text-[10px]">
+                  <input type="checkbox" checked={(block as any).interactive ?? true} onChange={(e) => handleUpdate({ interactive: e.target.checked } as any)} className="rounded" />
+                  Interativo
+                </label>
+                <Separator />
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] font-semibold text-emerald-700">Etapas</p>
+                  <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => {
+                    const steps = [...((block as any).steps || []), { id: crypto.randomUUID(), title: "Nova Etapa", content: "Descrição", image: "", icon: "" }];
+                    handleUpdate({ steps } as any);
+                  }}>
+                    <Plus className="h-2.5 w-2.5 mr-0.5" /> Add
+                  </Button>
+                </div>
+                {((block as any).steps || []).map((step: any, i: number) => (
+                  <div key={step.id} className="bg-emerald-50/50 rounded-lg p-2 mb-1 space-y-1">
+                    <div className="flex gap-1">
+                      <Input value={step.title} onChange={(e) => { const steps = [...(block as any).steps]; steps[i] = { ...steps[i], title: e.target.value }; handleUpdate({ steps } as any); }} className="h-5 text-[9px] flex-1" placeholder="Título" />
+                      <button onClick={() => handleUpdate({ steps: (block as any).steps.filter((_: any, j: number) => j !== i) } as any)} className="text-red-400 text-xs">✕</button>
+                    </div>
+                    <Input value={step.content} onChange={(e) => { const steps = [...(block as any).steps]; steps[i] = { ...steps[i], content: e.target.value }; handleUpdate({ steps } as any); }} className="h-5 text-[9px]" placeholder="Conteúdo" />
+                  </div>
+                ))}
+              </Section>
+            )}
+
+            {/* ─── LIGHTBOX ─── */}
+            {block.type === "lightbox" && (
+              <Section title="Lightbox" icon={<Maximize2 className="h-3 w-3 text-violet-500" />}>
+                <FieldRow label="Trigger">
+                  <select value={(block as any).triggerType || "button"} onChange={(e) => handleUpdate({ triggerType: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="button">Botão</option>
+                    <option value="image">Imagem</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Label">
+                  <Input value={(block as any).triggerLabel || ""} onChange={(e) => handleUpdate({ triggerLabel: e.target.value } as any)} className="h-7 text-xs" placeholder="Texto do botão" />
+                </FieldRow>
+                <FieldRow label="Título">
+                  <Input value={(block as any).modalTitle || ""} onChange={(e) => handleUpdate({ modalTitle: e.target.value } as any)} className="h-7 text-xs" placeholder="Título do modal" />
+                </FieldRow>
+                <FieldRow label="Conteúdo">
+                  <textarea value={(block as any).modalContent || ""} onChange={(e) => handleUpdate({ modalContent: e.target.value } as any)} className="w-full text-xs rounded border border-slate-200 p-2 min-h-[60px]" placeholder="Conteúdo do modal" />
+                </FieldRow>
+                <FieldRow label="Imagem">
+                  <Input value={(block as any).modalImage || ""} onChange={(e) => handleUpdate({ modalImage: e.target.value } as any)} className="h-7 text-xs" placeholder="URL da imagem" />
+                </FieldRow>
+                <FieldRow label="Vídeo">
+                  <Input value={(block as any).modalVideo || ""} onChange={(e) => handleUpdate({ modalVideo: e.target.value } as any)} className="h-7 text-xs" placeholder="URL do vídeo" />
+                </FieldRow>
+                <FieldRow label="Largura">
+                  <select value={(block as any).modalWidth || "medium"} onChange={(e) => handleUpdate({ modalWidth: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="small">Pequeno</option>
+                    <option value="medium">Médio</option>
+                    <option value="large">Grande</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Overlay">
+                  <Input value={(block as any).overlayColor || "rgba(0,0,0,0.5)"} onChange={(e) => handleUpdate({ overlayColor: e.target.value } as any)} className="h-7 text-xs" placeholder="rgba(0,0,0,0.5)" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── QUOTE ─── */}
+            {block.type === "quote" && (
+              <Section title="Citação" icon={<Type className="h-3 w-3 text-amber-500" />}>
+                <FieldRow label="Texto">
+                  <textarea value={(block as any).text || ""} onChange={(e) => handleUpdate({ text: e.target.value } as any)} className="w-full text-xs rounded border border-slate-200 p-2 min-h-[60px]" placeholder="Texto da citação" />
+                </FieldRow>
+                <FieldRow label="Autor">
+                  <Input value={(block as any).author || ""} onChange={(e) => handleUpdate({ author: e.target.value } as any)} className="h-7 text-xs" placeholder="Nome do autor" />
+                </FieldRow>
+                <FieldRow label="Cargo">
+                  <Input value={(block as any).authorTitle || ""} onChange={(e) => handleUpdate({ authorTitle: e.target.value } as any)} className="h-7 text-xs" placeholder="Cargo/título" />
+                </FieldRow>
+                <FieldRow label="Foto">
+                  <Input value={(block as any).authorImage || ""} onChange={(e) => handleUpdate({ authorImage: e.target.value } as any)} className="h-7 text-xs" placeholder="URL da foto" />
+                </FieldRow>
+                <FieldRow label="Estilo">
+                  <select value={(block as any).quoteStyle || "modern"} onChange={(e) => handleUpdate({ quoteStyle: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="classic">Clássico</option>
+                    <option value="modern">Moderno</option>
+                    <option value="callout">Callout</option>
+                    <option value="speech-bubble">Balão</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Cor">
+                  <Input type="color" value={(block as any).accentColor || "#7C3AED"} onChange={(e) => handleUpdate({ accentColor: e.target.value } as any)} className="h-7 w-14" />
+                </FieldRow>
+                <FieldRow label="Alinhamento">
+                  <select value={(block as any).alignment || "left"} onChange={(e) => handleUpdate({ alignment: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="left">Esquerda</option>
+                    <option value="center">Centro</option>
+                  </select>
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── DOWNLOAD ─── */}
+            {block.type === "download" && (
+              <Section title="Downloads" icon={<Layers className="h-3 w-3 text-blue-500" />}>
+                <FieldRow label="Estilo">
+                  <select value={(block as any).downloadStyle || "card"} onChange={(e) => handleUpdate({ downloadStyle: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="list">Lista</option>
+                    <option value="card">Card</option>
+                    <option value="button">Botão</option>
+                  </select>
+                </FieldRow>
+                <Separator />
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] font-semibold text-blue-700">Arquivos</p>
+                  <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => {
+                    const files = [...((block as any).files || []), { id: crypto.randomUUID(), name: "arquivo.pdf", url: "", size: 0, fileType: "pdf", description: "" }];
+                    handleUpdate({ files } as any);
+                  }}>
+                    <Plus className="h-2.5 w-2.5 mr-0.5" /> Add
+                  </Button>
+                </div>
+                {((block as any).files || []).map((file: any, i: number) => (
+                  <div key={file.id} className="bg-blue-50/50 rounded-lg p-2 mb-1 space-y-1">
+                    <div className="flex gap-1">
+                      <Input value={file.name} onChange={(e) => { const files = [...(block as any).files]; files[i] = { ...files[i], name: e.target.value }; handleUpdate({ files } as any); }} className="h-5 text-[9px] flex-1" placeholder="Nome" />
+                      <button onClick={() => handleUpdate({ files: (block as any).files.filter((_: any, j: number) => j !== i) } as any)} className="text-red-400 text-xs">✕</button>
+                    </div>
+                    <Input value={file.url} onChange={(e) => { const files = [...(block as any).files]; files[i] = { ...files[i], url: e.target.value }; handleUpdate({ files } as any); }} className="h-5 text-[9px]" placeholder="URL do arquivo" />
+                    <Input value={file.description || ""} onChange={(e) => { const files = [...(block as any).files]; files[i] = { ...files[i], description: e.target.value }; handleUpdate({ files } as any); }} className="h-5 text-[9px]" placeholder="Descrição" />
+                  </div>
+                ))}
+              </Section>
+            )}
+
+            {/* ─── COUNTER ─── */}
+            {block.type === "counter" && (
+              <Section title="Contador" icon={<Layers className="h-3 w-3 text-red-500" />}>
+                <FieldRow label="Layout">
+                  <select value={(block as any).layout || "row"} onChange={(e) => handleUpdate({ layout: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="row">Linha</option>
+                    <option value="grid">Grid</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Estilo">
+                  <select value={(block as any).counterStyle || "card"} onChange={(e) => handleUpdate({ counterStyle: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="card">Card</option>
+                    <option value="minimal">Minimal</option>
+                    <option value="circle">Círculo</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Duração">
+                  <Input type="number" min={0.5} max={10} step={0.5} value={(block as any).animationDuration || 2} onChange={(e) => handleUpdate({ animationDuration: Number(e.target.value) } as any)} className="h-7 text-xs" />
+                </FieldRow>
+                <Separator />
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] font-semibold text-red-700">Itens</p>
+                  <Button variant="outline" size="sm" className="h-5 text-[9px] px-1.5" onClick={() => {
+                    const items = [...((block as any).items || []), { id: crypto.randomUUID(), value: 0, prefix: "", suffix: "", label: "Novo", icon: "", color: "#7C3AED" }];
+                    handleUpdate({ items } as any);
+                  }}>
+                    <Plus className="h-2.5 w-2.5 mr-0.5" /> Add
+                  </Button>
+                </div>
+                {((block as any).items || []).map((item: any, i: number) => (
+                  <div key={item.id} className="bg-red-50/50 rounded-lg p-2 mb-1 space-y-1">
+                    <div className="flex gap-1">
+                      <Input type="number" value={item.value} onChange={(e) => { const items = [...(block as any).items]; items[i] = { ...items[i], value: Number(e.target.value) }; handleUpdate({ items } as any); }} className="h-5 text-[9px] w-16" placeholder="Valor" />
+                      <Input value={item.label} onChange={(e) => { const items = [...(block as any).items]; items[i] = { ...items[i], label: e.target.value }; handleUpdate({ items } as any); }} className="h-5 text-[9px] flex-1" placeholder="Label" />
+                      <button onClick={() => handleUpdate({ items: (block as any).items.filter((_: any, j: number) => j !== i) } as any)} className="text-red-400 text-xs">✕</button>
+                    </div>
+                    <div className="flex gap-1">
+                      <Input value={item.prefix || ""} onChange={(e) => { const items = [...(block as any).items]; items[i] = { ...items[i], prefix: e.target.value }; handleUpdate({ items } as any); }} className="h-5 text-[9px] w-12" placeholder="Pre" />
+                      <Input value={item.suffix || ""} onChange={(e) => { const items = [...(block as any).items]; items[i] = { ...items[i], suffix: e.target.value }; handleUpdate({ items } as any); }} className="h-5 text-[9px] w-12" placeholder="Suf" />
+                      <Input type="color" value={item.color || "#7C3AED"} onChange={(e) => { const items = [...(block as any).items]; items[i] = { ...items[i], color: e.target.value }; handleUpdate({ items } as any); }} className="h-5 w-10" />
+                    </div>
+                  </div>
+                ))}
+              </Section>
+            )}
+
+            {/* ─── BUTTON ─── */}
+            {block.type === "button" && (
+              <Section title="Botão" icon={<Layers className="h-3 w-3 text-violet-500" />}>
+                <FieldRow label="Label">
+                  <Input value={(block as any).label || ""} onChange={(e) => handleUpdate({ label: e.target.value } as any)} className="h-7 text-xs" placeholder="Texto do botão" />
+                </FieldRow>
+                <FieldRow label="Ação">
+                  <select value={(block as any).action || "link"} onChange={(e) => handleUpdate({ action: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="link">Link externo</option>
+                    <option value="slide">Ir para slide</option>
+                    <option value="download">Download</option>
+                  </select>
+                </FieldRow>
+                {(block as any).action === "link" && (
+                  <FieldRow label="URL">
+                    <Input value={(block as any).url || ""} onChange={(e) => handleUpdate({ url: e.target.value } as any)} className="h-7 text-xs" placeholder="https://..." />
+                  </FieldRow>
+                )}
+                {(block as any).action === "slide" && (
+                  <FieldRow label="Slide">
+                    <Input type="number" min={0} value={(block as any).targetSlideIndex || 0} onChange={(e) => handleUpdate({ targetSlideIndex: Number(e.target.value) } as any)} className="h-7 text-xs" />
+                  </FieldRow>
+                )}
+                {(block as any).action === "download" && (
+                  <FieldRow label="URL">
+                    <Input value={(block as any).downloadUrl || ""} onChange={(e) => handleUpdate({ downloadUrl: e.target.value } as any)} className="h-7 text-xs" placeholder="URL do arquivo" />
+                  </FieldRow>
+                )}
+                <FieldRow label="Estilo">
+                  <select value={(block as any).buttonStyle || "primary"} onChange={(e) => handleUpdate({ buttonStyle: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="primary">Primário</option>
+                    <option value="secondary">Secundário</option>
+                    <option value="outline">Outline</option>
+                    <option value="ghost">Ghost</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Tamanho">
+                  <select value={(block as any).size || "medium"} onChange={(e) => handleUpdate({ size: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="small">Pequeno</option>
+                    <option value="medium">Médio</option>
+                    <option value="large">Grande</option>
+                  </select>
+                </FieldRow>
+                <label className="flex items-center gap-1.5 text-[10px]">
+                  <input type="checkbox" checked={(block as any).fullWidth || false} onChange={(e) => handleUpdate({ fullWidth: e.target.checked } as any)} className="rounded" />
+                  Largura total
+                </label>
+              </Section>
+            )}
+
+            {/* ─── DIVIDER ─── */}
+            {block.type === "divider" && (
+              <Section title="Divisor" icon={<Layers className="h-3 w-3 text-slate-400" />}>
+                <FieldRow label="Estilo">
+                  <select value={(block as any).dividerStyle || "solid"} onChange={(e) => handleUpdate({ dividerStyle: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="solid">Sólido</option>
+                    <option value="dashed">Tracejado</option>
+                    <option value="dotted">Pontilhado</option>
+                    <option value="gradient">Gradiente</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Cor">
+                  <Input type="color" value={(block as any).color || "#CBD5E1"} onChange={(e) => handleUpdate({ color: e.target.value } as any)} className="h-7 w-14" />
+                </FieldRow>
+                <FieldRow label="Espessura">
+                  <Input type="number" min={1} max={20} value={(block as any).thickness || 2} onChange={(e) => handleUpdate({ thickness: Number(e.target.value) } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── EMBED ─── */}
+            {block.type === "embed" && (
+              <Section title="Embed" icon={<Layers className="h-3 w-3 text-sky-500" />}>
+                <FieldRow label="URL">
+                  <Input value={(block as any).url || ""} onChange={(e) => handleUpdate({ url: e.target.value } as any)} className="h-7 text-xs" placeholder="URL do conteúdo" />
+                </FieldRow>
+                <FieldRow label="Título">
+                  <Input value={(block as any).title || ""} onChange={(e) => handleUpdate({ title: e.target.value } as any)} className="h-7 text-xs" placeholder="Título" />
+                </FieldRow>
+                <FieldRow label="Proporção">
+                  <select value={(block as any).aspectRatio || "16:9"} onChange={(e) => handleUpdate({ aspectRatio: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="16:9">16:9</option>
+                    <option value="4:3">4:3</option>
+                    <option value="1:1">1:1</option>
+                  </select>
+                </FieldRow>
+                <label className="flex items-center gap-1.5 text-[10px]">
+                  <input type="checkbox" checked={(block as any).allowFullscreen ?? true} onChange={(e) => handleUpdate({ allowFullscreen: e.target.checked } as any)} className="rounded" />
+                  Permitir fullscreen
+                </label>
               </Section>
             )}
 

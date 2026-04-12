@@ -32,6 +32,15 @@ import {
   Gamepad2,
   Brain,
   BookA,
+  MapPin,
+  ListOrdered,
+  Maximize,
+  Quote,
+  Download,
+  Hash,
+  MousePointerClick,
+  Minus,
+  Code,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -78,6 +87,15 @@ const COMPONENTS: ComponentItem[] = [
   { type: "game", label: "Palavras", description: "Jogo de encontrar palavras", icon: <Type className="h-5 w-5" />, color: "#10B981", category: "jogos" },
   { type: "game", label: "Swipe", description: "Jogo de cards deslizáveis", icon: <Gamepad2 className="h-5 w-5" />, color: "#F59E0B", category: "jogos" },
   { type: "game", label: "Alfabeto", description: "Jogo de ordenação de letras", icon: <BookA className="h-5 w-5" />, color: "#EC4899", category: "jogos" },
+  { type: "labeled-graphic", label: "Imagem Interativa", description: "Imagem com pontos clicáveis", icon: <MapPin className="h-5 w-5" />, color: "#0891B2", category: "apresentacao" },
+  { type: "process", label: "Processo", description: "Passo a passo visual", icon: <ListOrdered className="h-5 w-5" />, color: "#059669", category: "apresentacao" },
+  { type: "lightbox", label: "Lightbox", description: "Conteúdo em popup modal", icon: <Maximize className="h-5 w-5" />, color: "#7C3AED", category: "apresentacao" },
+  { type: "quote", label: "Citação", description: "Bloco de citação estilizado", icon: <Quote className="h-5 w-5" />, color: "#D97706", category: "texto" },
+  { type: "download", label: "Download", description: "Anexos para download", icon: <Download className="h-5 w-5" />, color: "#2563EB", category: "texto" },
+  { type: "counter", label: "Contador", description: "Números animados", icon: <Hash className="h-5 w-5" />, color: "#DC2626", category: "apresentacao" },
+  { type: "button", label: "Botão", description: "Botão de ação (link, slide)", icon: <MousePointerClick className="h-5 w-5" />, color: "#7C3AED", category: "apresentacao" },
+  { type: "divider", label: "Divisor", description: "Linha separadora", icon: <Minus className="h-5 w-5" />, color: "#94A3B8", category: "apresentacao" },
+  { type: "embed", label: "Embed", description: "Conteúdo externo (iframe)", icon: <Code className="h-5 w-5" />, color: "#0EA5E9", category: "avancado" },
 ];
 
 interface ComponentLibrarySidebarProps {
@@ -192,6 +210,33 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
         break;
       case "interactiveVideo":
         newBlock = { ...baseBlock, type: "interactiveVideo", width: 640, height: 360, src: "", poster: "", chapters: [], quizPoints: [], bookmarks: [], autoplay: false, loop: false };
+        break;
+      case "labeled-graphic":
+        newBlock = { ...baseBlock, type: "labeled-graphic", width: 600, height: 400, backgroundImage: "", markers: [], markerStyle: "pin", markerColor: "#7C3AED", popupPosition: "auto", completionRule: "none" };
+        break;
+      case "process":
+        newBlock = { ...baseBlock, type: "process", width: 700, height: 200, steps: [{ id: crypto.randomUUID(), title: "Etapa 1", content: "Descrição da etapa", image: "", icon: "1" }, { id: crypto.randomUUID(), title: "Etapa 2", content: "Descrição da etapa", image: "", icon: "2" }, { id: crypto.randomUUID(), title: "Etapa 3", content: "Descrição da etapa", image: "", icon: "3" }], layout: "horizontal", style: "numbered", connectorStyle: "arrow", activeColor: "#7C3AED", interactive: true };
+        break;
+      case "lightbox":
+        newBlock = { ...baseBlock, type: "lightbox", width: 200, height: 60, triggerType: "button", triggerLabel: "Saiba mais", triggerImage: "", modalTitle: "Título do Modal", modalContent: "Conteúdo do modal aqui...", modalImage: "", modalVideo: "", modalWidth: "medium", overlayColor: "rgba(0,0,0,0.5)" };
+        break;
+      case "quote":
+        newBlock = { ...baseBlock, type: "quote", width: 500, height: 180, text: "Uma citação inspiradora vai aqui.", author: "Autor", authorTitle: "Cargo", authorImage: "", quoteStyle: "modern", accentColor: "#7C3AED", alignment: "left" };
+        break;
+      case "download":
+        newBlock = { ...baseBlock, type: "download", width: 400, height: 200, files: [{ id: crypto.randomUUID(), name: "arquivo.pdf", url: "", size: 0, fileType: "pdf", description: "Descrição do arquivo" }], downloadStyle: "card", icon: "file" };
+        break;
+      case "counter":
+        newBlock = { ...baseBlock, type: "counter", width: 600, height: 150, items: [{ id: crypto.randomUUID(), value: 100, prefix: "", suffix: "+", label: "Alunos", icon: "", color: "#7C3AED" }, { id: crypto.randomUUID(), value: 50, prefix: "", suffix: "%", label: "Aprovação", icon: "", color: "#059669" }], layout: "row", animationDuration: 2, counterStyle: "card" };
+        break;
+      case "button":
+        newBlock = { ...baseBlock, type: "button", width: 200, height: 50, label: "Clique aqui", action: "link", url: "", targetSlideIndex: 0, downloadUrl: "", buttonStyle: "primary", size: "medium", icon: "", iconPosition: "left", fullWidth: false };
+        break;
+      case "divider":
+        newBlock = { ...baseBlock, type: "divider", width: 600, height: 20, dividerStyle: "solid", color: "#CBD5E1", thickness: 2 };
+        break;
+      case "embed":
+        newBlock = { ...baseBlock, type: "embed", width: 560, height: 315, url: "", title: "Conteúdo Incorporado", aspectRatio: "16:9", allowFullscreen: true };
         break;
       case "game":
         newBlock = { ...baseBlock, type: "game", width: 500, height: 400, gameType: "trivia", gameData: {}, title: "Novo Jogo" };

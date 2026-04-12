@@ -830,6 +830,125 @@ export function DraggableBlock({
         </div>
       )}
 
+      {/* ─── LABELED GRAPHIC BLOCK ─── */}
+      {block.type === "labeled-graphic" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-cyan-50 to-teal-50 border border-cyan-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-cyan-700 uppercase tracking-wider">Imagem Interativa</div>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            {(block as any).backgroundImage ? (
+              <img src={(block as any).backgroundImage} alt="Labeled graphic" className="w-full h-full object-cover rounded" />
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-center">
+                <div className="h-8 w-8 rounded-full bg-cyan-200 flex items-center justify-center text-cyan-600 text-sm">📍</div>
+                <p className="text-[8px] text-slate-500">{((block as any).markers || []).length} marcadores</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ─── PROCESS BLOCK ─── */}
+      {block.type === "process" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-emerald-700 uppercase tracking-wider">Processo</div>
+          </div>
+          <div className="flex-1 flex items-center justify-center gap-2">
+            {((block as any).steps || []).slice(0, 4).map((step: any, i: number) => (
+              <div key={step.id || i} className="flex items-center gap-1">
+                <div className="h-6 w-6 rounded-full bg-emerald-500 text-white text-[8px] flex items-center justify-center font-bold">{i + 1}</div>
+                {i < Math.min(((block as any).steps || []).length, 4) - 1 && <div className="w-4 h-0.5 bg-emerald-300" />}
+              </div>
+            ))}
+          </div>
+          <p className="text-[8px] text-slate-500 text-center">{((block as any).steps || []).length} etapas</p>
+        </div>
+      )}
+
+      {/* ─── LIGHTBOX BLOCK ─── */}
+      {block.type === "lightbox" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200/50 p-3 flex items-center justify-center">
+          <div className="px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-medium shadow-md">
+            {(block as any).triggerLabel || "Saiba mais"}
+          </div>
+        </div>
+      )}
+
+      {/* ─── QUOTE BLOCK ─── */}
+      {block.type === "quote" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200/50 p-3 flex flex-col justify-center" style={{ borderLeft: `4px solid ${(block as any).accentColor || '#7C3AED'}` }}>
+          <p className="text-xs italic text-slate-700 line-clamp-3">&ldquo;{(block as any).text || "Citação"}&rdquo;</p>
+          <p className="text-[9px] font-semibold text-slate-600 mt-2">— {(block as any).author || "Autor"}</p>
+          {(block as any).authorTitle && <p className="text-[8px] text-slate-400">{(block as any).authorTitle}</p>}
+        </div>
+      )}
+
+      {/* ─── DOWNLOAD BLOCK ─── */}
+      {block.type === "download" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-blue-700 uppercase tracking-wider">Downloads</div>
+          </div>
+          <div className="flex-1 space-y-1.5 overflow-hidden">
+            {((block as any).files || []).slice(0, 3).map((file: any, i: number) => (
+              <div key={file.id || i} className="flex items-center gap-2 px-2 py-1 bg-white/80 rounded border border-blue-100">
+                <div className="text-[10px]">📎</div>
+                <span className="text-[8px] text-slate-700 truncate">{file.name || "arquivo"}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── COUNTER BLOCK ─── */}
+      {block.type === "counter" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-red-50 to-rose-50 border border-red-200/50 p-3 flex items-center justify-center gap-4">
+          {((block as any).items || []).slice(0, 4).map((item: any, i: number) => (
+            <div key={item.id || i} className="text-center">
+              <div className="text-lg font-bold" style={{ color: item.color || '#DC2626' }}>
+                {item.prefix}{item.value}{item.suffix}
+              </div>
+              <div className="text-[8px] text-slate-500">{item.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ─── BUTTON BLOCK ─── */}
+      {block.type === "button" && (
+        <div className="w-full h-full rounded-lg flex items-center justify-center">
+          <div className={cn(
+            "px-4 py-2 rounded-lg text-xs font-medium shadow-sm",
+            (block as any).buttonStyle === "primary" && "bg-violet-600 text-white",
+            (block as any).buttonStyle === "secondary" && "bg-slate-200 text-slate-800",
+            (block as any).buttonStyle === "outline" && "border-2 border-violet-600 text-violet-600 bg-transparent",
+            (block as any).buttonStyle === "ghost" && "text-violet-600 bg-transparent hover:bg-violet-50",
+          )}>
+            {(block as any).label || "Botão"}
+          </div>
+        </div>
+      )}
+
+      {/* ─── DIVIDER BLOCK ─── */}
+      {block.type === "divider" && (
+        <div className="w-full h-full flex items-center justify-center px-2">
+          <div className="w-full" style={{
+            borderTop: `${(block as any).thickness || 2}px ${(block as any).dividerStyle || 'solid'} ${(block as any).color || '#CBD5E1'}`,
+          }} />
+        </div>
+      )}
+
+      {/* ─── EMBED BLOCK ─── */}
+      {block.type === "embed" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-sky-50 to-cyan-50 border border-sky-200/50 p-3 flex flex-col items-center justify-center">
+          <div className="text-2xl mb-2">🌐</div>
+          <p className="text-xs font-medium text-slate-700">{(block as any).title || "Embed"}</p>
+          <p className="text-[8px] text-slate-400 truncate max-w-full">{(block as any).url || "URL do conteúdo"}</p>
+        </div>
+      )}
+
       {/* Dimension tooltip when selected */}
       {isSelected && !isDragging && (
         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-800 text-white text-[9px] rounded font-mono whitespace-nowrap z-40 shadow-lg">

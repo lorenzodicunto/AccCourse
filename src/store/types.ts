@@ -265,7 +265,134 @@ export interface GameBlock extends BaseBlock {
   title: string;
 }
 
-export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock | InteractiveVideoBlock | GameBlock;
+// ─── Wave 6: New Content Blocks ───────────────────────────────────────────
+
+export interface LabeledGraphicMarker {
+  id: string;
+  x: number;
+  y: number;
+  label: string;
+  content: string;
+  icon?: "pin" | "number" | "plus" | "info" | "star";
+  image?: string;
+}
+
+export interface LabeledGraphicBlock extends BaseBlock {
+  type: "labeled-graphic";
+  backgroundImage: string;
+  markers: LabeledGraphicMarker[];
+  markerStyle: "pin" | "numbered" | "icon";
+  markerColor: string;
+  popupPosition: "auto" | "top" | "bottom" | "left" | "right";
+  completionRule: "view-all" | "none";
+}
+
+export interface ProcessStep {
+  id: string;
+  title: string;
+  content: string;
+  image?: string;
+  icon?: string;
+}
+
+export interface ProcessBlock extends BaseBlock {
+  type: "process";
+  steps: ProcessStep[];
+  layout: "horizontal" | "vertical";
+  style: "numbered" | "icon" | "minimal";
+  connectorStyle: "line" | "arrow" | "dashed";
+  activeColor: string;
+  interactive: boolean;
+}
+
+export interface LightboxBlock extends BaseBlock {
+  type: "lightbox";
+  triggerType: "button" | "image";
+  triggerLabel: string;
+  triggerImage?: string;
+  modalTitle: string;
+  modalContent: string;
+  modalImage?: string;
+  modalVideo?: string;
+  modalWidth: "small" | "medium" | "large";
+  overlayColor: string;
+}
+
+export interface QuoteBlock extends BaseBlock {
+  type: "quote";
+  text: string;
+  author: string;
+  authorTitle?: string;
+  authorImage?: string;
+  quoteStyle: "classic" | "modern" | "callout" | "speech-bubble";
+  accentColor: string;
+  alignment: "left" | "center";
+}
+
+export interface DownloadFile {
+  id: string;
+  name: string;
+  url: string;
+  size: number;
+  fileType: string;
+  description?: string;
+}
+
+export interface DownloadBlock extends BaseBlock {
+  type: "download";
+  files: DownloadFile[];
+  downloadStyle: "list" | "card" | "button";
+  icon: "file" | "download" | "document";
+}
+
+export interface CounterItem {
+  id: string;
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  label: string;
+  icon?: string;
+  color: string;
+}
+
+export interface CounterBlock extends BaseBlock {
+  type: "counter";
+  items: CounterItem[];
+  layout: "row" | "grid";
+  animationDuration: number;
+  counterStyle: "card" | "minimal" | "circle";
+}
+
+export interface ButtonBlock extends BaseBlock {
+  type: "button";
+  label: string;
+  action: "link" | "slide" | "download";
+  url?: string;
+  targetSlideIndex?: number;
+  downloadUrl?: string;
+  buttonStyle: "primary" | "secondary" | "outline" | "ghost";
+  size: "small" | "medium" | "large";
+  icon?: string;
+  iconPosition: "left" | "right";
+  fullWidth: boolean;
+}
+
+export interface DividerBlock extends BaseBlock {
+  type: "divider";
+  dividerStyle: "solid" | "dashed" | "dotted" | "gradient";
+  color: string;
+  thickness: number;
+}
+
+export interface EmbedBlock extends BaseBlock {
+  type: "embed";
+  url: string;
+  title: string;
+  aspectRatio: "16:9" | "4:3" | "1:1";
+  allowFullscreen: boolean;
+}
+
+export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock | InteractiveVideoBlock | GameBlock | LabeledGraphicBlock | ProcessBlock | LightboxBlock | QuoteBlock | DownloadBlock | CounterBlock | ButtonBlock | DividerBlock | EmbedBlock;
 
 export type SlideTransition = "none" | "fade" | "slide" | "zoom";
 
