@@ -20,6 +20,85 @@ export interface BlockAnimation {
   easing: AnimationEasing;
 }
 
+// ─── Wave 9: Variables & Triggers ─────────────────────────────────────────
+
+export type VariableType = "text" | "number" | "boolean";
+
+export interface CourseVariable {
+  id: string;
+  name: string;
+  type: VariableType;
+  defaultValue: string | number | boolean;
+  scope: "course" | "slide";
+  persistent: boolean;
+}
+
+export type TriggerEvent =
+  | "click"
+  | "hover"
+  | "slide-start"
+  | "slide-end"
+  | "variable-change"
+  | "media-complete"
+  | "quiz-correct"
+  | "quiz-incorrect"
+  | "key-press";
+
+export type TriggerAction =
+  | { type: "navigate"; slideIndex: number }
+  | { type: "show-layer"; layerId: string }
+  | { type: "hide-layer"; layerId: string }
+  | { type: "set-variable"; variableId: string; value: string | number | boolean }
+  | { type: "increment-variable"; variableId: string; amount: number }
+  | { type: "play-audio"; audioUrl: string }
+  | { type: "show-block"; blockId: string }
+  | { type: "hide-block"; blockId: string }
+  | { type: "change-state"; blockId: string; stateName: string }
+  | { type: "open-lightbox"; content: string }
+  | { type: "set-completion"; status: "completed" | "passed" | "failed" };
+
+export interface TriggerCondition {
+  variableId: string;
+  operator: "==" | "!=" | ">" | "<" | ">=" | "<=";
+  value: string | number | boolean;
+}
+
+export interface Trigger {
+  id: string;
+  name: string;
+  event: TriggerEvent;
+  targetBlockId?: string;
+  action: TriggerAction;
+  conditions: TriggerCondition[];
+  enabled: boolean;
+}
+
+// ─── Wave 10: Block States & Slide Layers ─────────────────────────────────
+
+export type BlockStateName = "normal" | "hover" | "visited" | "selected" | "disabled" | "correct" | "incorrect" | "hidden";
+
+export interface BlockStateOverride {
+  [key: string]: unknown;
+}
+
+export interface BlockState {
+  name: BlockStateName | string;
+  overrides: BlockStateOverride;
+  animation?: { type: string; duration: number };
+}
+
+export interface SlideLayer {
+  id: string;
+  name: string;
+  blocks: Block[];
+  visible: boolean;
+  preventBaseInteraction: boolean;
+  backdrop: "none" | "dim" | "blur";
+  position: "overlay" | "sidebar-right" | "sidebar-left" | "bottom-panel";
+  animation: { enter: string; exit: string; duration: number };
+  autoClose: number | null;
+}
+
 export interface BaseBlock {
   id: string;
   type: string;
@@ -29,6 +108,8 @@ export interface BaseBlock {
   height: number;
   zIndex: number;
   animation?: BlockAnimation;
+  states?: BlockState[];
+  currentState?: string;
 }
 
 export interface TextBlock extends BaseBlock {
@@ -508,6 +589,8 @@ export interface Slide {
   notes: string;
   narration?: string; // audio URL for slide narration
   duration?: number;  // estimated duration in seconds
+  triggers?: Trigger[];
+  layers?: SlideLayer[];
 }
 
 export interface QuizSettings {
@@ -562,6 +645,7 @@ export interface CourseProject {
   quizSettings: QuizSettings;
   gamification: GamificationSettings;
   certificate?: CertificateConfig;
+  variables?: CourseVariable[];
   createdAt: string;
   updatedAt: string;
 }

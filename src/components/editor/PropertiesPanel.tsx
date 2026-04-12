@@ -718,6 +718,80 @@ export function PropertiesPanel() {
               </div>
             </Section>
 
+            {/* ─── STATES (Wave 10) ─── */}
+            <Section
+              title="Estados"
+              icon={<Layers className="h-3 w-3 text-muted-foreground/60" />}
+              defaultOpen={false}
+            >
+              <div className="space-y-3">
+                {block.states && block.states.length > 0 ? (
+                  <div className="space-y-2">
+                    {block.states.map((state) => (
+                      <div key={state.name} className="p-2 rounded border border-border/40 bg-muted/20">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-medium text-foreground">{state.name}</span>
+                          <button
+                            onClick={() =>
+                              handleUpdate({
+                                states: block.states!.filter((s) => s.name !== state.name),
+                              } as Partial<Block>)
+                            }
+                            className="h-5 w-5 flex items-center justify-center rounded text-slate-400 hover:bg-red-50 hover:text-red-500 transition-colors text-[10px]"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Nenhum estado configurado</p>
+                )}
+                <Button
+                  onClick={() => {
+                    const stateName = prompt("Nome do estado (ex: hover, selected, disabled):");
+                    if (stateName) {
+                      const newState = {
+                        name: stateName,
+                        overrides: {},
+                      };
+                      handleUpdate({
+                        states: [...(block.states || []), newState],
+                      } as Partial<Block>);
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full h-7 text-xs"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Adicionar Estado
+                </Button>
+                {block.currentState && (
+                  <div className="p-2 rounded border border-border/40 bg-blue-50">
+                    <label className="text-[10px] font-semibold text-slate-700">
+                      Estado Atual
+                    </label>
+                    <select
+                      value={block.currentState || ""}
+                      onChange={(e) =>
+                        handleUpdate({ currentState: e.target.value } as Partial<Block>)
+                      }
+                      className="w-full h-6 text-xs rounded-md border border-border bg-background mt-1 px-2"
+                    >
+                      <option value="">Nenhum</option>
+                      {block.states?.map((state) => (
+                        <option key={state.name} value={state.name}>
+                          {state.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+            </Section>
+
             {/* ─── ALIGNMENT ─── */}
             <Section
               title="Alinhar no Slide"
@@ -3365,6 +3439,85 @@ export function PropertiesPanel() {
                     <audio src={slide.narration} controls className="w-full h-8" />
                   )}
                   <p className="text-[9px] text-violet-400 mt-1">Áudio reproduzido ao exibir o slide</p>
+                </div>
+
+                {/* Layers (Wave 10) */}
+                <div className="bg-indigo-50/50 border border-indigo-200/50 rounded-xl p-3 mt-3">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Layers className="h-3 w-3 text-indigo-600" />
+                    <span className="text-[10px] font-semibold text-indigo-700 uppercase tracking-wide">Camadas</span>
+                  </div>
+                  <div className="space-y-2">
+                    {slide.layers && slide.layers.length > 0 ? (
+                      <div className="space-y-2">
+                        {slide.layers.map((layer) => (
+                          <div key={layer.id} className="p-2 rounded border border-indigo-200/40 bg-white text-xs">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 flex-1">
+                                <input
+                                  type="checkbox"
+                                  checked={layer.visible}
+                                  onChange={(e) => {
+                                    if (project) {
+                                      useEditorStore.getState().updateSlide(project.id, slide.id, {
+                                        layers: slide.layers!.map((l) =>
+                                          l.id === layer.id ? { ...l, visible: e.target.checked } : l
+                                        ),
+                                      });
+                                    }
+                                  }}
+                                  className="w-3 h-3 rounded"
+                                />
+                                <span className="font-medium text-slate-700">{layer.name}</span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  if (project) {
+                                    useEditorStore.getState().updateSlide(project.id, slide.id, {
+                                      layers: slide.layers!.filter((l) => l.id !== layer.id),
+                                    });
+                                  }
+                                }}
+                                className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-indigo-600/70 text-[9px]">Nenhuma camada criada</p>
+                    )}
+                    <Button
+                      onClick={() => {
+                        const layerName = prompt("Nome da camada:");
+                        if (layerName && project) {
+                          const newLayer = {
+                            id: crypto.randomUUID(),
+                            name: layerName,
+                            blocks: [],
+                            visible: true,
+                            preventBaseInteraction: false,
+                            backdrop: "none" as const,
+                            position: "overlay" as const,
+                            animation: { enter: "fadeIn", exit: "fadeOut", duration: 0.3 },
+                            autoClose: null,
+                          };
+                          useEditorStore.getState().updateSlide(project.id, slide.id, {
+                            layers: [...(slide.layers || []), newLayer],
+                          });
+                        }
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="w-full h-6 text-[10px]"
+                    >
+                      <Plus className="h-3 w-3 mr-1" />
+                      Adicionar Camada
+                    </Button>
+                  </div>
+                  <p className="text-[9px] text-indigo-400 mt-2">Camadas permitem organizar blocos em diferentes níveis</p>
                 </div>
               </div>
             )}

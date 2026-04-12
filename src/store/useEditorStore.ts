@@ -61,6 +61,16 @@ export type {
   GamificationSettings,
   CertificateConfig,
   CourseProject,
+  VariableType,
+  CourseVariable,
+  TriggerEvent,
+  TriggerAction,
+  TriggerCondition,
+  Trigger,
+  BlockStateName,
+  BlockStateOverride,
+  BlockState,
+  SlideLayer,
 } from "./types";
 
 import type {
@@ -151,6 +161,11 @@ interface EditorActions {
   selectAllBlocks: (projectId: string, slideId: string) => void;
 
   // Slide extras
+  updateSlide: (
+    projectId: string,
+    slideId: string,
+    updates: Partial<Slide>
+  ) => void;
   updateSlideTransition: (
     projectId: string,
     slideId: string,
@@ -425,6 +440,25 @@ export const useEditorStore = create<EditorStore>()(
       },
 
       setCurrentSlide: (id) => set({ currentSlideId: id, selectedBlockId: null }),
+
+      updateSlide: (projectId, slideId, updates) => {
+        const state = get();
+        set({
+          past: [...state.past, state.projects].slice(-MAX_HISTORY),
+          future: [],
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  slides: p.slides.map((s) =>
+                    s.id === slideId ? { ...s, ...updates } : s
+                  ),
+                  updatedAt: new Date().toISOString(),
+                }
+              : p
+          ),
+        });
+      },
 
       updateSlideBackground: (projectId, slideId, background) => {
         const state = get();
