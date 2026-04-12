@@ -36,6 +36,7 @@ model User {
   tenant       Tenant?  @relation(fields: [tenantId], references: [id])
   courses      Course[]
   assets       Asset[]    @relation("uploadedAssets")
+  attempts     CourseAttempt[]
   createdAt    DateTime @default(now())
 
   @@index([tenantId])
@@ -54,6 +55,7 @@ model Course {
   deletedAt   DateTime? // Soft delete — null = active, set = in trash
   tenant      Tenant?   @relation(fields: [tenantId], references: [id])
   author      User      @relation(fields: [authorId], references: [id])
+  attempts    CourseAttempt[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -112,4 +114,26 @@ model Asset {
 
   @@index([tenantId])
   @@index([uploadedBy])
+}
+
+// ─── Course Analytics Models ──────────────────────────────────────────────────
+
+model CourseAttempt {
+  id            String   @id @default(cuid())
+  courseId      String
+  userId        String
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
+  score         Float?
+  maxScore      Float?
+  timeSpentSec  Int      @default(0)
+  status        String   @default("in_progress")
+  slideProgress Json?
+  quizResponses Json?
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([userId])
 }
