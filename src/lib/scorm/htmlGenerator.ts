@@ -627,31 +627,33 @@ function generateShapeBlockHTML(block: ShapeBlock, style: string): string {
   const rotation = block.rotation ? `transform: rotate(${block.rotation}deg);` : "";
   const fill = block.fillColor || "#7c3aed";
   const stroke = block.strokeColor || "#4f46e5";
-  const sw = block.strokeWidth ?? 2;
+  const sw = block.strokeWidth ?? 0;
+  const offset = sw / 2;
+  const size = 200 - sw;
 
   let shapeSVG: string;
   switch (block.shapeType) {
     case "circle":
-      shapeSVG = `<ellipse cx="100" cy="100" rx="95" ry="95" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      shapeSVG = `<ellipse cx="100" cy="100" rx="${100 - offset}" ry="${100 - offset}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
       break;
     case "rounded-rect":
-      shapeSVG = `<rect x="5" y="5" width="190" height="190" rx="30" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      shapeSVG = `<rect x="${offset}" y="${offset}" width="${size}" height="${size}" rx="30" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
       break;
     case "triangle":
-      shapeSVG = `<polygon points="100,10 190,190 10,190" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      shapeSVG = `<polygon points="100,${offset} ${200 - offset},${200 - offset} ${offset},${200 - offset}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
       break;
     case "arrow":
-      shapeSVG = `<polygon points="100,10 190,100 140,100 140,190 60,190 60,100 10,100" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      shapeSVG = `<polygon points="100,0 200,100 145,100 145,200 55,200 55,100 0,100" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
       break;
     case "line":
-      shapeSVG = `<line x1="10" y1="100" x2="190" y2="100" stroke="${stroke}" stroke-width="${Math.max(sw, 4)}" stroke-linecap="round" />`;
+      shapeSVG = `<line x1="${offset}" y1="100" x2="${200 - offset}" y2="100" stroke="${stroke}" stroke-width="${Math.max(sw, 4)}" stroke-linecap="round" />`;
       break;
     case "star":
-      shapeSVG = `<polygon points="100,10 125,75 195,80 140,130 155,195 100,160 45,195 60,130 5,80 75,75" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      shapeSVG = `<polygon points="100,0 127,72 200,78 145,128 160,200 100,162 40,200 55,128 0,78 73,72" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
       break;
     case "rectangle":
     default:
-      shapeSVG = `<rect x="5" y="5" width="190" height="190" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
+      shapeSVG = `<rect x="${offset}" y="${offset}" width="${size}" height="${size}" fill="${fill}" stroke="${stroke}" stroke-width="${sw}" />`;
       break;
   }
 
