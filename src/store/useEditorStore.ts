@@ -59,6 +59,7 @@ export type {
   Slide,
   QuizSettings,
   GamificationSettings,
+  CertificateConfig,
   CourseProject,
 } from "./types";
 

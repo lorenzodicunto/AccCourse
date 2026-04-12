@@ -49,6 +49,7 @@ import {
   FileText,
   Calculator,
   Grid3x3,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -226,6 +227,9 @@ export function PropertiesPanel() {
   const [aiAnalyzing, setAiAnalyzing] = useState(false);
   const [aiFileName, setAiFileName] = useState<string | null>(null);
   const aiFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Certificate state
+  const [certificateDialogOpen, setCertificateDialogOpen] = useState(false);
 
   const handleAiTheme = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -3445,6 +3449,248 @@ export function PropertiesPanel() {
                       </div>
                     )}
                   </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* ─── CERTIFICATE SETTINGS ─── */}
+            <div className="px-2">
+              <button
+                onClick={() => setCertificateDialogOpen(true)}
+                className="w-full mt-3 relative overflow-hidden rounded-xl px-4 py-3 text-left transition-all hover:scale-[1.02] active:scale-[0.98] group"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
+                }}
+              >
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div className="relative flex items-center gap-2.5">
+                  <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                    <Award className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-white tracking-wide">
+                      🎓 Certificados
+                    </p>
+                    <p className="text-[9px] text-white/70 mt-0.5">
+                      Configure a conclusão
+                    </p>
+                  </div>
+                </div>
+              </button>
+              <Dialog open={certificateDialogOpen} onOpenChange={setCertificateDialogOpen}>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Award className="h-5 w-5 text-amber-600" />
+                      Configuração de Certificados
+                    </DialogTitle>
+                  </DialogHeader>
+                  {project ? (
+                    <div className="space-y-4 py-2">
+                      <div className="space-y-2">
+                        <label className="text-xs font-semibold text-slate-700">
+                          Habilitar Certificados
+                        </label>
+                        <button
+                          onClick={() =>
+                            project &&
+                            useEditorStore.getState().updateProject(project.id, {
+                              certificate: {
+                                ...(project.certificate || {
+                                  enabled: false,
+                                  template: "classic",
+                                  title: "Certificado de Conclusão",
+                                  bodyText: "por completar com êxito este curso.",
+                                  accentColor: "#7c3aed",
+                                  orientation: "landscape",
+                                  includeScore: true,
+                                  includeHours: true,
+                                  validationHash: true,
+                                }),
+                                enabled: !(project.certificate?.enabled ?? false),
+                              },
+                            })
+                          }
+                          className={`w-full h-8 text-xs rounded-md border transition-colors ${
+                            project.certificate?.enabled
+                              ? "bg-amber-100 border-amber-300 text-amber-800"
+                              : "bg-slate-100 border-slate-300 text-slate-700"
+                          }`}
+                        >
+                          {project.certificate?.enabled ? "✓ Habilitado" : "Desabilitado"}
+                        </button>
+                      </div>
+
+                      {project.certificate?.enabled && (
+                        <>
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-700">
+                              Template
+                            </label>
+                            <select
+                              value={project.certificate?.template || "classic"}
+                              onChange={(e) =>
+                                project &&
+                                useEditorStore.getState().updateProject(project.id, {
+                                  certificate: {
+                                    ...project.certificate!,
+                                    template: e.target.value as any,
+                                  },
+                                })
+                              }
+                              className="w-full h-8 text-xs rounded-md border border-slate-300 bg-white px-2"
+                            >
+                              <option value="classic">Classic</option>
+                              <option value="modern">Modern</option>
+                              <option value="minimal">Minimal</option>
+                              <option value="corporate">Corporate</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-700">
+                              Título
+                            </label>
+                            <Input
+                              type="text"
+                              value={project.certificate?.title || "Certificado"}
+                              onChange={(e) =>
+                                project &&
+                                useEditorStore.getState().updateProject(project.id, {
+                                  certificate: {
+                                    ...project.certificate!,
+                                    title: e.target.value,
+                                  },
+                                })
+                              }
+                              className="h-8 text-xs rounded-md"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-700">
+                              Cor Acentuada
+                            </label>
+                            <div className="flex gap-1.5">
+                              <input
+                                type="color"
+                                value={project.certificate?.accentColor || "#7c3aed"}
+                                onChange={(e) =>
+                                  project &&
+                                  useEditorStore.getState().updateProject(project.id, {
+                                    certificate: {
+                                      ...project.certificate!,
+                                      accentColor: e.target.value,
+                                    },
+                                  })
+                                }
+                                className="w-8 h-8 rounded-md border border-slate-300 cursor-pointer"
+                              />
+                              <Input
+                                type="text"
+                                value={project.certificate?.accentColor || "#7c3aed"}
+                                onChange={(e) =>
+                                  project &&
+                                  useEditorStore.getState().updateProject(project.id, {
+                                    certificate: {
+                                      ...project.certificate!,
+                                      accentColor: e.target.value,
+                                    },
+                                  })
+                                }
+                                className="h-8 text-xs rounded-md"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-xs font-semibold text-slate-700">
+                              Orientação
+                            </label>
+                            <select
+                              value={project.certificate?.orientation || "landscape"}
+                              onChange={(e) =>
+                                project &&
+                                useEditorStore.getState().updateProject(project.id, {
+                                  certificate: {
+                                    ...project.certificate!,
+                                    orientation: e.target.value as "landscape" | "portrait",
+                                  },
+                                })
+                              }
+                              className="w-full h-8 text-xs rounded-md border border-slate-300 bg-white px-2"
+                            >
+                              <option value="landscape">Paisagem</option>
+                              <option value="portrait">Retrato</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-2 border-t border-slate-200 pt-3">
+                            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={project.certificate?.includeScore ?? true}
+                                onChange={(e) =>
+                                  project &&
+                                  useEditorStore.getState().updateProject(project.id, {
+                                    certificate: {
+                                      ...project.certificate!,
+                                      includeScore: e.target.checked,
+                                    },
+                                  })
+                                }
+                                className="w-4 h-4 rounded border-slate-300"
+                              />
+                              Incluir Desempenho
+                            </label>
+                            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={project.certificate?.includeHours ?? true}
+                                onChange={(e) =>
+                                  project &&
+                                  useEditorStore.getState().updateProject(project.id, {
+                                    certificate: {
+                                      ...project.certificate!,
+                                      includeHours: e.target.checked,
+                                    },
+                                  })
+                                }
+                                className="w-4 h-4 rounded border-slate-300"
+                              />
+                              Incluir Horas
+                            </label>
+                            <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={project.certificate?.validationHash ?? true}
+                                onChange={(e) =>
+                                  project &&
+                                  useEditorStore.getState().updateProject(project.id, {
+                                    certificate: {
+                                      ...project.certificate!,
+                                      validationHash: e.target.checked,
+                                    },
+                                  })
+                                }
+                                className="w-4 h-4 rounded border-slate-300"
+                              />
+                              Código de Validação
+                            </label>
+                          </div>
+
+                          <p className="text-[10px] text-slate-500 pt-2">
+                            Configurações avançadas (nome de assinatura, logo, etc.) estarão disponíveis em breve.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      Selecione um projeto para configurar certificados.
+                    </p>
+                  )}
                 </DialogContent>
               </Dialog>
             </div>

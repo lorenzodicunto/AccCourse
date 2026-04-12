@@ -531,6 +531,27 @@ export interface GamificationSettings {
   }[];
 }
 
+export interface CertificateConfig {
+  enabled: boolean;
+  template: "classic" | "modern" | "minimal" | "corporate" | "custom";
+  title: string;
+  subtitle?: string;
+  bodyText: string;
+  signatureName?: string;
+  signatureTitle?: string;
+  signatureImage?: string;
+  companyLogo?: string;
+  companyName?: string;
+  backgroundImage?: string;
+  accentColor: string;
+  orientation: "landscape" | "portrait";
+  minimumScore?: number;
+  includeScore: boolean;
+  includeHours: boolean;
+  validationHash: boolean;
+  expirationMonths?: number;
+}
+
 export interface CourseProject {
   id: string;
   title: string;
@@ -540,6 +561,7 @@ export interface CourseProject {
   slides: Slide[];
   quizSettings: QuizSettings;
   gamification: GamificationSettings;
+  certificate?: CertificateConfig;
   createdAt: string;
   updatedAt: string;
 }
