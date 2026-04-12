@@ -107,6 +107,21 @@ export function Canvas() {
     };
   }, [project?.theme.fontFamily, project?.theme.customFontUrl]);
 
+  // Ctrl+scroll wheel zoom
+  const handleWheel = useCallback(
+    (e: React.WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+          zoomIn();
+        } else {
+          zoomOut();
+        }
+      }
+    },
+    [zoomIn, zoomOut]
+  );
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: { distance: 3 },
@@ -366,15 +381,26 @@ export function Canvas() {
         </div>
 
         {/* Main Canvas Container */}
-        <div className="flex-1 flex items-center justify-center p-6 overflow-auto">
+        <div className="flex-1 overflow-auto relative" onWheel={handleWheel}>
+          <div
+            className="flex items-center justify-center p-6"
+            style={{
+              minWidth: zoom > 100 ? `${zoom}%` : "100%",
+              minHeight: zoom > 100 ? `${zoom}%` : "100%",
+            }}
+          >
           <div
             ref={canvasRef}
-            className={`relative bg-white rounded-xl shadow-2xl shadow-black/30 border border-white/10 transition-all duration-300 origin-center ${
+            className={`relative bg-white rounded-xl shadow-2xl shadow-black/30 border border-white/10 transition-all duration-300 ${
               previewMode === "mobile"
                 ? "w-[375px]"
                 : "w-full max-w-[960px]"
             }`}
-            style={{ aspectRatio: previewMode === "mobile" ? "9 / 19.5" : "16 / 9", transform: `scale(${zoom / 100})` }}
+            style={{
+              aspectRatio: previewMode === "mobile" ? "9 / 19.5" : "16 / 9",
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: "center center",
+            }}
             onClick={handleCanvasClick}
           >
             {/* Slide background */}
@@ -459,6 +485,7 @@ export function Canvas() {
                 </div>
               </div>
             )}
+          </div>
           </div>
         </div>
       </div>

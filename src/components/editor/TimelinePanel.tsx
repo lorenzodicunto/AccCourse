@@ -37,6 +37,7 @@ import {
   MousePointerClick,
   Minus,
   Code,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +51,7 @@ import { cn } from "@/lib/utils";
 interface TrackState {
   visible: boolean;
   locked: boolean;
+  customName?: string;
 }
 
 // ─── Block Icon Component ──────────────────────────────────────────────────
@@ -144,6 +146,22 @@ function getTrackColor(type: string): string {
   return colors[type] || "bg-slate-400";
 }
 
+function getTrackColorHex(type: string): string {
+  const colors: Record<string, string> = {
+    text: "#a78bfa",
+    image: "#60a5fa",
+    shape: "#818cf8",
+    video: "#fb923c",
+    audio: "#fbbf24",
+    quiz: "#fb7185",
+    flashcard: "#2dd4bf",
+    game: "#f472b6",
+    character: "#22d3ee",
+    scenario: "#34d399",
+  };
+  return colors[type] || "#94a3b8";
+}
+
 // ─── Timeline Ruler ───────────────────────────────────────────────────────
 
 function TimelineRuler({ duration, pixelsPerSecond }: { duration: number; pixelsPerSecond: number }) {
@@ -184,165 +202,6 @@ function Playhead({ time, pixelsPerSecond, height }: { time: number; pixelsPerSe
   );
 }
 
-// ─── Track Row ────────────────────────────────────────────────────────────
-
-interface TrackRowProps {
-  block: Block;
-  index: number;
-  totalBlocks: number;
-  isSelected: boolean;
-  trackState: TrackState;
-  slideDuration: number;
-  pixelsPerSecond: number;
-  onSelect: () => void;
-  onToggleVisibility: () => void;
-  onToggleLock: () => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-}
-
-function TrackRow({
-  block,
-  index,
-  totalBlocks,
-  isSelected,
-  trackState,
-  slideDuration,
-  pixelsPerSecond,
-  onSelect,
-  onToggleVisibility,
-  onToggleLock,
-  onMoveUp,
-  onMoveDown,
-}: TrackRowProps) {
-  const anim = block.animation;
-  const enterDelay = anim?.delay ?? 0;
-  const enterDuration = anim?.duration ?? 0.5;
-  const barColor = getTrackColor(block.type);
-
-  // Calculate bar position
-  const barLeft = enterDelay * pixelsPerSecond;
-  const barWidth = Math.max(20, enterDuration * pixelsPerSecond);
-
-  return (
-    <div
-      className={cn(
-        "flex items-stretch border-b border-slate-100 group transition-colors",
-        isSelected ? "bg-violet-50" : "hover:bg-slate-50",
-        !trackState.visible && "opacity-40"
-      )}
-      style={{ height: "32px" }}
-    >
-      {/* ─── Track Info (left panel) ─── */}
-      <div
-        className={cn(
-          "flex items-center gap-1 px-2 shrink-0 border-r border-slate-200 cursor-pointer select-none",
-          isSelected && "bg-violet-100/60"
-        )}
-        style={{ width: "200px" }}
-        onClick={onSelect}
-      >
-        {/* Reorder arrows */}
-        <div className="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => { e.stopPropagation(); onMoveUp(); }}
-            disabled={index === 0}
-            className="text-slate-400 hover:text-slate-700 disabled:opacity-20"
-            title="Mover para cima (z-index +)"
-          >
-            <ArrowUp className="h-2.5 w-2.5" />
-          </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); onMoveDown(); }}
-            disabled={index === totalBlocks - 1}
-            className="text-slate-400 hover:text-slate-700 disabled:opacity-20"
-            title="Mover para baixo (z-index -)"
-          >
-            <ArrowDown className="h-2.5 w-2.5" />
-          </button>
-        </div>
-
-        {/* Visibility toggle */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleVisibility(); }}
-          className="p-0.5 text-slate-400 hover:text-slate-700"
-          title={trackState.visible ? "Ocultar" : "Mostrar"}
-        >
-          {trackState.visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-        </button>
-
-        {/* Lock toggle */}
-        <button
-          onClick={(e) => { e.stopPropagation(); onToggleLock(); }}
-          className="p-0.5 text-slate-400 hover:text-slate-700"
-          title={trackState.locked ? "Desbloquear" : "Bloquear"}
-        >
-          {trackState.locked ? <Lock className="h-3 w-3 text-amber-500" /> : <Unlock className="h-3 w-3" />}
-        </button>
-
-        {/* Block type icon + name */}
-        <BlockIcon type={block.type} />
-        <span className="text-[11px] font-medium text-slate-700 truncate flex-1">
-          {getBlockLabel(block)}
-        </span>
-
-        {/* Z-index badge */}
-        <span className="text-[9px] text-slate-400 tabular-nums">{block.zIndex}</span>
-      </div>
-
-      {/* ─── Timeline Track (right panel, scrollable) ─── */}
-      <div className="flex-1 relative overflow-hidden">
-        {/* Grid lines */}
-        <div className="absolute inset-0 pointer-events-none">
-          {Array.from({ length: Math.ceil(slideDuration) + 1 }, (_, i) => (
-            <div
-              key={i}
-              className="absolute top-0 h-full border-l border-slate-100"
-              style={{ left: `${i * pixelsPerSecond}px` }}
-            />
-          ))}
-        </div>
-
-        {/* Animation bar */}
-        {anim && anim.type && anim.type !== "none" ? (
-          <div
-            className={cn(
-              "absolute top-1 h-[24px] rounded-sm cursor-pointer shadow-sm",
-              barColor,
-              isSelected ? "ring-1 ring-violet-500" : "hover:brightness-110"
-            )}
-            style={{
-              left: `${barLeft}px`,
-              width: `${barWidth}px`,
-            }}
-            title={`${anim.type} — Atraso: ${enterDelay.toFixed(1)}s | Duração: ${enterDuration.toFixed(1)}s`}
-          >
-            <span className="text-[9px] font-semibold text-white/90 px-1.5 truncate block leading-[24px]">
-              {anim.type}
-            </span>
-          </div>
-        ) : (
-          /* Static presence bar (no animation) */
-          <div
-            className={cn(
-              "absolute top-1 h-[24px] rounded-sm opacity-30",
-              barColor
-            )}
-            style={{
-              left: 0,
-              width: `${Math.min(slideDuration, 2) * pixelsPerSecond}px`,
-            }}
-          >
-            <span className="text-[9px] text-white/60 px-1.5 truncate block leading-[24px]">
-              estático
-            </span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Timeline Panel ───────────────────────────────────────────────────
 
 interface TimelinePanelProps {
@@ -363,9 +222,21 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [trackStates, setTrackStates] = useState<Record<string, TrackState>>({});
   const [slideDuration, setSlideDuration] = useState(10);
+  const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
+  const [editingLabelValue, setEditingLabelValue] = useState("");
+
+  // Drag-to-resize state
+  const [resizing, setResizing] = useState<{
+    blockId: string;
+    edge: "left" | "right";
+    startX: number;
+    startDelay: number;
+    startDuration: number;
+  } | null>(null);
 
   const playIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timelineContentRef = useRef<HTMLDivElement>(null);
+  const labelInputRef = useRef<HTMLInputElement>(null);
 
   const PIXELS_PER_SECOND = 50;
 
@@ -392,6 +263,14 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
     });
   }, [currentSlide?.blocks.length]);
 
+  // Focus input when editing label
+  useEffect(() => {
+    if (editingLabelId && labelInputRef.current) {
+      labelInputRef.current.focus();
+      labelInputRef.current.select();
+    }
+  }, [editingLabelId]);
+
   // Playback logic
   useEffect(() => {
     if (isPlaying) {
@@ -413,6 +292,56 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
       if (playIntervalRef.current) clearInterval(playIntervalRef.current);
     };
   }, [isPlaying, playbackSpeed, slideDuration]);
+
+  // ─── Drag-to-resize handler ───────────────────────────────────────────
+  useEffect(() => {
+    if (!resizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const dx = e.clientX - resizing.startX;
+      const dtSeconds = dx / PIXELS_PER_SECOND;
+
+      if (resizing.edge === "right") {
+        // Resize duration from right edge
+        const newDuration = Math.max(0.1, resizing.startDuration + dtSeconds);
+        const block = currentSlide?.blocks.find((b) => b.id === resizing.blockId);
+        if (block && project && currentSlide) {
+          updateBlock(project.id, currentSlide.id, block.id, {
+            animation: {
+              ...(block.animation || { type: "none", delay: 0, duration: 0.5 }),
+              duration: Math.round(newDuration * 10) / 10,
+            },
+          } as Partial<Block>);
+        }
+      } else {
+        // Resize delay from left edge
+        const newDelay = Math.max(0, resizing.startDelay + dtSeconds);
+        const durationChange = resizing.startDelay - newDelay;
+        const newDuration = Math.max(0.1, resizing.startDuration + durationChange);
+        const block = currentSlide?.blocks.find((b) => b.id === resizing.blockId);
+        if (block && project && currentSlide) {
+          updateBlock(project.id, currentSlide.id, block.id, {
+            animation: {
+              ...(block.animation || { type: "none", delay: 0, duration: 0.5 }),
+              delay: Math.round(newDelay * 10) / 10,
+              duration: Math.round(newDuration * 10) / 10,
+            },
+          } as Partial<Block>);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setResizing(null);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [resizing, currentSlide, project, updateBlock]);
 
   const handleMoveUp = useCallback(
     (blockId: string) => {
@@ -462,6 +391,57 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
     [slideDuration]
   );
 
+  // ─── Label rename handlers ────────────────────────────────────────────
+  const startRenaming = useCallback((blockId: string) => {
+    const existing = trackStates[blockId]?.customName;
+    const block = sortedBlocks.find((b) => b.id === blockId);
+    setEditingLabelValue(existing || (block ? getBlockLabel(block) : ""));
+    setEditingLabelId(blockId);
+  }, [trackStates, sortedBlocks]);
+
+  const commitRename = useCallback(() => {
+    if (!editingLabelId) return;
+    setTrackStates((prev) => ({
+      ...prev,
+      [editingLabelId]: {
+        ...prev[editingLabelId],
+        customName: editingLabelValue.trim() || undefined,
+      },
+    }));
+    setEditingLabelId(null);
+  }, [editingLabelId, editingLabelValue]);
+
+  const cancelRename = useCallback(() => {
+    setEditingLabelId(null);
+  }, []);
+
+  // ─── Resize start handler ────────────────────────────────────────────
+  const startResize = useCallback(
+    (e: React.MouseEvent, blockId: string, edge: "left" | "right") => {
+      e.stopPropagation();
+      e.preventDefault();
+      const block = currentSlide?.blocks.find((b) => b.id === blockId);
+      if (!block) return;
+      const anim = block.animation;
+      setResizing({
+        blockId,
+        edge,
+        startX: e.clientX,
+        startDelay: anim?.delay ?? 0,
+        startDuration: anim?.duration ?? 0.5,
+      });
+    },
+    [currentSlide]
+  );
+
+  // ─── Get display name for track ──────────────────────────────────────
+  const getDisplayName = useCallback(
+    (block: Block) => {
+      return trackStates[block.id]?.customName || getBlockLabel(block);
+    },
+    [trackStates]
+  );
+
   if (!isVisible) {
     return (
       <button
@@ -482,8 +462,6 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
       </div>
     );
   }
-
-  const totalHeight = sortedBlocks.length * 32 + 24; // tracks + ruler
 
   return (
     <div className="bg-white border-t-2 border-violet-200 flex flex-col" style={{ height: "240px" }}>
@@ -619,11 +597,32 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
                 {(trackStates[block.id]?.locked ?? false) ? <Lock className="h-3 w-3 text-amber-500" /> : <Unlock className="h-3 w-3" />}
               </button>
 
-              {/* Icon + Label */}
+              {/* Icon + Label (editable) */}
               <BlockIcon type={block.type} />
-              <span className="text-[11px] font-medium text-slate-700 truncate flex-1">
-                {getBlockLabel(block)}
-              </span>
+              {editingLabelId === block.id ? (
+                <input
+                  ref={labelInputRef}
+                  type="text"
+                  value={editingLabelValue}
+                  onChange={(e) => setEditingLabelValue(e.target.value)}
+                  onBlur={commitRename}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") commitRename();
+                    if (e.key === "Escape") cancelRename();
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-[11px] font-medium text-slate-700 bg-white border border-violet-300 rounded px-1 py-0 flex-1 min-w-0 outline-none focus:ring-1 focus:ring-violet-400"
+                  style={{ height: "18px" }}
+                />
+              ) : (
+                <span
+                  className="text-[11px] font-medium text-slate-700 truncate flex-1 cursor-text"
+                  onDoubleClick={(e) => { e.stopPropagation(); startRenaming(block.id); }}
+                  title="Duplo clique para renomear"
+                >
+                  {getDisplayName(block)}
+                </span>
+              )}
               <span className="text-[9px] text-slate-400 tabular-nums">{block.zIndex}</span>
             </div>
           ))}
@@ -654,7 +653,14 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
                 const enterDelay = anim?.delay ?? 0;
                 const enterDuration = anim?.duration ?? 0.5;
                 const barColor = getTrackColor(block.type);
+                const barColorHex = getTrackColorHex(block.type);
                 const isBlockSelected = selectedBlockIds.includes(block.id);
+                const hasAnimation = anim && anim.type && anim.type !== "none";
+
+                const barLeft = enterDelay * PIXELS_PER_SECOND;
+                const barWidth = hasAnimation
+                  ? Math.max(20, enterDuration * PIXELS_PER_SECOND)
+                  : Math.min(slideDuration, 2) * PIXELS_PER_SECOND;
 
                 return (
                   <div
@@ -676,34 +682,53 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
                       ))}
                     </div>
 
-                    {/* Animation bar */}
-                    {anim && anim.type && anim.type !== "none" ? (
-                      <div
-                        className={cn(
-                          "absolute top-1 h-[24px] rounded-sm cursor-pointer shadow-sm transition-all",
-                          barColor,
-                          isBlockSelected ? "ring-1 ring-violet-600 brightness-110" : "hover:brightness-110"
-                        )}
-                        style={{
-                          left: `${enterDelay * PIXELS_PER_SECOND}px`,
-                          width: `${Math.max(20, enterDuration * PIXELS_PER_SECOND)}px`,
-                        }}
-                        onClick={() => setSelectedBlock(block.id)}
-                        title={`${anim.type} — ${enterDelay.toFixed(1)}s + ${enterDuration.toFixed(1)}s`}
-                      >
-                        <span className="text-[9px] font-semibold text-white/90 px-1.5 truncate block leading-[24px]">
-                          {anim.type}
-                        </span>
-                      </div>
-                    ) : (
-                      <div
-                        className={cn("absolute top-1 h-[24px] rounded-sm opacity-25 cursor-pointer", barColor)}
-                        style={{ left: 0, width: `${Math.min(slideDuration, 2) * PIXELS_PER_SECOND}px` }}
-                        onClick={() => setSelectedBlock(block.id)}
-                      >
-                        <span className="text-[9px] text-white/50 px-1.5 truncate block leading-[24px]">—</span>
-                      </div>
-                    )}
+                    {/* Bar container */}
+                    <div
+                      className={cn(
+                        "absolute top-1 h-[24px] rounded-sm cursor-pointer shadow-sm group/bar transition-shadow",
+                        barColor,
+                        hasAnimation ? "" : "opacity-25",
+                        isBlockSelected ? "ring-1 ring-violet-600 brightness-110" : "hover:brightness-110"
+                      )}
+                      style={{
+                        left: `${hasAnimation ? barLeft : 0}px`,
+                        width: `${barWidth}px`,
+                      }}
+                      onClick={() => setSelectedBlock(block.id)}
+                      title={hasAnimation
+                        ? `${anim!.type} — ${enterDelay.toFixed(1)}s + ${enterDuration.toFixed(1)}s`
+                        : "Sem animação (estático)"
+                      }
+                    >
+                      {/* Label */}
+                      <span className="text-[9px] font-semibold text-white/90 px-1.5 truncate block leading-[24px]">
+                        {hasAnimation ? anim!.type : "—"}
+                      </span>
+
+                      {/* Left resize handle */}
+                      {hasAnimation && (
+                        <div
+                          className="absolute left-0 top-0 w-[6px] h-full cursor-ew-resize opacity-0 group-hover/bar:opacity-100 transition-opacity rounded-l-sm"
+                          style={{ background: "rgba(0,0,0,0.3)" }}
+                          onMouseDown={(e) => startResize(e, block.id, "left")}
+                          title="Arrastar para ajustar delay"
+                        >
+                          <div className="absolute top-1/2 left-[2px] -translate-y-1/2 w-[2px] h-3 bg-white/60 rounded-full" />
+                        </div>
+                      )}
+
+                      {/* Right resize handle */}
+                      {hasAnimation && (
+                        <div
+                          className="absolute right-0 top-0 w-[6px] h-full cursor-ew-resize opacity-0 group-hover/bar:opacity-100 transition-opacity rounded-r-sm"
+                          style={{ background: "rgba(0,0,0,0.3)" }}
+                          onMouseDown={(e) => startResize(e, block.id, "right")}
+                          title="Arrastar para ajustar duração"
+                        >
+                          <div className="absolute top-1/2 right-[2px] -translate-y-1/2 w-[2px] h-3 bg-white/60 rounded-full" />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -712,7 +737,7 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
         </div>
       </div>
 
-      {/* ─── Footer with block count ─── */}
+      {/* ─── Empty state ─── */}
       {sortedBlocks.length === 0 && (
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">

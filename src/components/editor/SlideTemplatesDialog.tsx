@@ -244,6 +244,7 @@ export function SlideTemplatesDialog() {
   const setCurrentSlide = useEditorStore((s) => s.setCurrentSlide);
   const updateSlideBackground = useEditorStore((s) => s.updateSlideBackground);
   const addBlock = useEditorStore((s) => s.addBlock);
+  const addBlocks = useEditorStore((s) => s.addBlocks);
 
   const handleApply = () => {
     // Find template in SLIDE_TEMPLATES
@@ -265,10 +266,10 @@ export function SlideTemplatesDialog() {
     // Set background
     updateSlideBackground(project.id, newSlide.id, displayTemplate.background);
 
-    // Generate and add blocks from the template
+    // Generate and add all blocks atomically (single undo entry)
     const blocks = slideTemplate.generateBlocks();
-    for (const blockData of blocks) {
-      addBlock(project.id, newSlide.id, blockData);
+    if (blocks.length > 0) {
+      addBlocks(project.id, newSlide.id, blocks);
     }
 
     // Navigate to new slide
@@ -368,25 +369,31 @@ export function SlideTemplatesDialog() {
                     {template.thumbnail}
                   </div>
 
-                  {/* Mini block indicators (subtle) */}
+                  {/* Mini block indicators from SLIDE_TEMPLATES */}
                   <div className="absolute inset-0 pointer-events-none">
-                    {template.blocks.slice(0, 3).map((block, i) => (
-                      <div
-                        key={i}
-                        className="absolute rounded-[1px]"
-                        style={{
-                          left: `${(block.x / CANVAS_WIDTH) * 100}%`,
-                          top: `${(block.y / CANVAS_HEIGHT) * 100}%`,
-                          width: `${(block.width / CANVAS_WIDTH) * 100}%`,
-                          height: `${(block.height / CANVAS_HEIGHT) * 100}%`,
-                          backgroundColor:
-                            block.type === "text" ? "rgba(99,102,241,0.1)" :
-                            block.type === "image" ? "rgba(59,130,246,0.15)" :
-                            block.type === "shape" ? "rgba(99,102,241,0.2)" :
-                            "rgba(0,0,0,0.05)",
-                        }}
-                      />
-                    ))}
+                    {(() => {
+                      const st = SLIDE_TEMPLATES.find((s) => s.id === template.id);
+                      if (!st) return null;
+                      const previewBlocks = st.generateBlocks();
+                      return previewBlocks.map((block, i) => (
+                        <div
+                          key={i}
+                          className="absolute rounded-[1px]"
+                          style={{
+                            left: `${(block.x / CANVAS_WIDTH) * 100}%`,
+                            top: `${(block.y / CANVAS_HEIGHT) * 100}%`,
+                            width: `${(block.width / CANVAS_WIDTH) * 100}%`,
+                            height: `${(block.height / CANVAS_HEIGHT) * 100}%`,
+                            backgroundColor:
+                              block.type === "text" ? "rgba(99,102,241,0.25)" :
+                              block.type === "image" ? "rgba(59,130,246,0.2)" :
+                              block.type === "shape" ? ((block as unknown as Record<string, unknown>).fillColor as string || "rgba(99,102,241,0.15)") :
+                              "rgba(0,0,0,0.05)",
+                            opacity: block.type === "shape" ? 0.4 : 1,
+                          }}
+                        />
+                      ));
+                    })()}
                   </div>
                 </div>
 
