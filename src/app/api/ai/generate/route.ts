@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
+import { safeParseBody, devLog } from "@/lib/api-utils";
 
 // Rate limit: 5 AI course generation requests per minute per IP
 const generateLimiter = rateLimit({ interval: 60_000, limit: 5 });
@@ -18,7 +19,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
     }
 
-    const { prompt, slideCount = 5, includeQuiz = true } = await req.json();
+    const [body, errorResponse] = await safeParseBody<{ prompt?: string; slideCount?: number; includeQuiz?: boolean }>(req);
+    if (errorResponse) return errorResponse;
+    const { prompt, slideCount = 5, includeQuiz = true } = body;
 
     if (!prompt || prompt.trim().length < 10) {
       return NextResponse.json(
@@ -31,7 +34,7 @@ export async function POST(req: Request) {
 
     // Mock fallback
     if (!apiKey) {
-      console.log("[AI Course] No OPENAI_API_KEY, using mock");
+      devLog("[AI Course] No OPENAI_API_KEY, using mock");
       await new Promise((r) => setTimeout(r, 2000));
       return NextResponse.json({
         title: "Curso Gerado por AI",

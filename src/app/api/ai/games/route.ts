@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
+import { safeParseBody, devLog } from "@/lib/api-utils";
 import type { GameType, GameData } from "@/types/games";
 
 // Rate limit: 10 AI game requests per minute per IP
@@ -22,12 +23,14 @@ export async function POST(req: Request) {
       );
     }
 
+    const [body, errorResponse] = await safeParseBody<{ courseContent?: string; gameType?: string; difficulty?: string; itemCount?: number }>(req);
+    if (errorResponse) return errorResponse;
     const {
       courseContent,
       gameType,
       difficulty = "medium",
       itemCount = 5,
-    } = await req.json();
+    } = body;
 
     if (!courseContent || courseContent.trim().length < 20) {
       return NextResponse.json(
@@ -54,9 +57,9 @@ export async function POST(req: Request) {
 
     // Mock fallback if no API key
     if (!apiKey) {
-      console.log("[AI Games] No OPENAI_API_KEY, using mock");
+      devLog("[AI Games] No OPENAI_API_KEY, using mock");
       await new Promise((r) => setTimeout(r, 1500));
-      return NextResponse.json(generateMockGameData(gameType, itemCount, difficulty));
+      return NextResponse.json(generateMockGameData(gameType as GameType, itemCount, difficulty));
     }
 
     const { generateObject } = await import("ai");

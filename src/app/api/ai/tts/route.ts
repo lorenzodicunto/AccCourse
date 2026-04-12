@@ -4,6 +4,7 @@ import path from "path";
 import crypto from "crypto";
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
+import { safeParseBody, devLog } from "@/lib/api-utils";
 
 // Rate limit: 5 TTS requests per minute per IP
 const ttsLimiter = rateLimit({ interval: 60_000, limit: 5 });
@@ -23,7 +24,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
     }
 
-    const { text, voice = "nova", speed = 1.0 } = await req.json();
+    const [body, errorResponse] = await safeParseBody<{ text?: string; voice?: string; speed?: number }>(req);
+    if (errorResponse) return errorResponse;
+    const { text, voice = "nova", speed = 1.0 } = body;
 
     if (!text || text.trim().length === 0) {
       return NextResponse.json(
@@ -39,7 +42,7 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!VALID_VOICES.includes(voice)) {
+    if (!(VALID_VOICES as readonly string[]).includes(voice)) {
       return NextResponse.json(
         { error: `Voz inválida. Opções: ${VALID_VOICES.join(", ")}` },
         { status: 400 }
@@ -57,7 +60,7 @@ export async function POST(req: Request) {
 
     // Mock fallback
     if (!apiKey) {
-      console.log("[TTS] No OPENAI_API_KEY, using mock");
+      devLog("[TTS] No OPENAI_API_KEY, using mock");
       await new Promise((r) => setTimeout(r, 1000));
       const timestamp = Date.now();
       return NextResponse.json({

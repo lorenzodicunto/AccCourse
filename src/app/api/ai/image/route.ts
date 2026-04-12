@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
-import fetch from "node-fetch";
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
+import { safeParseBody, devLog } from "@/lib/api-utils";
 
 // Rate limit: 3 image generation requests per minute per IP
 const imageLimiter = rateLimit({ interval: 60_000, limit: 3 });
@@ -24,7 +24,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
     }
 
-    const { prompt, style = "realistic", size = "1024x1024" } = await req.json();
+    const [body, errorResponse] = await safeParseBody<{ prompt?: string; style?: string; size?: string }>(req);
+    if (errorResponse) return errorResponse;
+    const { prompt, style = "realistic", size = "1024x1024" } = body;
 
     if (!prompt || prompt.trim().length === 0) {
       return NextResponse.json(
@@ -40,14 +42,14 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!VALID_STYLES.includes(style)) {
+    if (!(VALID_STYLES as readonly string[]).includes(style)) {
       return NextResponse.json(
         { error: `Estilo inválido. Opções: ${VALID_STYLES.join(", ")}` },
         { status: 400 }
       );
     }
 
-    if (!VALID_SIZES.includes(size)) {
+    if (!(VALID_SIZES as readonly string[]).includes(size)) {
       return NextResponse.json(
         { error: `Tamanho inválido. Opções: ${VALID_SIZES.join(", ")}` },
         { status: 400 }
@@ -58,7 +60,7 @@ export async function POST(req: Request) {
 
     // Mock fallback
     if (!apiKey) {
-      console.log("[Image Gen] No OPENAI_API_KEY, using mock");
+      devLog("[Image Gen] No OPENAI_API_KEY, using mock");
       await new Promise((r) => setTimeout(r, 1500));
       const timestamp = Date.now();
       return NextResponse.json({

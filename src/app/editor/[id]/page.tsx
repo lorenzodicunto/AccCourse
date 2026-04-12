@@ -10,19 +10,36 @@ import { TopToolbar } from "@/components/editor/TopToolbar";
 import { SlideNavigator } from "@/components/editor/SlideNavigator";
 import { StatusBar } from "@/components/editor/StatusBar";
 import { Loader2 } from "lucide-react";
+import { ErrorFallback } from "@/components/editor/ErrorFallback";
+
+// Shared loading spinner for dynamic imports
+const DynamicLoader = () => (
+  <div className="flex-1 flex items-center justify-center">
+    <Loader2 className="h-6 w-6 animate-spin text-purple-500" />
+  </div>
+);
 
 // Lazy-load heavy editor components for faster initial paint
 const Canvas = dynamic(
   () => import("@/components/editor/Canvas").then((m) => ({ default: m.Canvas })),
-  { ssr: false, loading: () => <div className="flex-1 flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-purple-500" /></div> }
+  {
+    ssr: false,
+    loading: DynamicLoader,
+  }
 );
 const PropertiesPanel = dynamic(
   () => import("@/components/editor/PropertiesPanel").then((m) => ({ default: m.PropertiesPanel })),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <div className="w-72 border-l border-border bg-card animate-pulse" />,
+  }
 );
 const ComponentLibrarySidebar = dynamic(
   () => import("@/components/editor/ComponentLibrarySidebar").then((m) => ({ default: m.ComponentLibrarySidebar })),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => <div className="w-72 border-r border-border bg-card animate-pulse" />,
+  }
 );
 import { toast } from "sonner";
 

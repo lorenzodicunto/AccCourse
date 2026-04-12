@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
+import { safeParseBody, devLog } from "@/lib/api-utils";
 
 // Rate limit: 10 AI quiz requests per minute per IP
 const quizLimiter = rateLimit({ interval: 60_000, limit: 10 });
@@ -18,7 +19,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
     }
 
-    const { text, numQuestions = 3, types = ["quiz", "truefalse"] } = await req.json();
+    const [body, errorResponse] = await safeParseBody<{ text?: string; numQuestions?: number; types?: string[] }>(req);
+    if (errorResponse) return errorResponse;
+    const { text, numQuestions = 3, types = ["quiz", "truefalse"] } = body;
 
     if (!text || text.trim().length < 20) {
       return NextResponse.json(
@@ -31,7 +34,7 @@ export async function POST(req: Request) {
 
     // Mock fallback if no API key
     if (!apiKey) {
-      console.log("[AI Quiz] No OPENAI_API_KEY, using mock");
+      devLog("[AI Quiz] No OPENAI_API_KEY, using mock");
       await new Promise((r) => setTimeout(r, 1500));
       return NextResponse.json({
         questions: [

@@ -48,6 +48,7 @@ export default function DashboardPage() {
   const [activeFilter, setActiveFilter] = useState<"todos" | "rascunho" | "publicados">("todos");
   const { theme, setTheme } = useTheme();
   const [courseToDelete, setCourseToDelete] = useState<CourseRow | null>(null);
+  const [duplicating, setDuplicating] = useState<string | null>(null);
 
   useEffect(() => {
     loadCourses();
@@ -87,6 +88,8 @@ export default function DashboardPage() {
   };
 
   const handleDuplicate = async (course: CourseRow) => {
+    if (duplicating === course.id) return;
+    setDuplicating(course.id);
     try {
       await createCourse(
         `${course.title} (cópia)`,
@@ -98,6 +101,8 @@ export default function DashboardPage() {
       loadCourses();
     } catch {
       toast.error("Erro ao duplicar.");
+    } finally {
+      setDuplicating(null);
     }
   };
 

@@ -5,6 +5,7 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { existsSync } from "fs";
 import { rateLimit } from "@/lib/rateLimit";
+import { devWarn } from "@/lib/api-utils";
 
 // Rate limit: 30 requests per minute per IP for asset operations
 const assetLimiter = rateLimit({ interval: 60_000, limit: 30 });
@@ -165,7 +166,7 @@ export async function DELETE(request: NextRequest) {
       }
     }
   } catch (e) {
-    console.warn("Failed to delete file from disk:", e);
+    devWarn("Failed to delete file from disk:", e);
   }
 
   // Delete DB record

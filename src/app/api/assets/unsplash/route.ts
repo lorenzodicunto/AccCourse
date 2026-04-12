@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { rateLimit } from "@/lib/rateLimit";
+import { devLog } from "@/lib/api-utils";
 
 // Rate limit: 20 Unsplash requests per minute per IP
 const unsplashLimiter = rateLimit({ interval: 60_000, limit: 20 });
@@ -41,7 +42,7 @@ export async function GET(req: NextRequest) {
 
     // Mock fallback
     if (!apiKey) {
-      console.log("[Unsplash] No UNSPLASH_API_KEY, using mock");
+      devLog("[Unsplash] No UNSPLASH_API_KEY, using mock");
 
       const mockResults: UnsplashImage[] = Array.from({ length: perPage }, (_, i) => {
         const idx = (page - 1) * perPage + i + 1;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
+import { safeParseBody, devLog } from "@/lib/api-utils";
 
 // Rate limit: 10 smart colors requests per minute per IP
 const smartColorsLimiter = rateLimit({ interval: 60_000, limit: 10 });
@@ -33,9 +34,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
     }
 
-    const { description = "", baseColor = "", mood = "professional" } = await req.json();
+    const [body, errorResponse] = await safeParseBody<{ description?: string; baseColor?: string; mood?: string }>(req);
+    if (errorResponse) return errorResponse;
+    const { description = "", baseColor = "", mood = "professional" } = body;
 
-    if (!VALID_MOODS.includes(mood)) {
+    if (!(VALID_MOODS as readonly string[]).includes(mood)) {
       return NextResponse.json(
         { error: `Mood inválido. Opções: ${VALID_MOODS.join(", ")}` },
         { status: 400 }
@@ -53,7 +56,7 @@ export async function POST(req: Request) {
 
     // Mock fallback with predefined palettes by mood
     if (!apiKey) {
-      console.log("[Smart Colors] No OPENAI_API_KEY, using mock");
+      devLog("[Smart Colors] No OPENAI_API_KEY, using mock");
       await new Promise((r) => setTimeout(r, 500));
 
       const mockPalettes: Record<string, ColorPalette> = {

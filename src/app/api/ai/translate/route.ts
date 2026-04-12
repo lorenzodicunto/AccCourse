@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
+import { safeParseBody, devLog } from "@/lib/api-utils";
 
 // Rate limit: 2 translation requests per minute per IP
 const translateLimiter = rateLimit({ interval: 60_000, limit: 2 });
@@ -76,7 +77,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Muitas requisições. Tente novamente em breve." }, { status: 429 });
     }
 
-    const { courseData, targetLanguage, sourceLanguage = "pt-BR" } = await req.json();
+    const [body, errorResponse] = await safeParseBody<{ courseData?: any; targetLanguage?: string; sourceLanguage?: string }>(req);
+    if (errorResponse) return errorResponse;
+    const { courseData, targetLanguage, sourceLanguage = "pt-BR" } = body;
 
     if (!courseData || typeof courseData !== "object") {
       return NextResponse.json(
@@ -103,7 +106,7 @@ export async function POST(req: Request) {
 
     // Mock fallback
     if (!apiKey) {
-      console.log("[Translate] No OPENAI_API_KEY, using mock");
+      devLog("[Translate] No OPENAI_API_KEY, using mock");
       await new Promise((r) => setTimeout(r, 2000));
       return NextResponse.json(courseData);
     }

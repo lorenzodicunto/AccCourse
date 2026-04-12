@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rateLimit";
+import { devLog } from "@/lib/api-utils";
 
 // Rate limit: 10 AI theme requests per minute per IP
 const themeLimiter = rateLimit({ interval: 60_000, limit: 10 });
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
 
     // If no API key, use mock fallback
     if (!apiKey) {
-      console.log("[AI Theme] No OPENAI_API_KEY found, using mock fallback");
+      devLog("[AI Theme] No OPENAI_API_KEY found, using mock fallback");
       await new Promise((resolve) => setTimeout(resolve, 2000));
       return NextResponse.json({
         primaryColor: "#0f172a",
