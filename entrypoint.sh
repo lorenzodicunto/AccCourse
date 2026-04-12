@@ -37,7 +37,11 @@ node -e "
         }
       } else {
         console.log('🌱 Creating Super Admin...');
-        const passwordHash = await bcrypt.hash('admin', 12);
+        const adminPwd = process.env.ADMIN_DEFAULT_PASSWORD || 'admin';
+        if (adminPwd === 'admin') {
+          console.warn('⚠️  Using default admin password! Set ADMIN_DEFAULT_PASSWORD env var.');
+        }
+        const passwordHash = await bcrypt.hash(adminPwd, 12);
         await prisma.user.create({
           data: {
             email: 'admin@acccourse.com',

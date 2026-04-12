@@ -13,11 +13,12 @@ export default auth((req) => {
   const isLoggedIn = !!req.auth;
   const role = req.auth?.user?.role;
 
-  // Public routes: /review/*, /login, /api/auth/*
+  // Public routes: /review/*, /login, /api/auth/*, /api/health
   if (
     pathname.startsWith("/review") ||
     pathname.startsWith("/login") ||
-    pathname.startsWith("/api/auth")
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/api/health")
   ) {
     // If logged in and trying to access /login, redirect to dashboard
     if (pathname.startsWith("/login") && isLoggedIn) {
