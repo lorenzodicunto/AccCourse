@@ -1,7 +1,7 @@
 // SCORM Course HTML Generator
 // Generates the index.html content from course slides and blocks
 
-import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock, BranchingBlock, TimelineBlock, DragDropBlock, InteractiveVideoBlock, LabeledGraphicBlock, ProcessBlock, LightboxBlock, QuoteBlock, DownloadBlock, CounterBlock, ButtonBlock, DividerBlock, EmbedBlock, LikertBlock, RankingBlock, EssayBlock, NumericBlock, DropdownBlock, MatrixBlock, ImageChoiceBlock } from "@/store/useEditorStore";
+import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock, BranchingBlock, TimelineBlock, DragDropBlock, InteractiveVideoBlock, LabeledGraphicBlock, ProcessBlock, LightboxBlock, QuoteBlock, DownloadBlock, CounterBlock, ButtonBlock, DividerBlock, EmbedBlock, LikertBlock, RankingBlock, EssayBlock, NumericBlock, DropdownBlock, MatrixBlock, ImageChoiceBlock, CharacterBlock, ScenarioBlock } from "@/store/useEditorStore";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
@@ -499,6 +499,10 @@ function generateBlockHTML(block: Block, assetMap?: Map<string, string>): string
       return generateMatrixBlockHTML(block as MatrixBlock, style);
     case "image-choice":
       return generateImageChoiceBlockHTML(block as ImageChoiceBlock, style);
+    case "character":
+      return generateCharacterBlockHTML(block as CharacterBlock, style);
+    case "scenario":
+      return generateScenarioBlockHTML(block as ScenarioBlock, style);
     default:
       return "";
   }
@@ -1386,4 +1390,67 @@ function generateImageChoiceBlockHTML(block: ImageChoiceBlock, style: string): s
       ${choicesHTML}
     </div>
   </div>`;
+}
+
+function generateCharacterBlockHTML(block: CharacterBlock, style: string): string {
+  const { currentPose = "standing", currentExpression = "neutral", speechBubble, scale = 1 } = block;
+
+  let speechBubbleHTML = "";
+  if (speechBubble?.text) {
+    const bubbleStyle = {
+      speech: "border-radius:8px;background:#fff;border:2px solid #ec4899;",
+      thought: "border-radius:50%;background:#f5f3ff;border:2px dashed #a855f7;",
+      narration: "border-radius:4px;background:#f9f5ff;border:2px solid #d946ef;",
+    }[speechBubble.style || "speech"] || "border-radius:8px;background:#fff;border:2px solid #ec4899;";
+
+    speechBubbleHTML = `
+      <div style="${bubbleStyle}padding:12px;margin:8px;font-size:13px;color:#1e293b;text-align:center;max-width:90%;">
+        ${escapeHtml(speechBubble.text)}
+      </div>
+    `;
+  }
+
+  const scaleStyle = scale !== 1 ? `transform:scale(${scale});` : "";
+  const mirrorStyle = (block as any).mirrorHorizontal ? "transform:scaleX(-1);" : "";
+
+  return `
+    <div class="block character-block" style="${style}padding:12px;background:#fce7f3;border-radius:12px;border:1px solid #fbcfe8;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div style="text-align:center;font-size:11px;font-weight:600;color:#be185d;margin-bottom:8px;">PERSONAGEM: ${escapeHtml(currentPose)} / ${escapeHtml(currentExpression)}</div>
+      <div style="font-size:64px;${scaleStyle}${mirrorStyle}">👤</div>
+      <div style="margin-top:8px;font-size:10px;color:#9f1239;text-align:center;">
+        ${escapeHtml(currentPose)} | ${escapeHtml(currentExpression)}
+      </div>
+      ${speechBubbleHTML}
+    </div>
+  `;
+}
+
+function generateScenarioBlockHTML(block: ScenarioBlock, style: string): string {
+  const { scenes = [], scenarioStyle = "visual-novel" } = block;
+  const firstScene = scenes[0];
+
+  const choicesHTML = (firstScene?.choices || []).map((choice: any) => `
+    <button style="display:block;width:100%;padding:10px;margin:6px 0;background:#f97316;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;">
+      ${escapeHtml(choice.text)}
+    </button>
+  `).join("");
+
+  const sceneIndicator = scenes.length > 1 ? `<span style="font-size:10px;background:#fed7aa;color:#92400e;padding:2px 6px;border-radius:3px;margin-left:8px;">Cena 1 de ${scenes.length}</span>` : "";
+
+  return `
+    <div class="block scenario-block" style="${style}padding:16px;background:#fef3c7;border-radius:12px;border:1px solid #fde68a;display:flex;flex-direction:column;">
+      <div style="font-size:11px;font-weight:600;color:#b45309;margin-bottom:8px;">
+        CENÁRIO ${sceneIndicator}
+        <span style="display:inline-block;margin-left:4px;font-size:9px;background:#fed7aa;padding:2px 4px;border-radius:2px;">${scenarioStyle}</span>
+      </div>
+
+      <div style="flex:1;background:white;border-radius:8px;padding:12px;margin-bottom:12px;border:1px solid #fcd34d;font-size:13px;color:#334155;line-height:1.5;max-height:180px;overflow-y:auto;">
+        ${firstScene ? escapeHtml(firstScene.narration) : "Adicione cenas ao cenário..."}
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        ${choicesHTML || '<div style="text-align:center;font-size:11px;color:#92400e;">Adicione opções de resposta</div>'}
+      </div>
+    </div>
+  `;
 }

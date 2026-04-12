@@ -50,6 +50,8 @@ import {
   Calculator,
   Grid3x3,
   Award,
+  User,
+  Film,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -89,6 +91,8 @@ function BlockIcon({ type }: { type: Block["type"] }) {
     dropdown: <ChevronDown className="h-4 w-4 text-indigo-500" />,
     matrix: <Layers className="h-4 w-4 text-red-500" />,
     "image-choice": <Image className="h-4 w-4 text-blue-500" />,
+    character: <User className="h-4 w-4 text-pink-500" />,
+    scenario: <Film className="h-4 w-4 text-orange-500" />,
   };
   return icons[type];
 }
@@ -127,6 +131,8 @@ const BLOCK_LABELS: Record<string, string> = {
   dropdown: "Dropdown",
   matrix: "Matriz",
   "image-choice": "Escolha Visual",
+  character: "Personagem",
+  scenario: "Cenário Interativo",
 };
 
 // ─── Collapsible Section ───
@@ -3237,6 +3243,352 @@ export function PropertiesPanel() {
                             );
                           handleUpdate({
                             interactions: updated,
+                          } as Partial<Block>);
+                        }}
+                      >
+                        <Plus className="h-2 w-2" /> Opção
+                      </Button>
+                    </div>
+                  ))}
+                </Section>
+              </>
+            )}
+
+            {/* ─── CHARACTER BLOCK ─── */}
+            {block.type === "character" && (
+              <>
+                <Section
+                  title="Personagem"
+                  icon={
+                    <User className="h-3 w-3 text-muted-foreground/60" />
+                  }
+                >
+                  <FieldRow label="ID do Personagem">
+                    <Input
+                      value={(block as any).characterId || ""}
+                      onChange={(e) =>
+                        handleUpdate({
+                          characterId: e.target.value,
+                        } as Partial<Block>)
+                      }
+                      placeholder="ID do personagem"
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+
+                  <FieldRow label="Pose">
+                    <Input
+                      value={(block as any).currentPose || "standing"}
+                      onChange={(e) =>
+                        handleUpdate({
+                          currentPose: e.target.value,
+                        } as Partial<Block>)
+                      }
+                      placeholder="Ex: standing, sitting"
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+
+                  <FieldRow label="Expressão">
+                    <Input
+                      value={(block as any).currentExpression || "neutral"}
+                      onChange={(e) =>
+                        handleUpdate({
+                          currentExpression: e.target.value,
+                        } as Partial<Block>)
+                      }
+                      placeholder="Ex: neutral, happy, sad"
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+
+                  <FieldRow label="Espelhar Horizontal">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={(block as any).mirrorHorizontal || false}
+                        onChange={(e) =>
+                          handleUpdate({
+                            mirrorHorizontal: e.target.checked,
+                          } as Partial<Block>)
+                        }
+                        className="w-4 h-4 rounded border-slate-300"
+                      />
+                      <span className="text-xs text-slate-600">Ativado</span>
+                    </label>
+                  </FieldRow>
+
+                  <FieldRow label="Escala">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="range"
+                        min="0.5"
+                        max="2"
+                        step="0.1"
+                        value={(block as any).scale || 1}
+                        onChange={(e) =>
+                          handleUpdate({
+                            scale: parseFloat(e.target.value),
+                          } as Partial<Block>)
+                        }
+                        className="flex-1"
+                      />
+                      <span className="text-xs w-8 text-right text-slate-600">
+                        {((block as any).scale || 1).toFixed(1)}x
+                      </span>
+                    </div>
+                  </FieldRow>
+                </Section>
+
+                <Section
+                  title="Balão de Fala"
+                  icon={
+                    <Type className="h-3 w-3 text-muted-foreground/60" />
+                  }
+                  defaultOpen={false}
+                >
+                  <FieldRow label="Texto">
+                    <Input
+                      value={(block as any).speechBubble?.text || ""}
+                      onChange={(e) =>
+                        handleUpdate({
+                          speechBubble: {
+                            ...((block as any).speechBubble || {}),
+                            text: e.target.value,
+                          },
+                        } as Partial<Block>)
+                      }
+                      placeholder="Digite o texto do balão..."
+                      className="h-7 text-xs rounded-md"
+                    />
+                  </FieldRow>
+
+                  <FieldRow label="Posição">
+                    <select
+                      value={(block as any).speechBubble?.position || "top"}
+                      onChange={(e) =>
+                        handleUpdate({
+                          speechBubble: {
+                            ...((block as any).speechBubble || {}),
+                            position: e.target.value as "top" | "left" | "right" | "bottom",
+                          },
+                        } as Partial<Block>)
+                      }
+                      className="w-full h-7 text-xs rounded-md border border-slate-300 bg-white px-2"
+                    >
+                      <option value="top">Acima</option>
+                      <option value="bottom">Abaixo</option>
+                      <option value="left">Esquerda</option>
+                      <option value="right">Direita</option>
+                    </select>
+                  </FieldRow>
+
+                  <FieldRow label="Estilo">
+                    <select
+                      value={(block as any).speechBubble?.style || "speech"}
+                      onChange={(e) =>
+                        handleUpdate({
+                          speechBubble: {
+                            ...((block as any).speechBubble || {}),
+                            style: e.target.value as "speech" | "thought" | "narration",
+                          },
+                        } as Partial<Block>)
+                      }
+                      className="w-full h-7 text-xs rounded-md border border-slate-300 bg-white px-2"
+                    >
+                      <option value="speech">Fala</option>
+                      <option value="thought">Pensamento</option>
+                      <option value="narration">Narração</option>
+                    </select>
+                  </FieldRow>
+                </Section>
+              </>
+            )}
+
+            {/* ─── SCENARIO BLOCK ─── */}
+            {block.type === "scenario" && (
+              <>
+                <Section
+                  title="Configuração"
+                  icon={
+                    <Film className="h-3 w-3 text-muted-foreground/60" />
+                  }
+                >
+                  <FieldRow label="Estilo">
+                    <select
+                      value={(block as any).scenarioStyle || "visual-novel"}
+                      onChange={(e) =>
+                        handleUpdate({
+                          scenarioStyle: e.target.value as "visual-novel" | "dialog" | "simulation",
+                        } as Partial<Block>)
+                      }
+                      className="w-full h-7 text-xs rounded-md border border-slate-300 bg-white px-2"
+                    >
+                      <option value="visual-novel">Romance Visual</option>
+                      <option value="dialog">Diálogo</option>
+                      <option value="simulation">Simulação</option>
+                    </select>
+                  </FieldRow>
+                </Section>
+
+                <Section
+                  title="Cenas"
+                  icon={
+                    <Clock className="h-3 w-3 text-muted-foreground/60" />
+                  }
+                >
+                  <div className="flex justify-end mb-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-6 text-[9px] rounded gap-1 px-2"
+                      onClick={() => {
+                        if (block.type !== "scenario") return;
+                        const newScene = {
+                          id: crypto.randomUUID(),
+                          backgroundImage: "",
+                          character: undefined,
+                          narration: "Nova cena",
+                          choices: [
+                            {
+                              id: crypto.randomUUID(),
+                              text: "Opção 1",
+                              nextSceneId: "",
+                              feedback: "",
+                              isCorrect: true,
+                              points: 10,
+                            },
+                          ],
+                        };
+                        handleUpdate({
+                          scenes: [...((block as any).scenes || []), newScene],
+                        } as Partial<Block>);
+                      }}
+                    >
+                      <Plus className="h-2.5 w-2.5" />
+                      Adicionar Cena
+                    </Button>
+                  </div>
+
+                  {((block as any).scenes || []).map((scene: any, sceneIdx: number) => (
+                    <div
+                      key={scene.id}
+                      className="border border-border/40 rounded-lg p-2 space-y-2 bg-muted/10 mb-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-semibold text-slate-700">
+                          Cena {sceneIdx + 1}
+                        </span>
+                        <button
+                          onClick={() => {
+                            if (block.type !== "scenario") return;
+                            handleUpdate({
+                              scenes: ((block as any).scenes || []).filter(
+                                (s: any) => s.id !== scene.id
+                              ),
+                            } as Partial<Block>);
+                          }}
+                          className="p-0.5 rounded hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-2.5 w-2.5 text-destructive" />
+                        </button>
+                      </div>
+
+                      <Input
+                        value={scene.narration || ""}
+                        onChange={(e) => {
+                          if (block.type !== "scenario") return;
+                          handleUpdate({
+                            scenes: ((block as any).scenes || []).map(
+                              (s: any) =>
+                                s.id === scene.id
+                                  ? { ...s, narration: e.target.value }
+                                  : s
+                            ),
+                          } as Partial<Block>);
+                        }}
+                        placeholder="Narração da cena..."
+                        className="h-6 text-[9px] rounded"
+                      />
+
+                      <div className="text-[8px] text-slate-600 font-medium mb-1">
+                        Opções de Resposta
+                      </div>
+                      {(scene.choices || []).map((choice: any, choiceIdx: number) => (
+                        <div key={choice.id} className="flex items-center gap-1 bg-white/50 p-1 rounded border border-slate-200">
+                          <Input
+                            value={choice.text || ""}
+                            onChange={(e) => {
+                              if (block.type !== "scenario") return;
+                              handleUpdate({
+                                scenes: ((block as any).scenes || []).map(
+                                  (s: any) =>
+                                    s.id === scene.id
+                                      ? {
+                                          ...s,
+                                          choices: s.choices.map(
+                                            (c: any) =>
+                                              c.id === choice.id
+                                                ? { ...c, text: e.target.value }
+                                                : c
+                                          ),
+                                        }
+                                      : s
+                                ),
+                              } as Partial<Block>);
+                            }}
+                            placeholder="Opção..."
+                            className="h-5 text-[8px] rounded flex-1"
+                          />
+                          <button
+                            onClick={() => {
+                              if (block.type !== "scenario") return;
+                              handleUpdate({
+                                scenes: ((block as any).scenes || []).map(
+                                  (s: any) =>
+                                    s.id === scene.id
+                                      ? {
+                                          ...s,
+                                          choices: s.choices.filter(
+                                            (c: any) => c.id !== choice.id
+                                          ),
+                                        }
+                                      : s
+                                ),
+                              } as Partial<Block>);
+                            }}
+                            className="p-0.5 rounded hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-2 w-2 text-destructive" />
+                          </button>
+                        </div>
+                      ))}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full h-5 text-[8px] gap-0.5 rounded"
+                        onClick={() => {
+                          if (block.type !== "scenario") return;
+                          handleUpdate({
+                            scenes: ((block as any).scenes || []).map(
+                              (s: any) =>
+                                s.id === scene.id
+                                  ? {
+                                      ...s,
+                                      choices: [
+                                        ...s.choices,
+                                        {
+                                          id: crypto.randomUUID(),
+                                          text: `Opção ${s.choices.length + 1}`,
+                                          nextSceneId: "",
+                                          feedback: "",
+                                          isCorrect: false,
+                                          points: 5,
+                                        },
+                                      ],
+                                    }
+                                  : s
+                            ),
                           } as Partial<Block>);
                         }}
                       >

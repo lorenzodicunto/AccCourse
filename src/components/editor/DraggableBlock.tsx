@@ -1077,6 +1077,38 @@ export function DraggableBlock({
         </div>
       )}
 
+      {/* ─── CHARACTER BLOCK ─── */}
+      {block.type === "character" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-200/50 p-3 flex flex-col items-center justify-center">
+          <div className="text-[9px] font-bold text-pink-700 uppercase tracking-wider mb-2">Personagem</div>
+          <div className="w-16 h-16 rounded-full bg-pink-200 flex items-center justify-center text-2xl mb-2">👤</div>
+          <p className="text-[9px] text-slate-700 font-medium">{(block as any).currentPose || "standing"}</p>
+          <p className="text-[8px] text-slate-500">{(block as any).currentExpression || "neutral"}</p>
+          {(block as any).speechBubble?.text && (
+            <div className="mt-2 px-3 py-1.5 bg-white rounded-lg border border-pink-200 text-[8px] text-slate-700 max-w-full truncate shadow-sm">
+              {(block as any).speechBubble.text}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── SCENARIO BLOCK ─── */}
+      {block.type === "scenario" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-orange-700 uppercase tracking-wider">Cenário</div>
+            <span className="text-[7px] bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded">{(block as any).scenarioStyle || "visual-novel"}</span>
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-2xl mb-1">🎭</div>
+              <p className="text-[9px] text-slate-700">{((block as any).scenes || []).length} cenas</p>
+              <p className="text-[8px] text-slate-500 mt-1 line-clamp-2">{((block as any).scenes || [])[0]?.narration || "Adicione cenas..."}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Dimension tooltip when selected */}
       {isSelected && !isDragging && (
         <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-slate-800 text-white text-[9px] rounded font-mono whitespace-nowrap z-40 shadow-lg">

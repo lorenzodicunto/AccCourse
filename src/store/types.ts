@@ -576,7 +576,73 @@ export interface ImageChoiceBlock extends BaseBlock {
   feedbackIncorrect: string;
 }
 
-export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock | InteractiveVideoBlock | GameBlock | LabeledGraphicBlock | ProcessBlock | LightboxBlock | QuoteBlock | DownloadBlock | CounterBlock | ButtonBlock | DividerBlock | EmbedBlock | LikertBlock | RankingBlock | EssayBlock | NumericBlock | DropdownBlock | MatrixBlock | ImageChoiceBlock;
+// ─── Wave 11: Characters & Scenarios ──────────────────────────────────────
+
+export interface CharacterPose {
+  id: string;
+  name: string;
+  imageUrl: string;
+}
+
+export interface CharacterExpression {
+  id: string;
+  name: string;
+  imageUrl: string;
+}
+
+export interface Character {
+  id: string;
+  name: string;
+  description: string;
+  style: "illustration" | "realistic" | "cartoon" | "minimal";
+  poses: CharacterPose[];
+  expressions: CharacterExpression[];
+  defaultPose: string;
+  defaultExpression: string;
+}
+
+export interface CharacterBlock extends BaseBlock {
+  type: "character";
+  characterId: string;
+  currentPose: string;
+  currentExpression: string;
+  speechBubble?: {
+    text: string;
+    position: "top" | "left" | "right" | "bottom";
+    style: "speech" | "thought" | "narration";
+  };
+  mirrorHorizontal: boolean;
+  scale: number;
+}
+
+export interface ScenarioScene {
+  id: string;
+  backgroundImage?: string;
+  character?: {
+    characterId: string;
+    pose: string;
+    expression: string;
+    position: "left" | "center" | "right";
+  };
+  narration: string;
+  choices: {
+    id: string;
+    text: string;
+    nextSceneId: string;
+    feedback?: string;
+    isCorrect?: boolean;
+    points?: number;
+  }[];
+}
+
+export interface ScenarioBlock extends BaseBlock {
+  type: "scenario";
+  scenes: ScenarioScene[];
+  startSceneId: string;
+  scenarioStyle: "visual-novel" | "dialog" | "simulation";
+}
+
+export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock | InteractiveVideoBlock | GameBlock | LabeledGraphicBlock | ProcessBlock | LightboxBlock | QuoteBlock | DownloadBlock | CounterBlock | ButtonBlock | DividerBlock | EmbedBlock | LikertBlock | RankingBlock | EssayBlock | NumericBlock | DropdownBlock | MatrixBlock | ImageChoiceBlock | CharacterBlock | ScenarioBlock;
 
 export type SlideTransition = "none" | "fade" | "slide" | "zoom";
 
@@ -646,6 +712,7 @@ export interface CourseProject {
   gamification: GamificationSettings;
   certificate?: CertificateConfig;
   variables?: CourseVariable[];
+  characters?: Character[];
   createdAt: string;
   updatedAt: string;
 }

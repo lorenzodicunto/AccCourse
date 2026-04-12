@@ -45,6 +45,8 @@ import {
   FileText,
   Calculator,
   Grid3x3,
+  User,
+  Film,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -107,6 +109,8 @@ const COMPONENTS: ComponentItem[] = [
   { type: "dropdown", label: "Dropdown", description: "Preencher com menu dropdown", icon: <ChevronDown className="h-5 w-5" />, color: "#6366F1", category: "avaliacoes" },
   { type: "matrix", label: "Matriz", description: "Grid de múltipla escolha", icon: <Grid3x3 className="h-5 w-5" />, color: "#DC2626", category: "avaliacoes" },
   { type: "image-choice", label: "Escolha Visual", description: "Selecionar entre imagens", icon: <Image className="h-5 w-5" />, color: "#2563EB", category: "avaliacoes" },
+  { type: "character", label: "Personagem", description: "Avatar com expressões e poses", icon: <User className="h-5 w-5" />, color: "#EC4899", category: "avancado" },
+  { type: "scenario", label: "Cenário", description: "Diálogo interativo com personagem", icon: <Film className="h-5 w-5" />, color: "#F97316", category: "avancado" },
 ];
 
 interface ComponentLibrarySidebarProps {
@@ -272,6 +276,12 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
         break;
       case "image-choice":
         newBlock = { ...baseBlock, type: "image-choice", width: 600, height: 400, question: "Selecione a imagem correta:", choices: [{ id: crypto.randomUUID(), image: "", label: "Opção 1", isCorrect: true }, { id: crypto.randomUUID(), image: "", label: "Opção 2", isCorrect: false }], multiSelect: false, columns: 2, showLabels: true, points: 10, feedbackCorrect: "Correto!", feedbackIncorrect: "Tente novamente." };
+        break;
+      case "character":
+        newBlock = { ...baseBlock, type: "character", width: 250, height: 350, characterId: "", currentPose: "standing", currentExpression: "neutral", speechBubble: undefined, mirrorHorizontal: false, scale: 1 };
+        break;
+      case "scenario":
+        newBlock = { ...baseBlock, type: "scenario", width: 700, height: 400, scenes: [{ id: crypto.randomUUID(), backgroundImage: "", character: undefined, narration: "Cena inicial do cenário.", choices: [{ id: crypto.randomUUID(), text: "Opção 1", nextSceneId: "", feedback: "", isCorrect: true, points: 10 }] }], startSceneId: "", scenarioStyle: "visual-novel" };
         break;
       default:
         return;
