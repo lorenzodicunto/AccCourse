@@ -97,6 +97,7 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 interface TopToolbarProps {
   courseId?: string;
   onToggleComponentLib?: () => void;
+  onToggleTimeline?: () => void;
 }
 
 type RibbonTabId = "home" | "insert" | "interactions" | "design" | "export" | "tools";
@@ -185,7 +186,7 @@ const SLIDE_SIZE_PRESETS = [
   { name: "Quadrado", width: 600, height: 600 },
 ];
 
-export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) {
+export function TopToolbar({ courseId, onToggleComponentLib, onToggleTimeline }: TopToolbarProps) {
   const router = useRouter();
   const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
   const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
@@ -1309,6 +1310,16 @@ export function TopToolbar({ courseId, onToggleComponentLib }: TopToolbarProps) 
                     }}
                   />
                 )}
+              </RibbonGroup>
+
+              <RibbonGroup label="Painel">
+                <RibbonButton
+                  icon={<Clock className="h-5 w-5" />}
+                  label="Timeline"
+                  variant="large"
+                  onClick={() => onToggleTimeline?.()}
+                  title="Abrir/fechar painel de Timeline — Gerencie camadas e timing"
+                />
               </RibbonGroup>
             </>
           </div>

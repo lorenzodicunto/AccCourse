@@ -42,6 +42,10 @@ const ComponentLibrarySidebar = dynamic(
     loading: () => <div className="w-72 border-r border-border bg-card animate-pulse" />,
   }
 );
+const TimelinePanel = dynamic(
+  () => import("@/components/editor/TimelinePanel").then((m) => ({ default: m.TimelinePanel })),
+  { ssr: false }
+);
 import { toast } from "sonner";
 
 export type SaveStatus = "saved" | "saving" | "unsaved" | "error";
@@ -75,6 +79,7 @@ export default function EditorPage() {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("saved");
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [componentLibOpen, setComponentLibOpen] = useState(false);
+  const [timelineOpen, setTimelineOpen] = useState(false);
 
   // ─── Clipboard (internal, no browser API needed) ───
   const clipboardRef = useRef<Block[]>([]);
@@ -452,7 +457,7 @@ export default function EditorPage() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden" style={{ background: '#F8FAFC' }}>
-      <TopToolbar courseId={courseId} onToggleComponentLib={() => setComponentLibOpen(!componentLibOpen)} />
+      <TopToolbar courseId={courseId} onToggleComponentLib={() => setComponentLibOpen(!componentLibOpen)} onToggleTimeline={() => setTimelineOpen(!timelineOpen)} />
       <div className="flex flex-1 overflow-hidden">
         <SlideNavigator />
         <div role="main" aria-label="Área de edição do curso" className="flex-1 overflow-hidden">
@@ -460,6 +465,7 @@ export default function EditorPage() {
         </div>
         <PropertiesPanel />
       </div>
+      <TimelinePanel isVisible={timelineOpen} onToggle={() => setTimelineOpen(!timelineOpen)} />
       <StatusBar saveStatus={saveStatus} lastSavedAt={lastSavedAt} />
       <ComponentLibrarySidebar open={componentLibOpen} onClose={() => setComponentLibOpen(false)} />
     </div>

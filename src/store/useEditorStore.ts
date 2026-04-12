@@ -161,6 +161,7 @@ interface EditorActions {
     slideId: string,
     blockIds: string[]
   ) => void;
+  reorderBlocks: (projectId: string, slideId: string, blockIds: string[]) => void;
   setSelectedBlock: (id: string | null) => void;
   toggleBlockSelection: (blockId: string) => void;
   clearBlockSelection: () => void;
@@ -636,6 +637,41 @@ export const useEditorStore = create<EditorStore>()(
             state.selectedBlockId && blockIds.includes(state.selectedBlockId)
               ? null
               : state.selectedBlockId,
+        });
+      },
+
+      reorderBlocks: (projectId, slideId, blockIds) => {
+        const state = get();
+        const project = state.projects.find((p) => p.id === projectId);
+        if (!project) return;
+        const slide = project.slides.find((s) => s.id === slideId);
+        if (!slide) return;
+
+        const blockMap = new Map(slide.blocks.map((b) => [b.id, b]));
+        const reordered = blockIds
+          .map((id, i) => {
+            const block = blockMap.get(id);
+            return block ? { ...block, zIndex: i } : null;
+          })
+          .filter(Boolean) as Block[];
+        // Keep any blocks not in blockIds at the end
+        const remaining = slide.blocks.filter((b) => !blockIds.includes(b.id));
+        const finalBlocks = [...reordered, ...remaining];
+
+        set({
+          past: [...state.past, state.projects].slice(-MAX_HISTORY),
+          future: [],
+          projects: state.projects.map((p) =>
+            p.id === projectId
+              ? {
+                  ...p,
+                  slides: p.slides.map((s) =>
+                    s.id === slideId ? { ...s, blocks: finalBlocks } : s
+                  ),
+                  updatedAt: new Date().toISOString(),
+                }
+              : p
+          ),
         });
       },
 
