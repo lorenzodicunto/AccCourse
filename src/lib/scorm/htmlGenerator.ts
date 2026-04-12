@@ -1,7 +1,7 @@
 // SCORM Course HTML Generator
 // Generates the index.html content from course slides and blocks
 
-import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock, BranchingBlock, TimelineBlock, DragDropBlock, InteractiveVideoBlock, LabeledGraphicBlock, ProcessBlock, LightboxBlock, QuoteBlock, DownloadBlock, CounterBlock, ButtonBlock, DividerBlock, EmbedBlock } from "@/store/useEditorStore";
+import { CourseProject, Block, TextBlock, ImageBlock, FlashcardBlock, QuizBlock, VideoBlock, ShapeBlock, AudioBlock, TrueFalseBlock, MatchingBlock, FillBlankBlock, SortingBlock, HotspotBlock, AccordionBlock, TabsBlock, BranchingBlock, TimelineBlock, DragDropBlock, InteractiveVideoBlock, LabeledGraphicBlock, ProcessBlock, LightboxBlock, QuoteBlock, DownloadBlock, CounterBlock, ButtonBlock, DividerBlock, EmbedBlock, LikertBlock, RankingBlock, EssayBlock, NumericBlock, DropdownBlock, MatrixBlock, ImageChoiceBlock } from "@/store/useEditorStore";
 import { sanitizeHtml } from "@/lib/sanitize";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 
@@ -485,6 +485,20 @@ function generateBlockHTML(block: Block, assetMap?: Map<string, string>): string
       return generateDividerBlockHTML(block as DividerBlock, style);
     case "embed":
       return generateEmbedBlockHTML(block as EmbedBlock, style);
+    case "likert":
+      return generateLikertBlockHTML(block as LikertBlock, style);
+    case "ranking":
+      return generateRankingBlockHTML(block as RankingBlock, style);
+    case "essay":
+      return generateEssayBlockHTML(block as EssayBlock, style);
+    case "numeric":
+      return generateNumericBlockHTML(block as NumericBlock, style);
+    case "dropdown":
+      return generateDropdownBlockHTML(block as DropdownBlock, style);
+    case "matrix":
+      return generateMatrixBlockHTML(block as MatrixBlock, style);
+    case "image-choice":
+      return generateImageChoiceBlockHTML(block as ImageChoiceBlock, style);
     default:
       return "";
   }
@@ -1241,5 +1255,135 @@ function generateDividerBlockHTML(block: DividerBlock, style: string): string {
 function generateEmbedBlockHTML(block: EmbedBlock, style: string): string {
   return `<div style="${style}" role="region" aria-label="${block.title}">
     <iframe src="${block.url}" title="${block.title}" style="width:100%;height:100%;border:none;border-radius:8px;" ${block.allowFullscreen ? 'allowfullscreen' : ''} loading="lazy"></iframe>
+  </div>`;
+}
+
+// ─── Wave 7: Advanced Quiz Types ───────────────────────────────────────────
+
+function generateLikertBlockHTML(block: LikertBlock, style: string): string {
+  const scaleHTML = block.scale.labels.map((label, i) => `<th style="padding:8px;font-size:11px;text-align:center;border:1px solid #e2e8f0;">${label}</th>`).join('');
+  const statementsHTML = (block.statements || []).map(stmt => `
+    <tr>
+      <td style="padding:8px;border:1px solid #e2e8f0;text-align:left;font-size:12px;font-weight:500;">${stmt.text}</td>
+      ${block.scale.labels.map((_, i) => `<td style="padding:8px;text-align:center;border:1px solid #e2e8f0;"><input type="radio" name="likert_${stmt.id}" value="${block.scale.values[i]}" /></td>`).join('')}
+    </tr>
+  `).join('');
+  return `<div style="${style};padding:16px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;">
+    <div style="margin-bottom:16px;">
+      <h3 style="font-size:14px;font-weight:600;color:#1e293b;margin:0 0 12px 0;">${escapeHtml(block.question)}</h3>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr><th style="padding:8px;border:1px solid #e2e8f0;"></th>${scaleHTML}</tr>
+        </thead>
+        <tbody>${statementsHTML}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function generateRankingBlockHTML(block: RankingBlock, style: string): string {
+  const itemsHTML = (block.items || []).map((item, i) => `
+    <div style="padding:10px;background:white;border:1px solid #e2e8f0;border-radius:6px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
+      <div style="font-weight:600;color:#0891b2;font-size:14px;min-width:24px;">${i + 1}</div>
+      <div style="flex:1;font-size:13px;color:#334155;">${escapeHtml(item.text)}</div>
+      <svg width="20" height="20" viewBox="0 0 20 20" style="cursor:grab;color:#94a3b8;"><path fill="currentColor" d="M8 5a1 1 0 0 0-2 0v10a1 1 0 1 0 2 0V5zm6 0a1 1 0 1 0-2 0v10a1 1 0 1 0 2 0V5z"/></svg>
+    </div>
+  `).join('');
+  return `<div style="${style};padding:16px;background:#f0f9ff;border-radius:8px;border:1px solid #0891b2;">
+    <h3 style="font-size:14px;font-weight:600;color:#1e293b;margin:0 0 12px 0;">${escapeHtml(block.question)}</h3>
+    <div>${itemsHTML}</div>
+  </div>`;
+}
+
+function generateEssayBlockHTML(block: EssayBlock, style: string): string {
+  const wordCountHTML = block.showWordCount ? `<div style="font-size:11px;color:#94a3b8;margin-top:8px;">Palavras: <span id="wordCount_${block.id}">0</span> / ${block.maxWords || '∞'}</div>` : '';
+  return `<div style="${style};padding:16px;background:#fffbeb;border-radius:8px;border:1px solid #d97706;">
+    <h3 style="font-size:14px;font-weight:600;color:#1e293b;margin:0 0 12px 0;">${escapeHtml(block.question)}</h3>
+    <textarea style="width:100%;min-height:120px;padding:12px;border:1px solid #d97706;border-radius:6px;font-family:inherit;font-size:13px;resize:vertical;" placeholder="${escapeHtml(block.placeholder || 'Digite aqui...')}" data-min-words="${block.minWords || 0}" data-max-words="${block.maxWords || 999999}"></textarea>
+    ${wordCountHTML}
+  </div>`;
+}
+
+function generateNumericBlockHTML(block: NumericBlock, style: string): string {
+  const unitHTML = block.unit ? `<span style="font-size:13px;color:#059669;margin-left:8px;font-weight:500;">${escapeHtml(block.unit)}</span>` : '';
+  return `<div style="${style};padding:16px;background:#f0fdf4;border-radius:8px;border:1px solid #059669;">
+    <h3 style="font-size:14px;font-weight:600;color:#1e293b;margin:0 0 12px 0;">${escapeHtml(block.question)}</h3>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <input type="number" style="flex:1;padding:10px;border:1px solid #059669;border-radius:6px;font-size:13px;font-family:monospace;" placeholder="0.00" step="${Math.pow(10, -(block.decimalPlaces || 2))}" />
+      ${unitHTML}
+    </div>
+    <div style="font-size:11px;color:#94a3b8;margin-top:8px;">Tolerância: ±${block.tolerance || 0}</div>
+  </div>`;
+}
+
+function generateDropdownBlockHTML(block: DropdownBlock, style: string): string {
+  const itemsHTML = (block.items || []).map(item => `
+    <div style="margin-bottom:12px;padding:12px;background:white;border:1px solid #6366f1;border-radius:6px;">
+      <div style="font-size:13px;color:#334155;margin-bottom:8px;">${escapeHtml(item.text)}</div>
+      <select style="width:100%;padding:8px;border:1px solid #6366f1;border-radius:4px;font-size:12px;">
+        <option value="">Selecione...</option>
+        ${(item.options || []).map(opt => `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}</option>`).join('')}
+      </select>
+    </div>
+  `).join('');
+  return `<div style="${style};padding:16px;background:#f5f3ff;border-radius:8px;border:1px solid #6366f1;">
+    <h3 style="font-size:14px;font-weight:600;color:#1e293b;margin:0 0 12px 0;">${escapeHtml(block.question)}</h3>
+    ${itemsHTML}
+  </div>`;
+}
+
+function generateMatrixBlockHTML(block: MatrixBlock, style: string): string {
+  const columns = block.columns || [];
+  const rows = block.rows || [];
+  const inputType = block.inputType || 'radio';
+
+  const columnHeadersHTML = columns.map(col => `<th style="padding:8px;text-align:center;border:1px solid #dc2626;font-size:12px;font-weight:600;color:#991b1b;">${escapeHtml(col.label)}</th>`).join('');
+
+  const rowsHTML = rows.map((row, rowIdx) => `
+    <tr>
+      <td style="padding:8px;border:1px solid #dc2626;font-weight:500;font-size:12px;text-align:left;">${escapeHtml(row.label)}</td>
+      ${columns.map((col, colIdx) => `
+        <td style="padding:8px;border:1px solid #dc2626;text-align:center;">
+          <input type="${inputType}" name="matrix_${rowIdx}" value="${col.id}" />
+        </td>
+      `).join('')}
+    </tr>
+  `).join('');
+
+  return `<div style="${style};padding:16px;background:#fef2f2;border-radius:8px;border:1px solid #dc2626;">
+    <h3 style="font-size:14px;font-weight:600;color:#1e293b;margin:0 0 12px 0;">${escapeHtml(block.question)}</h3>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr><th style="padding:8px;border:1px solid #dc2626;"></th>${columnHeadersHTML}</tr>
+        </thead>
+        <tbody>${rowsHTML}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function generateImageChoiceBlockHTML(block: ImageChoiceBlock, style: string): string {
+  const choices = block.choices || [];
+  const columns = block.columns || 2;
+  const showLabels = block.showLabels !== false;
+
+  const choicesHTML = choices.map(choice => `
+    <div style="flex:1;min-width:${100/columns}%;padding:8px;">
+      <label style="display:flex;flex-direction:column;cursor:pointer;gap:8px;align-items:center;">
+        <input type="${block.multiSelect ? 'checkbox' : 'radio'}" name="image_choice" value="${choice.id}" style="cursor:pointer;" />
+        ${choice.image ? `<img src="${escapeHtml(choice.image)}" alt="${choice.label || ''}" style="width:100%;max-height:120px;object-fit:cover;border-radius:6px;border:2px solid #dbeafe;" />` : '<div style="width:100%;height:120px;background:#f1f5f9;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#94a3b8;">Imagem</div>'}
+        ${showLabels && choice.label ? `<span style="font-size:12px;text-align:center;font-weight:500;color:#334155;">${escapeHtml(choice.label)}</span>` : ''}
+      </label>
+    </div>
+  `).join('');
+
+  return `<div style="${style};padding:16px;background:#f0f9ff;border-radius:8px;border:1px solid #2563eb;">
+    <h3 style="font-size:14px;font-weight:600;color:#1e293b;margin:0 0 12px 0;">${escapeHtml(block.question)}</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;">
+      ${choicesHTML}
+    </div>
   </div>`;
 }

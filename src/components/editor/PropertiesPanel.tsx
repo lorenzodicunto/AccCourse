@@ -45,6 +45,10 @@ import {
   PanelTop,
   GitBranch,
   GripVertical,
+  BarChart3,
+  FileText,
+  Calculator,
+  Grid3x3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -77,6 +81,13 @@ function BlockIcon({ type }: { type: Block["type"] }) {
     button: <Layers className="h-4 w-4 text-violet-500" />,
     divider: <Layers className="h-4 w-4 text-slate-400" />,
     embed: <Layers className="h-4 w-4 text-sky-500" />,
+    likert: <BarChart3 className="h-4 w-4 text-violet-500" />,
+    ranking: <ArrowUpDown className="h-4 w-4 text-cyan-500" />,
+    essay: <PenLine className="h-4 w-4 text-amber-500" />,
+    numeric: <Layers className="h-4 w-4 text-emerald-500" />,
+    dropdown: <ChevronDown className="h-4 w-4 text-indigo-500" />,
+    matrix: <Layers className="h-4 w-4 text-red-500" />,
+    "image-choice": <Image className="h-4 w-4 text-blue-500" />,
   };
   return icons[type];
 }
@@ -108,6 +119,13 @@ const BLOCK_LABELS: Record<string, string> = {
   button: "Botão",
   divider: "Divisor",
   embed: "Embed",
+  likert: "Likert",
+  ranking: "Ranking",
+  essay: "Dissertativa",
+  numeric: "Numérico",
+  dropdown: "Dropdown",
+  matrix: "Matriz",
+  "image-choice": "Escolha Visual",
 };
 
 // ─── Collapsible Section ───
@@ -2556,6 +2574,339 @@ export function PropertiesPanel() {
                   <input type="checkbox" checked={(block as any).allowFullscreen ?? true} onChange={(e) => handleUpdate({ allowFullscreen: e.target.checked } as any)} className="rounded" />
                   Permitir fullscreen
                 </label>
+              </Section>
+            )}
+
+            {/* ─── LIKERT BLOCK ─── */}
+            {block.type === "likert" && (
+              <Section title="Likert" icon={<BarChart3 className="h-3 w-3 text-violet-500" />}>
+                <FieldRow label="Pergunta">
+                  <Input value={(block as any).question || ""} onChange={(e) => handleUpdate({ question: e.target.value } as any)} className="h-7 text-xs" placeholder="Pergunta" />
+                </FieldRow>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-medium text-slate-700">Afirmações</label>
+                  {((block as any).statements || []).map((stmt: any) => (
+                    <div key={stmt.id} className="flex gap-2">
+                      <Input value={stmt.text} onChange={(e) => {
+                        const updated = ((block as any).statements || []).map((s: any) => s.id === stmt.id ? {...s, text: e.target.value} : s);
+                        handleUpdate({ statements: updated } as any);
+                      }} className="h-7 text-xs flex-1" placeholder="Afirmação" />
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        const filtered = ((block as any).statements || []).filter((s: any) => s.id !== stmt.id);
+                        handleUpdate({ statements: filtered } as any);
+                      }} className="h-7 w-7 p-0"><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const newStmt = { id: crypto.randomUUID(), text: "Nova afirmação" };
+                    handleUpdate({ statements: [...((block as any).statements || []), newStmt] } as any);
+                  }} className="w-full gap-2 rounded-lg text-xs h-7"><Plus className="h-3.5 w-3.5" /> Adicionar</Button>
+                </div>
+                <FieldRow label="Pontos">
+                  <Input type="number" value={(block as any).points || 10} onChange={(e) => handleUpdate({ points: parseInt(e.target.value) || 10 } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── RANKING BLOCK ─── */}
+            {block.type === "ranking" && (
+              <Section title="Ranking" icon={<ArrowUpDown className="h-3 w-3 text-cyan-500" />}>
+                <FieldRow label="Pergunta">
+                  <Input value={(block as any).question || ""} onChange={(e) => handleUpdate({ question: e.target.value } as any)} className="h-7 text-xs" placeholder="Pergunta" />
+                </FieldRow>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-medium text-slate-700">Itens</label>
+                  {((block as any).items || []).map((item: any, idx: number) => (
+                    <div key={item.id} className="flex gap-2">
+                      <Input value={item.text} onChange={(e) => {
+                        const updated = ((block as any).items || []).map((it: any) => it.id === item.id ? {...it, text: e.target.value} : it);
+                        handleUpdate({ items: updated } as any);
+                      }} className="h-7 text-xs flex-1" placeholder="Item" />
+                      <Input type="number" value={item.correctPosition || idx + 1} onChange={(e) => {
+                        const updated = ((block as any).items || []).map((it: any) => it.id === item.id ? {...it, correctPosition: parseInt(e.target.value) || 1} : it);
+                        handleUpdate({ items: updated } as any);
+                      }} className="h-7 text-xs w-16" placeholder="Pos" min="1" />
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        const filtered = ((block as any).items || []).filter((it: any) => it.id !== item.id);
+                        handleUpdate({ items: filtered } as any);
+                      }} className="h-7 w-7 p-0"><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const newItem = { id: crypto.randomUUID(), text: "Novo item", correctPosition: ((block as any).items || []).length + 1 };
+                    handleUpdate({ items: [...((block as any).items || []), newItem] } as any);
+                  }} className="w-full gap-2 rounded-lg text-xs h-7"><Plus className="h-3.5 w-3.5" /> Adicionar</Button>
+                </div>
+                <label className="flex items-center gap-1.5 text-[10px]">
+                  <input type="checkbox" checked={(block as any).shuffleOnLoad} onChange={(e) => handleUpdate({ shuffleOnLoad: e.target.checked } as any)} className="rounded" />
+                  Embaralhar na carga
+                </label>
+                <label className="flex items-center gap-1.5 text-[10px]">
+                  <input type="checkbox" checked={(block as any).showNumbers} onChange={(e) => handleUpdate({ showNumbers: e.target.checked } as any)} className="rounded" />
+                  Mostrar números
+                </label>
+                <FieldRow label="Feedback Correto">
+                  <Input value={(block as any).feedbackCorrect || ""} onChange={(e) => handleUpdate({ feedbackCorrect: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback" />
+                </FieldRow>
+                <FieldRow label="Feedback Incorreto">
+                  <Input value={(block as any).feedbackIncorrect || ""} onChange={(e) => handleUpdate({ feedbackIncorrect: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback" />
+                </FieldRow>
+                <FieldRow label="Pontos">
+                  <Input type="number" value={(block as any).points || 10} onChange={(e) => handleUpdate({ points: parseInt(e.target.value) || 10 } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── ESSAY BLOCK ─── */}
+            {block.type === "essay" && (
+              <Section title="Dissertativa" icon={<PenLine className="h-3 w-3 text-amber-500" />}>
+                <FieldRow label="Pergunta">
+                  <Input value={(block as any).question || ""} onChange={(e) => handleUpdate({ question: e.target.value } as any)} className="h-7 text-xs" placeholder="Pergunta" />
+                </FieldRow>
+                <FieldRow label="Placeholder">
+                  <Input value={(block as any).placeholder || ""} onChange={(e) => handleUpdate({ placeholder: e.target.value } as any)} className="h-7 text-xs" placeholder="Placeholder" />
+                </FieldRow>
+                <FieldRow label="Min. de Palavras">
+                  <Input type="number" value={(block as any).minWords || 0} onChange={(e) => handleUpdate({ minWords: parseInt(e.target.value) || 0 } as any)} className="h-7 text-xs" />
+                </FieldRow>
+                <FieldRow label="Max. de Palavras">
+                  <Input type="number" value={(block as any).maxWords || 500} onChange={(e) => handleUpdate({ maxWords: parseInt(e.target.value) || 500 } as any)} className="h-7 text-xs" />
+                </FieldRow>
+                <label className="flex items-center gap-1.5 text-[10px]">
+                  <input type="checkbox" checked={(block as any).showWordCount} onChange={(e) => handleUpdate({ showWordCount: e.target.checked } as any)} className="rounded" />
+                  Mostrar contador de palavras
+                </label>
+                <FieldRow label="Rúbrica">
+                  <textarea value={(block as any).rubric || ""} onChange={(e) => handleUpdate({ rubric: e.target.value } as any)} className="h-16 text-xs w-full rounded border border-slate-200 p-2 resize-none" placeholder="Critérios de avaliação" />
+                </FieldRow>
+                <FieldRow label="Resposta Exemplo">
+                  <textarea value={(block as any).sampleAnswer || ""} onChange={(e) => handleUpdate({ sampleAnswer: e.target.value } as any)} className="h-16 text-xs w-full rounded border border-slate-200 p-2 resize-none" placeholder="Resposta de exemplo" />
+                </FieldRow>
+                <FieldRow label="Feedback">
+                  <Input value={(block as any).feedbackAfterSubmit || ""} onChange={(e) => handleUpdate({ feedbackAfterSubmit: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback após envio" />
+                </FieldRow>
+                <FieldRow label="Pontos">
+                  <Input type="number" value={(block as any).points || 10} onChange={(e) => handleUpdate({ points: parseInt(e.target.value) || 10 } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── NUMERIC BLOCK ─── */}
+            {block.type === "numeric" && (
+              <Section title="Numérico" icon={<Layers className="h-3 w-3 text-emerald-500" />}>
+                <FieldRow label="Pergunta">
+                  <Input value={(block as any).question || ""} onChange={(e) => handleUpdate({ question: e.target.value } as any)} className="h-7 text-xs" placeholder="Pergunta" />
+                </FieldRow>
+                <FieldRow label="Resposta Correta">
+                  <Input type="number" value={(block as any).correctAnswer || 0} onChange={(e) => handleUpdate({ correctAnswer: parseFloat(e.target.value) || 0 } as any)} className="h-7 text-xs" placeholder="0" step="0.01" />
+                </FieldRow>
+                <FieldRow label="Tolerância">
+                  <Input type="number" value={(block as any).tolerance || 0.5} onChange={(e) => handleUpdate({ tolerance: parseFloat(e.target.value) || 0 } as any)} className="h-7 text-xs" placeholder="0.5" step="0.01" />
+                </FieldRow>
+                <FieldRow label="Unidade">
+                  <Input value={(block as any).unit || ""} onChange={(e) => handleUpdate({ unit: e.target.value } as any)} className="h-7 text-xs" placeholder="Ex: km, g, °C" />
+                </FieldRow>
+                <FieldRow label="Casas Decimais">
+                  <Input type="number" value={(block as any).decimalPlaces || 2} onChange={(e) => handleUpdate({ decimalPlaces: parseInt(e.target.value) || 2 } as any)} className="h-7 text-xs" min="0" max="10" />
+                </FieldRow>
+                <FieldRow label="Mín.">
+                  <Input type="number" value={(block as any).min || ""} onChange={(e) => handleUpdate({ min: e.target.value ? parseFloat(e.target.value) : undefined } as any)} className="h-7 text-xs" placeholder="Opcional" step="0.01" />
+                </FieldRow>
+                <FieldRow label="Máx.">
+                  <Input type="number" value={(block as any).max || ""} onChange={(e) => handleUpdate({ max: e.target.value ? parseFloat(e.target.value) : undefined } as any)} className="h-7 text-xs" placeholder="Opcional" step="0.01" />
+                </FieldRow>
+                <FieldRow label="Feedback Correto">
+                  <Input value={(block as any).feedbackCorrect || ""} onChange={(e) => handleUpdate({ feedbackCorrect: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback" />
+                </FieldRow>
+                <FieldRow label="Feedback Incorreto">
+                  <Input value={(block as any).feedbackIncorrect || ""} onChange={(e) => handleUpdate({ feedbackIncorrect: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback" />
+                </FieldRow>
+                <FieldRow label="Feedback Próximo">
+                  <Input value={(block as any).feedbackClose || ""} onChange={(e) => handleUpdate({ feedbackClose: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback quando quase acertou" />
+                </FieldRow>
+                <FieldRow label="Pontos">
+                  <Input type="number" value={(block as any).points || 10} onChange={(e) => handleUpdate({ points: parseInt(e.target.value) || 10 } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── DROPDOWN BLOCK ─── */}
+            {block.type === "dropdown" && (
+              <Section title="Dropdown" icon={<ChevronDown className="h-3 w-3 text-indigo-500" />}>
+                <FieldRow label="Pergunta">
+                  <Input value={(block as any).question || ""} onChange={(e) => handleUpdate({ question: e.target.value } as any)} className="h-7 text-xs" placeholder="Pergunta" />
+                </FieldRow>
+                <div className="space-y-3">
+                  <label className="text-[10px] font-medium text-slate-700">Itens com Dropdown</label>
+                  {((block as any).items || []).map((item: any) => (
+                    <div key={item.id} className="border border-slate-200 rounded p-2 space-y-1.5">
+                      <Input value={item.text} onChange={(e) => {
+                        const updated = ((block as any).items || []).map((it: any) => it.id === item.id ? {...it, text: e.target.value} : it);
+                        handleUpdate({ items: updated } as any);
+                      }} className="h-7 text-xs w-full" placeholder="Texto (inclua ___ para lacuna)" />
+                      <div className="text-[9px] text-slate-500 mb-1">Opções (uma por linha):</div>
+                      <textarea value={item.options?.join('\n') || ""} onChange={(e) => {
+                        const updated = ((block as any).items || []).map((it: any) => it.id === item.id ? {...it, options: e.target.value.split('\n').filter((o: string) => o.trim())} : it);
+                        handleUpdate({ items: updated } as any);
+                      }} className="h-12 text-xs w-full rounded border border-slate-200 p-1.5 resize-none" placeholder="Opção 1\nOpção 2\nOpção 3" />
+                      <FieldRow label="Opção Correta">
+                        <select value={item.correctOption || ""} onChange={(e) => {
+                          const updated = ((block as any).items || []).map((it: any) => it.id === item.id ? {...it, correctOption: e.target.value} : it);
+                          handleUpdate({ items: updated } as any);
+                        }} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                          <option value="">Selecione</option>
+                          {(item.options || []).map((opt: string) => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      </FieldRow>
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        const filtered = ((block as any).items || []).filter((it: any) => it.id !== item.id);
+                        handleUpdate({ items: filtered } as any);
+                      }} className="h-7 w-full rounded text-xs gap-2"><Trash2 className="h-3.5 w-3.5" /> Remover</Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const newItem = { id: crypto.randomUUID(), text: "Texto ___", options: ["Opção 1", "Opção 2"], correctOption: "Opção 1" };
+                    handleUpdate({ items: [...((block as any).items || []), newItem] } as any);
+                  }} className="w-full gap-2 rounded-lg text-xs h-7"><Plus className="h-3.5 w-3.5" /> Adicionar Item</Button>
+                </div>
+                <FieldRow label="Feedback Correto">
+                  <Input value={(block as any).feedbackCorrect || ""} onChange={(e) => handleUpdate({ feedbackCorrect: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback" />
+                </FieldRow>
+                <FieldRow label="Feedback Incorreto">
+                  <Input value={(block as any).feedbackIncorrect || ""} onChange={(e) => handleUpdate({ feedbackIncorrect: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback" />
+                </FieldRow>
+                <FieldRow label="Pontos">
+                  <Input type="number" value={(block as any).points || 10} onChange={(e) => handleUpdate({ points: parseInt(e.target.value) || 10 } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── MATRIX BLOCK ─── */}
+            {block.type === "matrix" && (
+              <Section title="Matriz" icon={<Grid3x3 className="h-3 w-3 text-red-500" />}>
+                <FieldRow label="Pergunta">
+                  <Input value={(block as any).question || ""} onChange={(e) => handleUpdate({ question: e.target.value } as any)} className="h-7 text-xs" placeholder="Pergunta" />
+                </FieldRow>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-medium text-slate-700">Linhas</label>
+                  {((block as any).rows || []).map((row: any) => (
+                    <div key={row.id} className="flex gap-2">
+                      <Input value={row.label} onChange={(e) => {
+                        const updated = ((block as any).rows || []).map((r: any) => r.id === row.id ? {...r, label: e.target.value} : r);
+                        handleUpdate({ rows: updated } as any);
+                      }} className="h-7 text-xs flex-1" placeholder="Rótulo da linha" />
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        const filtered = ((block as any).rows || []).filter((r: any) => r.id !== row.id);
+                        handleUpdate({ rows: filtered } as any);
+                      }} className="h-7 w-7 p-0"><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const newRow = { id: crypto.randomUUID(), label: "Nova linha" };
+                    handleUpdate({ rows: [...((block as any).rows || []), newRow] } as any);
+                  }} className="w-full gap-2 rounded-lg text-xs h-7"><Plus className="h-3.5 w-3.5" /> Adicionar Linha</Button>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-medium text-slate-700">Colunas</label>
+                  {((block as any).columns || []).map((col: any) => (
+                    <div key={col.id} className="flex gap-2">
+                      <Input value={col.label} onChange={(e) => {
+                        const updated = ((block as any).columns || []).map((c: any) => c.id === col.id ? {...c, label: e.target.value} : c);
+                        handleUpdate({ columns: updated } as any);
+                      }} className="h-7 text-xs flex-1" placeholder="Rótulo da coluna" />
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        const filtered = ((block as any).columns || []).filter((c: any) => c.id !== col.id);
+                        handleUpdate({ columns: filtered } as any);
+                      }} className="h-7 w-7 p-0"><Trash2 className="h-3.5 w-3.5" /></Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const newCol = { id: crypto.randomUUID(), label: "Nova coluna" };
+                    handleUpdate({ columns: [...((block as any).columns || []), newCol] } as any);
+                  }} className="w-full gap-2 rounded-lg text-xs h-7"><Plus className="h-3.5 w-3.5" /> Adicionar Coluna</Button>
+                </div>
+                <FieldRow label="Tipo de Entrada">
+                  <select value={(block as any).inputType || "radio"} onChange={(e) => handleUpdate({ inputType: e.target.value } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="radio">Rádio (uma resposta por linha)</option>
+                    <option value="checkbox">Checkbox (múltiplas respostas)</option>
+                  </select>
+                </FieldRow>
+                <FieldRow label="Feedback Correto">
+                  <Input value={(block as any).feedbackCorrect || ""} onChange={(e) => handleUpdate({ feedbackCorrect: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback" />
+                </FieldRow>
+                <FieldRow label="Feedback Incorreto">
+                  <Input value={(block as any).feedbackIncorrect || ""} onChange={(e) => handleUpdate({ feedbackIncorrect: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback" />
+                </FieldRow>
+                <FieldRow label="Pontos">
+                  <Input type="number" value={(block as any).points || 10} onChange={(e) => handleUpdate({ points: parseInt(e.target.value) || 10 } as any)} className="h-7 text-xs" />
+                </FieldRow>
+              </Section>
+            )}
+
+            {/* ─── IMAGE CHOICE BLOCK ─── */}
+            {block.type === "image-choice" && (
+              <Section title="Escolha Visual" icon={<Image className="h-3 w-3 text-blue-500" />}>
+                <FieldRow label="Pergunta">
+                  <Input value={(block as any).question || ""} onChange={(e) => handleUpdate({ question: e.target.value } as any)} className="h-7 text-xs" placeholder="Pergunta" />
+                </FieldRow>
+                <label className="flex items-center gap-1.5 text-[10px]">
+                  <input type="checkbox" checked={(block as any).multiSelect} onChange={(e) => handleUpdate({ multiSelect: e.target.checked } as any)} className="rounded" />
+                  Múltipla seleção
+                </label>
+                <FieldRow label="Colunas">
+                  <select value={(block as any).columns || 2} onChange={(e) => handleUpdate({ columns: parseInt(e.target.value) as 2 | 3 | 4 } as any)} className="h-7 text-xs w-full rounded border border-slate-200 px-2">
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                </FieldRow>
+                <label className="flex items-center gap-1.5 text-[10px]">
+                  <input type="checkbox" checked={(block as any).showLabels} onChange={(e) => handleUpdate({ showLabels: e.target.checked } as any)} className="rounded" />
+                  Mostrar rótulos
+                </label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-medium text-slate-700">Opções</label>
+                  {((block as any).choices || []).map((choice: any) => (
+                    <div key={choice.id} className="border border-slate-200 rounded p-2 space-y-1.5">
+                      <FieldRow label="Rótulo">
+                        <Input value={choice.label || ""} onChange={(e) => {
+                          const updated = ((block as any).choices || []).map((ch: any) => ch.id === choice.id ? {...ch, label: e.target.value} : ch);
+                          handleUpdate({ choices: updated } as any);
+                        }} className="h-7 text-xs" placeholder="Rótulo" />
+                      </FieldRow>
+                      <FieldRow label="URL da Imagem">
+                        <Input value={choice.image || ""} onChange={(e) => {
+                          const updated = ((block as any).choices || []).map((ch: any) => ch.id === choice.id ? {...ch, image: e.target.value} : ch);
+                          handleUpdate({ choices: updated } as any);
+                        }} className="h-7 text-xs" placeholder="https://..." />
+                      </FieldRow>
+                      <label className="flex items-center gap-1.5 text-[10px]">
+                        <input type="checkbox" checked={choice.isCorrect} onChange={(e) => {
+                          const updated = ((block as any).choices || []).map((ch: any) => ch.id === choice.id ? {...ch, isCorrect: e.target.checked} : ch);
+                          handleUpdate({ choices: updated } as any);
+                        }} className="rounded" />
+                        Resposta correta
+                      </label>
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        const filtered = ((block as any).choices || []).filter((ch: any) => ch.id !== choice.id);
+                        handleUpdate({ choices: filtered } as any);
+                      }} className="h-7 w-full rounded text-xs gap-2"><Trash2 className="h-3.5 w-3.5" /> Remover</Button>
+                    </div>
+                  ))}
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const newChoice = { id: crypto.randomUUID(), image: "", label: "Nova opção", isCorrect: false };
+                    handleUpdate({ choices: [...((block as any).choices || []), newChoice] } as any);
+                  }} className="w-full gap-2 rounded-lg text-xs h-7"><Plus className="h-3.5 w-3.5" /> Adicionar Opção</Button>
+                </div>
+                <FieldRow label="Feedback Correto">
+                  <Input value={(block as any).feedbackCorrect || ""} onChange={(e) => handleUpdate({ feedbackCorrect: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback" />
+                </FieldRow>
+                <FieldRow label="Feedback Incorreto">
+                  <Input value={(block as any).feedbackIncorrect || ""} onChange={(e) => handleUpdate({ feedbackIncorrect: e.target.value } as any)} className="h-7 text-xs" placeholder="Feedback" />
+                </FieldRow>
+                <FieldRow label="Pontos">
+                  <Input type="number" value={(block as any).points || 10} onChange={(e) => handleUpdate({ points: parseInt(e.target.value) || 10 } as any)} className="h-7 text-xs" />
+                </FieldRow>
               </Section>
             )}
 

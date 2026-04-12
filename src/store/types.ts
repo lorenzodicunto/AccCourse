@@ -392,7 +392,110 @@ export interface EmbedBlock extends BaseBlock {
   allowFullscreen: boolean;
 }
 
-export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock | InteractiveVideoBlock | GameBlock | LabeledGraphicBlock | ProcessBlock | LightboxBlock | QuoteBlock | DownloadBlock | CounterBlock | ButtonBlock | DividerBlock | EmbedBlock;
+// ─── Wave 7: Advanced Quiz Types ──────────────────────────────────────────
+
+export interface LikertBlock extends BaseBlock {
+  type: "likert";
+  question: string;
+  statements: { id: string; text: string }[];
+  scale: { labels: string[]; values: number[] };
+  required: boolean;
+  points: number;
+  expectedValues?: Record<string, number>;
+}
+
+export interface RankingBlock extends BaseBlock {
+  type: "ranking";
+  question: string;
+  items: { id: string; text: string; correctPosition: number; image?: string }[];
+  shuffleOnLoad: boolean;
+  showNumbers: boolean;
+  partialCredit: boolean;
+  points: number;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+}
+
+export interface EssayBlock extends BaseBlock {
+  type: "essay";
+  question: string;
+  placeholder: string;
+  minWords?: number;
+  maxWords?: number;
+  showWordCount: boolean;
+  rubric?: string;
+  sampleAnswer?: string;
+  autoGrade: boolean;
+  points: number;
+  feedbackAfterSubmit: string;
+}
+
+export interface NumericBlock extends BaseBlock {
+  type: "numeric";
+  question: string;
+  correctAnswer: number;
+  tolerance: number;
+  unit?: string;
+  decimalPlaces?: number;
+  min?: number;
+  max?: number;
+  points: number;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+  feedbackClose?: string;
+}
+
+export interface DropdownItem {
+  id: string;
+  text: string;
+  options: string[];
+  correctOption: string;
+}
+
+export interface DropdownBlock extends BaseBlock {
+  type: "dropdown";
+  question: string;
+  items: DropdownItem[];
+  points: number;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+}
+
+export interface MatrixRow { id: string; label: string }
+export interface MatrixColumn { id: string; label: string }
+
+export interface MatrixBlock extends BaseBlock {
+  type: "matrix";
+  question: string;
+  rows: MatrixRow[];
+  columns: MatrixColumn[];
+  inputType: "radio" | "checkbox";
+  correctAnswers: Record<string, string[]>;
+  points: number;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+}
+
+export interface ImageChoice {
+  id: string;
+  image: string;
+  label?: string;
+  isCorrect: boolean;
+}
+
+export interface ImageChoiceBlock extends BaseBlock {
+  type: "image-choice";
+  question: string;
+  choices: ImageChoice[];
+  multiSelect: boolean;
+  columns: 2 | 3 | 4;
+  showLabels: boolean;
+  points: number;
+  feedbackCorrect: string;
+  feedbackIncorrect: string;
+}
+
+export type Block = TextBlock | ImageBlock | FlashcardBlock | QuizBlock | VideoBlock | ShapeBlock | AudioBlock | TrueFalseBlock | MatchingBlock | FillBlankBlock | SortingBlock | HotspotBlock | AccordionBlock | TabsBlock | BranchingBlock | TimelineBlock | DragDropBlock | InteractiveVideoBlock | GameBlock | LabeledGraphicBlock | ProcessBlock | LightboxBlock | QuoteBlock | DownloadBlock | CounterBlock | ButtonBlock | DividerBlock | EmbedBlock | LikertBlock | RankingBlock | EssayBlock | NumericBlock | DropdownBlock | MatrixBlock | ImageChoiceBlock;
 
 export type SlideTransition = "none" | "fade" | "slide" | "zoom";
 

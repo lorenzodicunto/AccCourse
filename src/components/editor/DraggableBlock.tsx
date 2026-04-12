@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "@/lib/constants/canvas";
 import {
@@ -946,6 +946,134 @@ export function DraggableBlock({
           <div className="text-2xl mb-2">🌐</div>
           <p className="text-xs font-medium text-slate-700">{(block as any).title || "Embed"}</p>
           <p className="text-[8px] text-slate-400 truncate max-w-full">{(block as any).url || "URL do conteúdo"}</p>
+        </div>
+      )}
+
+      {/* ─── LIKERT BLOCK ─── */}
+      {block.type === "likert" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-violet-700 uppercase tracking-wider">Likert</div>
+          </div>
+          <p className="text-[9px] text-slate-700 mb-2 font-medium">{(block as any).question || "Pergunta"}</p>
+          <div className="flex-1 space-y-1 overflow-hidden">
+            {((block as any).statements || []).slice(0, 3).map((s: any, i: number) => (
+              <div key={s.id || i} className="flex items-center gap-2">
+                <span className="text-[8px] text-slate-600 truncate w-20">{s.text}</span>
+                <div className="flex gap-0.5">{[1,2,3,4,5].map(n => <div key={n} className="w-3 h-3 rounded-full border border-violet-300" />)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── RANKING BLOCK ─── */}
+      {block.type === "ranking" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-cyan-50 to-blue-50 border border-cyan-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-cyan-700 uppercase tracking-wider">Ranking</div>
+          </div>
+          <p className="text-[9px] text-slate-700 mb-2 font-medium">{(block as any).question || "Ordene"}</p>
+          <div className="flex-1 space-y-1 overflow-hidden">
+            {((block as any).items || []).slice(0, 4).map((item: any, i: number) => (
+              <div key={item.id || i} className="flex items-center gap-2 px-2 py-0.5 bg-white/80 rounded border border-cyan-100">
+                <span className="text-[8px] font-bold text-cyan-600">{i + 1}</span>
+                <span className="text-[8px] text-slate-700 truncate">{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── ESSAY BLOCK ─── */}
+      {block.type === "essay" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-amber-700 uppercase tracking-wider">Dissertativa</div>
+          </div>
+          <p className="text-[9px] text-slate-700 mb-2 font-medium">{(block as any).question || "Pergunta"}</p>
+          <div className="flex-1 border border-amber-200 rounded bg-white/50 p-2">
+            <p className="text-[8px] text-slate-400 italic">{(block as any).placeholder || "Digite aqui..."}</p>
+          </div>
+          {(block as any).showWordCount && <p className="text-[7px] text-slate-400 mt-1">Min: {(block as any).minWords || 0} | Max: {(block as any).maxWords || "∞"} palavras</p>}
+        </div>
+      )}
+
+      {/* ─── NUMERIC BLOCK ─── */}
+      {block.type === "numeric" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-emerald-700 uppercase tracking-wider">Numérico</div>
+          </div>
+          <p className="text-[9px] text-slate-700 mb-2 font-medium">{(block as any).question || "Pergunta"}</p>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-7 border border-emerald-200 rounded bg-white/50 px-2 flex items-center">
+              <span className="text-[9px] text-slate-400">0.00</span>
+            </div>
+            {(block as any).unit && <span className="text-[9px] text-emerald-600 font-medium">{(block as any).unit}</span>}
+          </div>
+          <p className="text-[7px] text-slate-400 mt-1">Tolerância: ±{(block as any).tolerance || 0}</p>
+        </div>
+      )}
+
+      {/* ─── DROPDOWN BLOCK ─── */}
+      {block.type === "dropdown" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-indigo-700 uppercase tracking-wider">Dropdown</div>
+          </div>
+          <p className="text-[9px] text-slate-700 mb-2 font-medium">{(block as any).question || "Complete"}</p>
+          <div className="flex-1 space-y-1 overflow-hidden">
+            {((block as any).items || []).slice(0, 3).map((item: any, i: number) => (
+              <div key={item.id || i} className="flex items-center gap-1 flex-wrap">
+                <span className="text-[8px] text-slate-600">{item.text}</span>
+                <span className="text-[8px] px-2 py-0.5 bg-indigo-100 border border-indigo-200 rounded text-indigo-700">[▼ {item.options?.length || 0}]</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ─── MATRIX BLOCK ─── */}
+      {block.type === "matrix" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-red-50 to-rose-50 border border-red-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-red-700 uppercase tracking-wider">Matriz</div>
+          </div>
+          <p className="text-[9px] text-slate-700 mb-2 font-medium">{(block as any).question || "Pergunta"}</p>
+          <div className="flex-1 overflow-hidden">
+            <div className="grid gap-0.5" style={{ gridTemplateColumns: `auto repeat(${((block as any).columns || []).length}, 1fr)` }}>
+              <div />
+              {((block as any).columns || []).map((col: any) => (
+                <div key={col.id} className="text-[7px] text-center font-medium text-red-600 truncate">{col.label}</div>
+              ))}
+              {((block as any).rows || []).slice(0, 3).map((row: any) => (
+                <React.Fragment key={row.id}>
+                  <div className="text-[7px] text-slate-600 truncate">{row.label}</div>
+                  {((block as any).columns || []).map((col: any) => (
+                    <div key={col.id} className="flex justify-center"><div className="w-3 h-3 rounded-full border border-red-300" /></div>
+                  ))}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── IMAGE CHOICE BLOCK ─── */}
+      {block.type === "image-choice" && (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 to-sky-50 border border-blue-200/50 p-3 flex flex-col">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="text-[9px] font-bold text-blue-700 uppercase tracking-wider">Escolha Visual</div>
+          </div>
+          <p className="text-[9px] text-slate-700 mb-2 font-medium">{(block as any).question || "Selecione"}</p>
+          <div className="flex-1 grid gap-1" style={{ gridTemplateColumns: `repeat(${(block as any).columns || 2}, 1fr)` }}>
+            {((block as any).choices || []).slice(0, 4).map((c: any, i: number) => (
+              <div key={c.id || i} className="bg-white/80 rounded border border-blue-100 flex items-center justify-center overflow-hidden">
+                {c.image ? <img src={c.image} alt={c.label || ""} className="w-full h-full object-cover" /> : <div className="text-[8px] text-slate-400 p-1">Imagem {i + 1}</div>}
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

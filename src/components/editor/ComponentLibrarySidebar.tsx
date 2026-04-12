@@ -41,6 +41,10 @@ import {
   MousePointerClick,
   Minus,
   Code,
+  BarChart3,
+  FileText,
+  Calculator,
+  Grid3x3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -96,6 +100,13 @@ const COMPONENTS: ComponentItem[] = [
   { type: "button", label: "Botão", description: "Botão de ação (link, slide)", icon: <MousePointerClick className="h-5 w-5" />, color: "#7C3AED", category: "apresentacao" },
   { type: "divider", label: "Divisor", description: "Linha separadora", icon: <Minus className="h-5 w-5" />, color: "#94A3B8", category: "apresentacao" },
   { type: "embed", label: "Embed", description: "Conteúdo externo (iframe)", icon: <Code className="h-5 w-5" />, color: "#0EA5E9", category: "avancado" },
+  { type: "likert", label: "Likert", description: "Escala de opinião", icon: <BarChart3 className="h-5 w-5" />, color: "#8B5CF6", category: "avaliacoes" },
+  { type: "ranking", label: "Ranking", description: "Ordenar itens por posição", icon: <ListOrdered className="h-5 w-5" />, color: "#0891B2", category: "avaliacoes" },
+  { type: "essay", label: "Dissertativa", description: "Resposta livre em texto", icon: <FileText className="h-5 w-5" />, color: "#D97706", category: "avaliacoes" },
+  { type: "numeric", label: "Numérico", description: "Resposta numérica com tolerância", icon: <Calculator className="h-5 w-5" />, color: "#059669", category: "avaliacoes" },
+  { type: "dropdown", label: "Dropdown", description: "Preencher com menu dropdown", icon: <ChevronDown className="h-5 w-5" />, color: "#6366F1", category: "avaliacoes" },
+  { type: "matrix", label: "Matriz", description: "Grid de múltipla escolha", icon: <Grid3x3 className="h-5 w-5" />, color: "#DC2626", category: "avaliacoes" },
+  { type: "image-choice", label: "Escolha Visual", description: "Selecionar entre imagens", icon: <Image className="h-5 w-5" />, color: "#2563EB", category: "avaliacoes" },
 ];
 
 interface ComponentLibrarySidebarProps {
@@ -240,6 +251,27 @@ export function ComponentLibrarySidebar({ open, onClose }: ComponentLibrarySideb
         break;
       case "game":
         newBlock = { ...baseBlock, type: "game", width: 500, height: 400, gameType: "trivia", gameData: {}, title: "Novo Jogo" };
+        break;
+      case "likert":
+        newBlock = { ...baseBlock, type: "likert", width: 650, height: 300, question: "Avalie as afirmações abaixo:", statements: [{ id: crypto.randomUUID(), text: "Afirmação 1" }, { id: crypto.randomUUID(), text: "Afirmação 2" }], scale: { labels: ["Discordo totalmente", "Discordo", "Neutro", "Concordo", "Concordo totalmente"], values: [1, 2, 3, 4, 5] }, required: true, points: 10 };
+        break;
+      case "ranking":
+        newBlock = { ...baseBlock, type: "ranking", width: 500, height: 300, question: "Ordene os itens:", items: [{ id: crypto.randomUUID(), text: "Item 1", correctPosition: 1 }, { id: crypto.randomUUID(), text: "Item 2", correctPosition: 2 }, { id: crypto.randomUUID(), text: "Item 3", correctPosition: 3 }], shuffleOnLoad: true, showNumbers: true, partialCredit: true, points: 10, feedbackCorrect: "Ordem correta!", feedbackIncorrect: "Tente novamente." };
+        break;
+      case "essay":
+        newBlock = { ...baseBlock, type: "essay", width: 600, height: 250, question: "Descreva sua resposta:", placeholder: "Digite aqui...", minWords: 10, maxWords: 500, showWordCount: true, rubric: "", sampleAnswer: "", autoGrade: false, points: 10, feedbackAfterSubmit: "Resposta enviada com sucesso!" };
+        break;
+      case "numeric":
+        newBlock = { ...baseBlock, type: "numeric", width: 500, height: 200, question: "Qual é o resultado?", correctAnswer: 0, tolerance: 0.5, unit: "", decimalPlaces: 2, min: undefined, max: undefined, points: 10, feedbackCorrect: "Correto!", feedbackIncorrect: "Incorreto.", feedbackClose: "Quase! Tente novamente." };
+        break;
+      case "dropdown":
+        newBlock = { ...baseBlock, type: "dropdown", width: 600, height: 200, question: "Complete as lacunas:", items: [{ id: crypto.randomUUID(), text: "A capital do Brasil é ", options: ["São Paulo", "Brasília", "Rio de Janeiro"], correctOption: "Brasília" }], points: 10, feedbackCorrect: "Correto!", feedbackIncorrect: "Tente novamente." };
+        break;
+      case "matrix":
+        newBlock = { ...baseBlock, type: "matrix", width: 650, height: 350, question: "Selecione as respostas corretas:", rows: [{ id: crypto.randomUUID(), label: "Linha 1" }, { id: crypto.randomUUID(), label: "Linha 2" }], columns: [{ id: crypto.randomUUID(), label: "Coluna A" }, { id: crypto.randomUUID(), label: "Coluna B" }, { id: crypto.randomUUID(), label: "Coluna C" }], inputType: "radio", correctAnswers: {}, points: 10, feedbackCorrect: "Correto!", feedbackIncorrect: "Tente novamente." };
+        break;
+      case "image-choice":
+        newBlock = { ...baseBlock, type: "image-choice", width: 600, height: 400, question: "Selecione a imagem correta:", choices: [{ id: crypto.randomUUID(), image: "", label: "Opção 1", isCorrect: true }, { id: crypto.randomUUID(), image: "", label: "Opção 2", isCorrect: false }], multiSelect: false, columns: 2, showLabels: true, points: 10, feedbackCorrect: "Correto!", feedbackIncorrect: "Tente novamente." };
         break;
       default:
         return;
