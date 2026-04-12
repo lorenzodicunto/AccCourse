@@ -27,17 +27,21 @@ model Tenant {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  role         UserRole @default(EDITOR)
-  tenantId     String?
-  tenant       Tenant?  @relation(fields: [tenantId], references: [id])
-  courses      Course[]
-  assets       Asset[]    @relation("uploadedAssets")
-  attempts     CourseAttempt[]
-  createdAt    DateTime @default(now())
+  id                 String   @id @default(cuid())
+  email              String   @unique
+  passwordHash       String
+  name               String
+  role               UserRole @default(EDITOR)
+  tenantId           String?
+  tenant             Tenant?  @relation(fields: [tenantId], references: [id])
+  courses            Course[]
+  assets             Asset[]    @relation("uploadedAssets")
+  attempts           CourseAttempt[]
+  projectMemberships ProjectMember[]
+  courseComments     CourseComment[]
+  courseVersions     CourseVersion[]
+  notifications      CourseNotification[]
+  createdAt          DateTime @default(now())
 
   @@index([tenantId])
 }
@@ -56,6 +60,9 @@ model Course {
   tenant      Tenant?   @relation(fields: [tenantId], references: [id])
   author      User      @relation(fields: [authorId], references: [id])
   attempts    CourseAttempt[]
+  members     ProjectMember[]
+  comments    CourseComment[]
+  versions    CourseVersion[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -136,4 +143,79 @@ model CourseAttempt {
 
   @@index([courseId])
   @@index([userId])
+}
+
+// ─── Collaboration Models ────────────────────────────────────────────────────
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  courseId  String
+  userId    String
+  role      String   @default("viewer")
+  invitedAt DateTime @default(now())
+  acceptedAt DateTime?
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, userId])
+  @@index([courseId])
+  @@index([userId])
+}
+
+model CourseComment {
+  id          String   @id @default(cuid())
+  courseId    String
+  slideIndex  Int
+  blockId     String?
+  positionX   Float?
+  positionY   Float?
+  authorId    String
+  content     String
+  mentions    Json?
+  status      String   @default("open")
+  priority    String   @default("medium")
+  createdAt   DateTime @default(now())
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  replies     Json?
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([authorId])
+}
+
+model CourseVersion {
+  id             String   @id @default(cuid())
+  courseId       String
+  version        Int
+  label          String?
+  snapshot       String   @db.Text
+  authorId       String
+  createdAt      DateTime @default(now())
+  changesSummary String?
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+}
+
+model CourseNotification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String
+  courseId  String
+  link      String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([courseId])
 }
