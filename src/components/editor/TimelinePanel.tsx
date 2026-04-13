@@ -225,14 +225,23 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
   const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
   const [editingLabelValue, setEditingLabelValue] = useState("");
 
-  // Drag-to-resize state
-  const [resizing, setResizing] = useState<{
+  // Drag state — use refs to avoid re-render loops during drag
+  const dragRef = useRef<{
+    type: "resize" | "move";
     blockId: string;
-    edge: "left" | "right";
+    edge?: "left" | "right";
     startX: number;
     startDelay: number;
     startDuration: number;
   } | null>(null);
+  const [dragPreview, setDragPreview] = useState<{
+    blockId: string;
+    delay: number;
+    duration: number;
+  } | null>(null);
+
+  const dragPreviewRef = useRef(dragPreview);
+  dragPreviewRef.current = dragPreview;
 
   const playIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timelineContentRef = useRef<HTMLDivElement>(null);
@@ -293,46 +302,57 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
     };
   }, [isPlaying, playbackSpeed, slideDuration]);
 
-  // ─── Drag-to-resize handler ───────────────────────────────────────────
+  // ─── Drag handler (ref-based, no re-render loop) ─────────────────────
+  // Attaches global listeners once on mount, reads from dragRef
   useEffect(() => {
-    if (!resizing) return;
-
     const handleMouseMove = (e: MouseEvent) => {
-      const dx = e.clientX - resizing.startX;
+      const drag = dragRef.current;
+      if (!drag) return;
+
+      const dx = e.clientX - drag.startX;
       const dtSeconds = dx / PIXELS_PER_SECOND;
 
-      if (resizing.edge === "right") {
-        // Resize duration from right edge
-        const newDuration = Math.max(0.1, resizing.startDuration + dtSeconds);
-        const block = currentSlide?.blocks.find((b) => b.id === resizing.blockId);
-        if (block && project && currentSlide) {
-          updateBlock(project.id, currentSlide.id, block.id, {
-            animation: {
-              ...(block.animation || { type: "none", delay: 0, duration: 0.5 }),
-              duration: Math.round(newDuration * 10) / 10,
-            },
-          } as Partial<Block>);
-        }
+      if (drag.type === "move") {
+        // Move entire bar — change delay only
+        const newDelay = Math.max(0, Math.round((drag.startDelay + dtSeconds) * 10) / 10);
+        setDragPreview({ blockId: drag.blockId, delay: newDelay, duration: drag.startDuration });
+      } else if (drag.edge === "right") {
+        // Resize from right edge — change duration
+        const newDuration = Math.max(0.1, Math.round((drag.startDuration + dtSeconds) * 10) / 10);
+        setDragPreview({ blockId: drag.blockId, delay: drag.startDelay, duration: newDuration });
       } else {
-        // Resize delay from left edge
-        const newDelay = Math.max(0, resizing.startDelay + dtSeconds);
-        const durationChange = resizing.startDelay - newDelay;
-        const newDuration = Math.max(0.1, resizing.startDuration + durationChange);
-        const block = currentSlide?.blocks.find((b) => b.id === resizing.blockId);
-        if (block && project && currentSlide) {
-          updateBlock(project.id, currentSlide.id, block.id, {
-            animation: {
-              ...(block.animation || { type: "none", delay: 0, duration: 0.5 }),
-              delay: Math.round(newDelay * 10) / 10,
-              duration: Math.round(newDuration * 10) / 10,
-            },
-          } as Partial<Block>);
-        }
+        // Resize from left edge — change delay + duration inversely
+        const newDelay = Math.max(0, Math.round((drag.startDelay + dtSeconds) * 10) / 10);
+        const durationChange = drag.startDelay - newDelay;
+        const newDuration = Math.max(0.1, Math.round((drag.startDuration + durationChange) * 10) / 10);
+        setDragPreview({ blockId: drag.blockId, delay: newDelay, duration: newDuration });
       }
     };
 
     const handleMouseUp = () => {
-      setResizing(null);
+      const drag = dragRef.current;
+      if (!drag) return;
+      const preview = dragPreviewRef.current;
+      if (!preview) { dragRef.current = null; setDragPreview(null); return; }
+
+      // Commit final values to store
+      const proj = getCurrentProject();
+      const slide = getCurrentSlide();
+      if (proj && slide) {
+        const block = slide.blocks.find((b) => b.id === drag.blockId);
+        if (block) {
+          updateBlock(proj.id, slide.id, block.id, {
+            animation: {
+              ...(block.animation || { type: "none", delay: 0, duration: 0.5 }),
+              delay: preview.delay,
+              duration: preview.duration,
+            },
+          } as Partial<Block>);
+        }
+      }
+
+      dragRef.current = null;
+      setDragPreview(null);
     };
 
     document.addEventListener("mousemove", handleMouseMove);
@@ -341,7 +361,8 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [resizing, currentSlide, project, updateBlock]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps — runs once, reads from refs
 
   const handleMoveUp = useCallback(
     (blockId: string) => {
@@ -420,18 +441,46 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
     (e: React.MouseEvent, blockId: string, edge: "left" | "right") => {
       e.stopPropagation();
       e.preventDefault();
-      const block = currentSlide?.blocks.find((b) => b.id === blockId);
+      const slide = getCurrentSlide();
+      const block = slide?.blocks.find((b) => b.id === blockId);
       if (!block) return;
       const anim = block.animation;
-      setResizing({
+      const delay = anim?.delay ?? 0;
+      const duration = anim?.duration ?? 0.5;
+      dragRef.current = {
+        type: "resize",
         blockId,
         edge,
         startX: e.clientX,
-        startDelay: anim?.delay ?? 0,
-        startDuration: anim?.duration ?? 0.5,
-      });
+        startDelay: delay,
+        startDuration: duration,
+      };
+      setDragPreview({ blockId, delay, duration });
     },
-    [currentSlide]
+    [getCurrentSlide]
+  );
+
+  // ─── Move start handler (drag whole bar) ───────────────────────────
+  const startMove = useCallback(
+    (e: React.MouseEvent, blockId: string) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const slide = getCurrentSlide();
+      const block = slide?.blocks.find((b) => b.id === blockId);
+      if (!block) return;
+      const anim = block.animation;
+      const delay = anim?.delay ?? 0;
+      const duration = anim?.duration ?? 0.5;
+      dragRef.current = {
+        type: "move",
+        blockId,
+        startX: e.clientX,
+        startDelay: delay,
+        startDuration: duration,
+      };
+      setDragPreview({ blockId, delay, duration });
+    },
+    [getCurrentSlide]
   );
 
   // ─── Get display name for track ──────────────────────────────────────
@@ -650,14 +699,14 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
 
               {sortedBlocks.map((block, i) => {
                 const anim = block.animation;
-                const enterDelay = anim?.delay ?? 0;
-                const enterDuration = anim?.duration ?? 0.5;
+                const isDragging = dragPreview?.blockId === block.id;
+                const enterDelay = isDragging ? dragPreview.delay : (anim?.delay ?? 0);
+                const enterDuration = isDragging ? dragPreview.duration : (anim?.duration ?? 0.5);
                 const barColor = getTrackColor(block.type);
-                const barColorHex = getTrackColorHex(block.type);
                 const isBlockSelected = selectedBlockIds.includes(block.id);
                 const hasAnimation = anim && anim.type && anim.type !== "none";
 
-                const barLeft = enterDelay * PIXELS_PER_SECOND;
+                const barLeft = (hasAnimation ? enterDelay : 0) * PIXELS_PER_SECOND;
                 const barWidth = hasAnimation
                   ? Math.max(20, enterDuration * PIXELS_PER_SECOND)
                   : Math.min(slideDuration, 2) * PIXELS_PER_SECOND;
@@ -682,50 +731,69 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
                       ))}
                     </div>
 
-                    {/* Bar container */}
+                    {/* Bar container — drag to move on body */}
                     <div
                       className={cn(
-                        "absolute top-1 h-[24px] rounded-sm cursor-pointer shadow-sm group/bar transition-shadow",
+                        "absolute top-1 h-[24px] rounded-sm shadow-sm group/bar",
                         barColor,
-                        hasAnimation ? "" : "opacity-25",
-                        isBlockSelected ? "ring-1 ring-violet-600 brightness-110" : "hover:brightness-110"
+                        hasAnimation ? "cursor-grab active:cursor-grabbing" : "cursor-pointer opacity-25",
+                        isBlockSelected ? "ring-1 ring-violet-600 brightness-110" : "hover:brightness-110",
+                        isDragging ? "ring-2 ring-violet-500 shadow-md z-10" : ""
                       )}
                       style={{
-                        left: `${hasAnimation ? barLeft : 0}px`,
+                        left: `${barLeft}px`,
                         width: `${barWidth}px`,
+                        transition: isDragging ? "none" : undefined,
                       }}
-                      onClick={() => setSelectedBlock(block.id)}
+                      onClick={() => { if (!dragRef.current) setSelectedBlock(block.id); }}
+                      onMouseDown={(e) => {
+                        if (hasAnimation) startMove(e, block.id);
+                      }}
                       title={hasAnimation
-                        ? `${anim!.type} — ${enterDelay.toFixed(1)}s + ${enterDuration.toFixed(1)}s`
+                        ? `${anim!.type} — ${enterDelay.toFixed(1)}s + ${enterDuration.toFixed(1)}s\nArrastar para mover`
                         : "Sem animação (estático)"
                       }
                     >
                       {/* Label */}
-                      <span className="text-[9px] font-semibold text-white/90 px-1.5 truncate block leading-[24px]">
-                        {hasAnimation ? anim!.type : "—"}
+                      <span className="text-[9px] font-semibold text-white/90 px-2 truncate block leading-[24px] select-none pointer-events-none">
+                        {hasAnimation ? `${anim!.type} ${enterDelay.toFixed(1)}s` : "—"}
                       </span>
 
                       {/* Left resize handle */}
                       {hasAnimation && (
                         <div
-                          className="absolute left-0 top-0 w-[6px] h-full cursor-ew-resize opacity-0 group-hover/bar:opacity-100 transition-opacity rounded-l-sm"
-                          style={{ background: "rgba(0,0,0,0.3)" }}
+                          className="absolute left-0 top-0 w-[8px] h-full cursor-ew-resize z-10 rounded-l-sm"
+                          style={{ background: isDragging || undefined ? "rgba(0,0,0,0.35)" : undefined }}
                           onMouseDown={(e) => startResize(e, block.id, "left")}
                           title="Arrastar para ajustar delay"
                         >
-                          <div className="absolute top-1/2 left-[2px] -translate-y-1/2 w-[2px] h-3 bg-white/60 rounded-full" />
+                          <div
+                            className={cn(
+                              "absolute inset-0 rounded-l-sm transition-opacity",
+                              isDragging ? "opacity-100" : "opacity-0 group-hover/bar:opacity-100"
+                            )}
+                            style={{ background: "rgba(0,0,0,0.3)" }}
+                          />
+                          <div className="absolute top-1/2 left-[3px] -translate-y-1/2 w-[2px] h-3 bg-white/70 rounded-full" />
                         </div>
                       )}
 
                       {/* Right resize handle */}
                       {hasAnimation && (
                         <div
-                          className="absolute right-0 top-0 w-[6px] h-full cursor-ew-resize opacity-0 group-hover/bar:opacity-100 transition-opacity rounded-r-sm"
-                          style={{ background: "rgba(0,0,0,0.3)" }}
+                          className="absolute right-0 top-0 w-[8px] h-full cursor-ew-resize z-10 rounded-r-sm"
+                          style={{ background: isDragging || undefined ? "rgba(0,0,0,0.35)" : undefined }}
                           onMouseDown={(e) => startResize(e, block.id, "right")}
                           title="Arrastar para ajustar duração"
                         >
-                          <div className="absolute top-1/2 right-[2px] -translate-y-1/2 w-[2px] h-3 bg-white/60 rounded-full" />
+                          <div
+                            className={cn(
+                              "absolute inset-0 rounded-r-sm transition-opacity",
+                              isDragging ? "opacity-100" : "opacity-0 group-hover/bar:opacity-100"
+                            )}
+                            style={{ background: "rgba(0,0,0,0.3)" }}
+                          />
+                          <div className="absolute top-1/2 right-[3px] -translate-y-1/2 w-[2px] h-3 bg-white/70 rounded-full" />
                         </div>
                       )}
                     </div>
