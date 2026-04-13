@@ -210,12 +210,22 @@ interface TimelinePanelProps {
 }
 
 export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
-  const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
-  const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
+  // ─── Reactive store selectors (subscribe to actual data, not getter functions) ─
+  const project = useEditorStore((s) => {
+    return s.projects.find((p) => p.id === s.currentProjectId) ?? null;
+  });
+  const currentSlide = useEditorStore((s) => {
+    const proj = s.projects.find((p) => p.id === s.currentProjectId);
+    if (!proj) return null;
+    return proj.slides.find((sl) => sl.id === s.currentSlideId) ?? null;
+  });
   const selectedBlockIds = useEditorStore((s) => s.selectedBlockIds);
   const setSelectedBlock = useEditorStore((s) => s.setSelectedBlock);
   const reorderBlocks = useEditorStore((s) => s.reorderBlocks);
   const updateBlock = useEditorStore((s) => s.updateBlock);
+  // Keep getter refs for the drag mouseUp handler (needs fresh data without re-render)
+  const getCurrentProject = useEditorStore((s) => s.getCurrentProject);
+  const getCurrentSlide = useEditorStore((s) => s.getCurrentSlide);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -249,28 +259,31 @@ export function TimelinePanel({ isVisible, onToggle }: TimelinePanelProps) {
 
   const PIXELS_PER_SECOND = 50;
 
-  const project = useMemo(() => getCurrentProject(), [getCurrentProject]);
-  const currentSlide = useMemo(() => getCurrentSlide(), [getCurrentSlide]);
-
   // Blocks sorted by zIndex (highest = top of list = front)
   const sortedBlocks = useMemo(() => {
     if (!currentSlide) return [];
     return [...currentSlide.blocks].sort((a, b) => (b.zIndex || 0) - (a.zIndex || 0));
   }, [currentSlide]);
 
-  // Initialize track states for new blocks
+  // Initialize track states for new blocks — watch the full block list, not just length
+  const blockIds = useMemo(
+    () => currentSlide?.blocks.map((b) => b.id).join(",") ?? "",
+    [currentSlide]
+  );
   useEffect(() => {
     if (!currentSlide) return;
     setTrackStates((prev) => {
       const updated = { ...prev };
+      let changed = false;
       currentSlide.blocks.forEach((b) => {
         if (!updated[b.id]) {
           updated[b.id] = { visible: true, locked: false };
+          changed = true;
         }
       });
-      return updated;
+      return changed ? updated : prev;
     });
-  }, [currentSlide?.blocks.length]);
+  }, [blockIds, currentSlide]);
 
   // Focus input when editing label
   useEffect(() => {
